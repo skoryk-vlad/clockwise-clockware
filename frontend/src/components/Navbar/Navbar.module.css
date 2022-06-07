@@ -1,0 +1,26 @@
+.navbar {
+    width: 200px;
+    background-color: #404040;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.navbar__links {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    margin: 10px 0px;
+}
+.navbar__link {
+    font-size: 20px;
+    padding: 10px 15px;
+    width: 100%;
+    color: #fff;
+    transition: .3s ease;
+}
+.navbar__link:hover {
+    background-color: #303030;
+}
+.navbar__link:last-child {
+    margin-top: auto;
+}

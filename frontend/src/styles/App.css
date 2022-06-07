@@ -1,0 +1,74 @@
+#root {
+  height: 100%;
+}
+.wrapper {
+  min-height: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.admin-container {
+  display: flex;
+  background-color: #eee;
+}
+.admin-body {
+  width: 100%;
+}
+.admin-body__title {
+  font-size: 25px;
+  padding: 10px 20px;
+  background-color: #505050;
+  color: #fff;
+}
+.admin-body__btns {
+  margin: 5px;
+}
+.admin-body__btns > *:not(:last-child) {
+  margin: 0px 5px 0px 0px;
+}
+.admin-body__table {
+  background-color: #ccc;
+  border: 0;
+  width: 100%;
+  font-size: 18px;
+  border-collapse: collapse;
+}
+.admin-body__table th,
+.admin-body__table td {
+  padding: 5px 10px;
+  border: 0;
+  outline: 0;
+}
+.admin-body__table th:not(:last-child),
+.admin-body__table td:not(:last-child) {
+  border-right: 1px solid #000;
+}
+.admin-body__table tr:nth-child(even) {
+  background-color: #eee;
+}
+.admin-body__table thead {
+  background-color: #aaa;
+}
+
+.admin-body__link {
+  width: 100px;
+}
+.admin-body__link span {
+  cursor: pointer;
+}
+.admin-body__link span:hover {
+  text-decoration: underline;
+}
+
+.login {
+  padding: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.login h1 {
+  text-align: center;
+  font-size: 30px;
+  margin: 0px 0px 10px 0px;
+}
