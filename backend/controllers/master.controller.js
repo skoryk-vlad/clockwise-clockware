@@ -7,7 +7,13 @@ class MasterController {
         res.json(newMaster.rows[0]);
     }
     async getMasters(req, res) {
-        const masters = await db.query('SELECT * FROM master');
+        let com = 'SELECT * FROM master';
+
+        if(req.query.city_id) {
+            com += ` WHERE city_id=${req.query.city_id}`;
+        }
+
+        const masters = await db.query(com);
         res.json(masters.rows);
     }
     async getMasterById(req, res) {

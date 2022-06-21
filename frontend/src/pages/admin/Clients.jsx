@@ -7,7 +7,9 @@ import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { MyInput } from '../../components/input/MyInput';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { BlueButton } from '../../components/BlueButton/BlueButton';
+import { OrderButton } from '../../components/OrderButton/OrderButton';
+import { Helmet } from 'react-helmet';
+import { AdminTable } from '../../components/AdminTable/AdminTable';
 
 export const Clients = () => {
     const [clients, setClients] = useState([]);
@@ -57,6 +59,9 @@ export const Clients = () => {
 
     return (
         <div className='admin-container'>
+            {/* <Helmet>
+                <title>Клиенты - Clockwise Clockware</title>
+            </Helmet> */}
             <Navbar />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Клиенты</h1>
@@ -69,43 +74,25 @@ export const Clients = () => {
                 <MyModal visible={modalAdd} setVisible={setModalAdd}>
                     <MyInput value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})} placeholder="Имя клиента..." />
                     <MyInput value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} placeholder="Почта клиента..." />
-                    <BlueButton onClick={() => addClient()}>Добавить</BlueButton>
+                    <OrderButton onClick={() => addClient()}>Добавить</OrderButton>
                 </MyModal>
                 <MyModal visible={modalUpd} setVisible={setModalUpd}>
                     <MyInput value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})} placeholder="Имя клиента..." />
                     <MyInput value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} placeholder="Почта клиента..." />
-                    <BlueButton onClick={() => updateClient()}>Изменить</BlueButton>
+                    <OrderButton onClick={() => updateClient()}>Изменить</OrderButton>
                 </MyModal>
 
-                <table className='admin-body__table'>
-                    <thead>
-                        <tr>
-                            <th>id</th>
-                            <th>name</th>
-                            <th>email</th>
-                            <th>Изменение</th>
-                            <th>Удаление</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Error &&
-                            <h1>Произошла ошибка ${Error}</h1>
-                        }
-                        {clients.map(client => 
-                            <tr key={client.id} id={client.id}>
-                                <td>{client.id}</td>
-                                <td>{client.name}</td>
-                                <td>{client.email}</td>
-                                <td className='admin-body__link'><span onClick={e => {setModalUpd(true); setIdUpd(e.target.closest('tr').id)}}>Изменить</span></td>
-                                <td className='admin-body__link'><span onClick={e => deleteClient(e)}>Удалить</span></td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-                        {isClientsLoading &&
-                            <Loader />
-                        }
+                <AdminTable dataArr={clients} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteClient(e)} />
 
+                {isClientsLoading &&
+                    <Loader />
+                }
+                {Error &&
+                    <h2>Произошла ошибка ${Error}</h2>
+                }
+                {clients.length === 0 &&
+                    <h2>Отсутствуют записи</h2>
+                }
             </div>
         </div>
     )

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Helmet } from 'react-helmet';
 import { BrowserRouter } from 'react-router-dom';
 import { AppRouter } from './components/AppRouter';
 import { AuthContext } from './context/context';
@@ -22,11 +23,13 @@ function App() {
             setIsAuth,
             isLoading
         }}>
+            {/* <Helmet>
+                <title>Clockwise Clockware</title>
+            </Helmet> */}
             <BrowserRouter>
                 <AppRouter/>
             </BrowserRouter>
         </AuthContext.Provider>
-        
     )
 }
 

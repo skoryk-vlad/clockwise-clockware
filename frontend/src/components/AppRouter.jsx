@@ -9,11 +9,9 @@ export const AppRouter = () => {
 
     if(isLoading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}><Loader /></div>
+            <Loader />
         );
     }
-
-    // const isAuth = false;
 
     return (
         isAuth
@@ -22,7 +20,7 @@ export const AppRouter = () => {
                 {[...privateRoutes, ...publicRoutes].map(route =>
                     <Route path={route.path} element={route.element} exact={route.exact} key={route.path} />
                 )}
-                <Route path="*" element={<Navigate replace to="/admin" />} />
+                <Route path="*" element={<Navigate replace to="/admin/main" />} />
             </Routes>
             :
             <Routes>

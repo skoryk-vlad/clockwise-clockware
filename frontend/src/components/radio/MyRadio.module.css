@@ -22,14 +22,17 @@
 	text-transform: uppercase;
 	color: white;
 	transition: all .3s ease;
-    border: 1px solid #007be6;
+    border: 1px solid #6F2CFF;
 }
 .myRadio:not(:checked) + label{
 	background-color: transparent;
-	color: #007be6;
+	color: #6F2CFF;
 }
 .myRadio:checked + label{
-	background-color: #007be6;
+	background-color: #6F2CFF;
+}
+.myRadio:hover:not(:checked) + label{
+	background-color: #eee;
 }
 .myRadio:not(:checked) + label:hover{
     opacity: 0.9;

@@ -24,3 +24,17 @@
 .navbar__link:last-child {
     margin-top: auto;
 }
+.active {
+    background-color: #202020;
+}
+
+.logo {
+    width: 100%;
+    height: 45px;
+    background-color: #999999;
+    font-size: 40px;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

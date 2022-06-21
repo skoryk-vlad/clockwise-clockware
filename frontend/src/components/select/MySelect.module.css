@@ -4,4 +4,26 @@
     padding: 5px 10px 5px 0px;
     margin: 5px 0;
     background-color: rgb(246, 246, 246);
+    border: 1px solid #6F2CFF;
+    width: 100%;
+    cursor: pointer;
+    transition: .3s ease;
+}
+.mySelect:hover {
+    background-color: #eee;
+}
+.option {
+    background-color: #fff;
+    color: #6F2CFF;
+    text-align: center;
+    padding: 5px;
+    display: block;
+}
+.option:disabled {
+    background-color: #999;
+    color: #fff;
+}
+.option:checked {
+    background-color: #6F2CFF;
+    color: #fff;
 }

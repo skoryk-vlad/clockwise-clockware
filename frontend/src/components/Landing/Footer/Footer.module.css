@@ -1,0 +1,64 @@
+.footer {
+    min-width: 100%;
+    background-color: #373737;
+    color: #fff;
+    padding: 20px 0px 30px;
+}
+.footer__container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 30px;
+}
+
+.footer__logoBlock {
+    overflow: hidden;
+    transition: all .3s ease;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    font-size: 25px;
+}
+.footer__logo {
+    overflow: hidden;
+    transition: all .3s ease;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+}
+.footer__logo img {
+    width: 100%;
+    height: 100%;
+}
+.footer__title {
+    margin: 0px 0px 0px 10px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.footer__logo:hover {
+    opacity: 0.8;
+}
+.footer__logo img {
+    width: 100%;
+    height: 100%;
+}
+
+.contacts {
+    margin: 0px 100px 0px 0px;
+}
+.contacts h4 {
+    font-size: 20px;
+    margin: 0px 0px 10px 0px;
+}
+.contacts__list a {
+    display: block;
+    color: #fff;
+    transition: .3s ease;
+}
+.contacts__list a:hover {
+    color: #ccc;
+}
+.contacts__list a:not(:last-child) {
+    margin: 0px 0px 5px 0px;
+}

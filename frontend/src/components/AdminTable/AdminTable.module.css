@@ -1,0 +1,54 @@
+.title {
+    font-size: 25px;
+    padding: 10px 20px;
+    background-color: #505050;
+    color: #fff;
+}
+
+.btns {
+    margin: 5px;
+}
+
+.btns>*:not(:last-child) {
+    margin: 0px 5px 0px 0px;
+}
+
+.table {
+    background-color: #ccc;
+    border: 0;
+    width: 100%;
+    font-size: 18px;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 5px 10px;
+    border: 0;
+    outline: 0;
+}
+
+.table th:not(:last-child),
+.table td:not(:last-child) {
+    border-right: 1px solid #000;
+}
+
+.table tr:nth-child(even) {
+    background-color: #eee;
+}
+
+.table thead {
+    background-color: #aaa;
+}
+
+.link {
+    width: 100px;
+}
+
+.link span {
+    cursor: pointer;
+}
+
+.link span:hover {
+    text-decoration: underline;
+}

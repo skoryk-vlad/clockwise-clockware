@@ -7,7 +7,20 @@ class OrderController {
         res.json(newOrder.rows[0]);
     }
     async getOrders(req, res) {
-        const orders = await db.query('SELECT * FROM orders');
+        let com = 'SELECT * FROM orders';
+
+        // if(req.query) {
+        //     com += ` WHERE `;
+        //     if(req.query.date) {
+        //         com += `date='${req.query.date}'`;
+        //     }
+        //     console.log(req.query.master_id);
+        //     if(req.query.master_id) {
+        //         com += ` AND master_id='${req.query.master_id}'`;
+        //     }
+        // }
+
+        const orders = await db.query(com);
         res.json(orders.rows);
     }
     async getOrderById(req, res) {

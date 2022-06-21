@@ -7,7 +7,9 @@ import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { MyInput } from '../../components/input/MyInput';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { BlueButton } from '../../components/BlueButton/BlueButton';
+import { OrderButton } from '../../components/OrderButton/OrderButton';
+import { Helmet } from 'react-helmet';
+import { AdminTable } from '../../components/AdminTable/AdminTable';
 
 export const Orders = () => {
     const [orders, setOrders] = useState([]);
@@ -71,6 +73,9 @@ export const Orders = () => {
 
     return (
         <div className='admin-container'>
+            {/* <Helmet>
+                <title>Заказы - Clockwise Clockware</title>
+            </Helmet> */}
             <Navbar />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Заказы</h1>
@@ -87,7 +92,7 @@ export const Orders = () => {
                     <MyInput value={newOrder.watch_size} onChange={e => setNewOrder({...newOrder, watch_size: e.target.value})} placeholder="Размер часов..." />
                     <MyInput value={newOrder.date} onChange={e => setNewOrder({ ...newOrder, date: e.target.value })} type="date" placeholder="Дата..." />
                     <MyInput value={newOrder.time} onChange={e => setNewOrder({ ...newOrder, time: e.target.value })} type="time" placeholder="Время..." />
-                    <BlueButton onClick={() => addOrder()}>Добавить</BlueButton>
+                    <OrderButton onClick={() => addOrder()}>Добавить</OrderButton>
                 </MyModal>
                 <MyModal visible={modalUpd} setVisible={setModalUpd}>
                 <MyInput value={newOrder.client_id} onChange={e => setNewOrder({...newOrder, client_id: e.target.value})} placeholder="id клиента..." />
@@ -96,46 +101,20 @@ export const Orders = () => {
                     <MyInput value={newOrder.watch_size} onChange={e => setNewOrder({...newOrder, watch_size: e.target.value})} placeholder="Размер часов..." />
                     <MyInput value={newOrder.date} onChange={e => setNewOrder({ ...newOrder, date: e.target.value })} type="date" placeholder="Дата..." />
                     <MyInput value={newOrder.time} onChange={e => setNewOrder({ ...newOrder, time: e.target.value })} type="time" placeholder="Время..." />
-                    <BlueButton onClick={() => updateOrder()}>Изменить</BlueButton>
+                    <OrderButton onClick={() => updateOrder()}>Изменить</OrderButton>
                 </MyModal>
 
-                <table className='admin-body__table'>
-                    <thead>
-                        <tr>
-                            <th>id</th>
-                            <th>client_id</th>
-                            <th>master_id</th>
-                            <th>city_id</th>
-                            <th>watch_size</th>
-                            <th>date</th>
-                            <th>time</th>
-                            <th>Изменение</th>
-                            <th>Удаление</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Error &&
-                            <h1>Произошла ошибка ${Error}</h1>
-                        }
-                        {orders.map(order => 
-                            <tr key={order.id} id={order.id}>
-                                <td>{order.id}</td>
-                                <td>{order.client_id}</td>
-                                <td>{order.master_id}</td>
-                                <td>{order.city_id}</td>
-                                <td>{order.watch_size}</td>
-                                <td>{order.date}</td>
-                                <td>{order.time}</td>
-                                <td className='admin-body__link'><span onClick={e => {setModalUpd(true); setIdUpd(e.target.closest('tr').id)}}>Изменить</span></td>
-                                <td className='admin-body__link'><span onClick={e => deleteOrder(e)}>Удалить</span></td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-                        {isOrdersLoading &&
-                            <Loader />
-                        }
+                <AdminTable dataArr={orders} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteOrder(e)} />
 
+                {Error &&
+                    <h2>Произошла ошибка ${Error}</h2>
+                }
+                {orders.length === 0 &&
+                    <h2>Отсутствуют записи</h2>
+                }
+                {isOrdersLoading &&
+                    <Loader />
+                }
             </div>
         </div>
     )

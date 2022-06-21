@@ -7,14 +7,14 @@ import { Masters } from "../pages/admin/Masters";
 import { Orders } from "../pages/admin/Orders";
 
 export const privateRoutes = [
-    {path: '/admin/*', element: <Admin/>, exact: true},
-    {path: '/admin/cities', element: <Cities/>, exact: true},
-    {path: '/admin/masters', element: <Masters/>, exact: true},
-    {path: '/admin/clients', element: <Clients/>, exact: true},
-    {path: '/admin/orders', element: <Orders/>, exact: true},
+    {path: '/admin/main', element: <Admin/>},
+    {path: '/admin/cities', element: <Cities/>},
+    {path: '/admin/masters', element: <Masters/>},
+    {path: '/admin/clients', element: <Clients/>},
+    {path: '/admin/orders', element: <Orders/>},
 ]
 
 export const publicRoutes = [
-    {path: '/admin/login', element: <Login/>, exact: true},
-    {path: '/', element: <Landing/>, exact: true},
+    {path: '/admin/login', element: <Login/>},
+    {path: '/', element: <Landing/>},
 ]

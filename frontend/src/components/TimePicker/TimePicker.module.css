@@ -1,0 +1,32 @@
+.timePicker {
+    display: flex;
+    width: 100%;
+    margin: 0px 0px 15px 0px;
+}
+
+.timeItem {
+    border: 1px solid #6F2CFF;
+    color: #6F2CFF;
+    width: 100%;
+    height: 40px;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: .3s ease;
+}
+.timeItem:hover {
+    background-color: #eee;
+}
+.timeItem:not(:last-child) {
+    border-right: 0;
+}
+.active {
+    background-color: #6F2CFF;
+    color: #fff;
+}
+.timeItem.active:hover {
+    background-color: #6F2CFF;
+    color: #fff;
+}

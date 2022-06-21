@@ -1,0 +1,27 @@
+.myBtn {
+    padding: 10px 20px;
+    color: #fff;
+    font-size: 20px;
+    /* max-width: 200px; */
+    background-color: #6F2CFF;
+    border: 1px solid #6F2CFF;
+    cursor: pointer;
+    transition: all .3s ease;
+    border-radius: 20px;
+}
+
+.myBtn:hover {
+    background-color: transparent;
+    color: #6F2CFF;
+}
+/* #007be6 */
+
+.disabledBtn {
+    background-color: #ccc;
+    border-color: #ccc;
+    cursor: default;
+}
+.disabledBtn:hover {
+    background-color: #ccc;
+    color: #fff;
+}

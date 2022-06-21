@@ -7,7 +7,9 @@ import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { MyInput } from '../../components/input/MyInput';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { BlueButton } from '../../components/BlueButton/BlueButton';
+import { OrderButton } from '../../components/OrderButton/OrderButton';
+import { Helmet } from 'react-helmet';
+import { AdminTable } from '../../components/AdminTable/AdminTable';
 
 export const Masters = () => {
     const [masters, setMasters] = useState([]);
@@ -60,6 +62,9 @@ export const Masters = () => {
 
     return (
         <div className='admin-container'>
+            {/* <Helmet>
+                <title>Мастера - Clockwise Clockware</title>
+            </Helmet> */}
             <Navbar />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Мастера</h1>
@@ -73,45 +78,26 @@ export const Masters = () => {
                     <MyInput value={newMaster.name} onChange={e => setNewMaster({...newMaster, name: e.target.value})} placeholder="Имя мастера..." />
                     <MyInput value={newMaster.rating} onChange={e => setNewMaster({...newMaster, rating: e.target.value})} placeholder="Рейтинг мастера..." />
                     <MyInput value={newMaster.city_id} onChange={e => setNewMaster({...newMaster, city_id: e.target.value})} placeholder="id города мастера..." />
-                    <BlueButton onClick={() => addMaster()}>Добавить</BlueButton>
+                    <OrderButton onClick={() => addMaster()}>Добавить</OrderButton>
                 </MyModal>
                 <MyModal visible={modalUpd} setVisible={setModalUpd}>
                     <MyInput value={newMaster.name} onChange={e => setNewMaster({...newMaster, name: e.target.value})} placeholder="Имя мастера..." />
                     <MyInput value={newMaster.rating} onChange={e => setNewMaster({...newMaster, rating: e.target.value})} placeholder="Рейтинг мастера..." />
                     <MyInput value={newMaster.city_id} onChange={e => setNewMaster({...newMaster, city_id: e.target.value})} placeholder="id города мастера..." />
-                    <BlueButton onClick={() => updateMaster()}>Изменить</BlueButton>
+                    <OrderButton onClick={() => updateMaster()}>Изменить</OrderButton>
                 </MyModal>
 
-                <table className='admin-body__table'>
-                    <thead>
-                        <tr>
-                            <th>id</th>
-                            <th>name</th>
-                            <th>rating</th>
-                            <th>city_id</th>
-                            <th>Изменение</th>
-                            <th>Удаление</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Error &&
-                            <h1>Произошла ошибка ${Error}</h1>
-                        }
-                        {masters.map(master => 
-                            <tr key={master.id} id={master.id}>
-                                <td>{master.id}</td>
-                                <td>{master.name}</td>
-                                <td>{master.rating}</td>
-                                <td>{master.city_id}</td>
-                                <td className='admin-body__link'><span onClick={e => {setModalUpd(true); setIdUpd(e.target.closest('tr').id)}}>Изменить</span></td>
-                                <td className='admin-body__link'><span onClick={e => deleteMaster(e)}>Удалить</span></td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-                        {isMastersLoading &&
-                            <Loader />
-                        }
+                <AdminTable dataArr={masters} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteMaster(e)} />
+
+                {Error &&
+                    <h2>Произошла ошибка ${Error}</h2>
+                }
+                {masters.length === 0 &&
+                    <h2>Отсутствуют записи</h2>
+                }
+                {isMastersLoading &&
+                    <Loader />
+                }
 
             </div>
         </div>
