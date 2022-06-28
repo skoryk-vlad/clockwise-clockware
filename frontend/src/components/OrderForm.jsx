@@ -78,7 +78,7 @@ export const OrderForm = ({ setModal }) => {
         setChosenMaster(master_id);
         setOrder({...order, master_id: master_id});
     };
-    //TODO ДАТА ПРОБЛЕМА
+    
     const addOrder = async () => {
         Server.addOrderAndClient(order);
         setIsForm(true);
@@ -195,7 +195,7 @@ export const OrderForm = ({ setModal }) => {
                                             <div className={classes.error}>{errors.time}</div>
                                         )}
                                     </div>
-                                    <NumPicker name="time" id="time" minTime={values.date === minDate ? date.getHours() + 1 : 0}
+                                    <NumPicker name="time" id="time" min={values.date === minDate ? date.getHours() + 1 : 0}
                                         from='10' to='18' count={values.watch_size}
                                         value={values.time} onClick={e => handleChange("time")(e.target.dataset.num)} />
                                 </div>

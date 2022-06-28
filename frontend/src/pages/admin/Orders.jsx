@@ -136,7 +136,7 @@ export const Orders = () => {
                     <NumPicker from='1' to='3'
                                 value={newOrder.watch_size} onClick={e => setNewOrder({...newOrder, watch_size: +e.target.dataset.num})} />
                     <MyInput value={newOrder.date} min={minDate} onChange={e => setNewOrder({ ...newOrder, date: e.target.value })} type="date" placeholder="Дата..." />
-                    <NumPicker minTime={newOrder.date === minDate ? date.getHours() + 1 : 0}
+                    <NumPicker min={newOrder.date === minDate ? date.getHours() + 1 : 0}
                                 from='10' to='18' count={newOrder.watch_size}
                                 value={newOrder.time} onClick={e => setNewOrder({...newOrder, time: e.target.dataset.num})} /> 
                     <OrderButton onClick={() => addOrder()}>Добавить</OrderButton>
@@ -160,7 +160,7 @@ export const Orders = () => {
                     <NumPicker from='1' to='3'
                                 value={updOrder.watch_size} onClick={e => setUpdOrder({...updOrder, watch_size: +e.target.dataset.num})} />
                     <MyInput value={updOrder.date} min={minDate} onChange={e => setUpdOrder({ ...updOrder, date: e.target.value })} type="date" placeholder="Дата..." />
-                    <NumPicker minTime={updOrder.date === minDate ? date.getHours() + 1 : 0}
+                    <NumPicker min={updOrder.date === minDate ? date.getHours() + 1 : 0}
                                 from='10' to='18' count={updOrder.watch_size}
                                 value={updOrder.time} onClick={e => setUpdOrder({...updOrder, time: +e.target.dataset.num})} /> 
                     <OrderButton onClick={() => updateOrder()}>Изменить</OrderButton>
