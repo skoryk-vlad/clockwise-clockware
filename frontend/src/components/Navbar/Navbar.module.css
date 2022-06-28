@@ -2,6 +2,7 @@
     width: 200px;
     background-color: #404040;
     height: 100vh;
+    position: fixed;
     display: flex;
     flex-direction: column;
 }

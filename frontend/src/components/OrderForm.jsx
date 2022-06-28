@@ -3,9 +3,8 @@ import Server from '../API/Server';
 import { useFetching } from '../hooks/useFetching';
 import { OrderButton } from './OrderButton/OrderButton';
 import { MyInput } from './input/MyInput';
-import { RadioBlock } from './radioBlock/RadioBlock';
 import { MySelect } from './select/MySelect';
-import { TimePicker } from './TimePicker/TimePicker';
+import { NumPicker } from './NumPicker/NumPicker';
 import { Formik } from 'formik';
 import classes from './OrderForm.module.css';
 
@@ -13,7 +12,14 @@ export const OrderForm = ({ setModal }) => {
     const [isForm, setIsForm] = useState(true);
     const [masters, setMasters] = useState([]);
     const [order, setOrder] = useState({});
+    const [returned, setReturned] = useState(false);
+    const [chosenMaster, setChosenMaster] = useState(null);
 
+    const checkZero = (num) => {
+        return num > 9 ? num : '0' + num;
+    };
+    const date = new Date();
+    const minDate = `${date.getFullYear()}-${checkZero(date.getMonth() + 1)}-${checkZero(date.getDate())}`;
 
     const [cities, setCities] = useState([]);
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
@@ -25,14 +31,14 @@ export const OrderForm = ({ setModal }) => {
         fetchCities();
     }, []);
 
-    const initialValues = {
+    const [initialValues, setInitialValues] = useState({
         name: "",
         email: "",
-        watchSize: 1,
+        watch_size: 1,
         city: 1,
         date: "",
         time: ""
-    };
+    });
 
     const validate = (values) => {
         let errors = {};
@@ -68,26 +74,40 @@ export const OrderForm = ({ setModal }) => {
     };
 
     const chooseMaster = (e) => {
-        e.target.closest(`.mstr_itm`).classList.add(classes.active);
-        
         const master_id = e.target.closest(`.mstr_itm`).id;
+        setChosenMaster(master_id);
         setOrder({...order, master_id: master_id});
     };
-
+    //TODO ДАТА ПРОБЛЕМА
     const addOrder = async () => {
         Server.addOrderAndClient(order);
         setIsForm(true);
         setMasters([]);
         setModal(false);
+        setReturned(false);
+        setChosenMaster(null);
+        setInitialValues({
+            name: "",
+            email: "",
+            watch_size: 1,
+            city: 1,
+            date: "",
+            time: ""
+        });
     }
 
     const findMasters = async (values, {resetForm}) => {
         resetForm({});
         setOrder(values);
         const masters = await Server.getMastersByCity(values.city);
-        console.log(masters);
         setMasters(masters);
         setIsForm(false);
+    }
+
+    const returnForm = () => {
+        setInitialValues({...order, time: +order.time});
+        setReturned(true);
+        setIsForm(true);
     }
 
     return (
@@ -96,7 +116,8 @@ export const OrderForm = ({ setModal }) => {
                 ?
                 <Formik initialValues={initialValues}
                     validate={validate}
-                    onSubmit={findMasters}>
+                    onSubmit={findMasters}
+                    >
                     {(formik) => {
                         const {
                             values,
@@ -140,10 +161,12 @@ export const OrderForm = ({ setModal }) => {
                                         placeholder="Почта"
                                     />
                                 </div>
-
+                                
                                 <div className={classes.formRow}>
-                                    <label htmlFor="watchSize">Размер часов</label>
-                                    <RadioBlock name="watchSize" id="watchSize" value={values.watchSize || 1} onClick={e => handleChange("watchSize")(e.target.id)} />
+                                    <label htmlFor="watch_size">Размер часов</label>
+                                    <NumPicker name="watch_size" id="watch_size"
+                                        from='1' to='3'
+                                        value={values.watch_size} onClick={e => handleChange("watch_size")(e.target.dataset.num)} />
                                 </div>
 
                                 <div className={classes.formRow}>
@@ -162,7 +185,7 @@ export const OrderForm = ({ setModal }) => {
                                             <div className={classes.error}>{errors.date}</div>
                                         )}
                                     </div>
-                                    <MyInput name="date" id="date" type="date" value={values.date} onChange={handleChange} />
+                                    <MyInput name="date" id="date" type="date" min={minDate} value={values.date} onChange={handleChange} />
                                 </div>
 
                                 <div className={classes.formRow}>
@@ -172,13 +195,13 @@ export const OrderForm = ({ setModal }) => {
                                             <div className={classes.error}>{errors.time}</div>
                                         )}
                                     </div>
-                                    <TimePicker name="time" id="time"
-                                                from='10' to='18' count={values.watchSize}
-                                                value={values.time} onClick={e => handleChange("time")(e.target.textContent)} />
+                                    <NumPicker name="time" id="time" minTime={values.date === minDate ? date.getHours() + 1 : 0}
+                                        from='10' to='18' count={values.watch_size}
+                                        value={values.time} onClick={e => handleChange("time")(e.target.dataset.num)} />
                                 </div>
 
-                                <OrderButton type="submit" className={!(dirty && isValid) ? "disabledBtn" : ""}
-                                    disabled={!(dirty && isValid)}>Оформить заказ</OrderButton>
+                                <OrderButton type="submit" className={!((dirty && isValid) || returned) ? "disabledBtn" : ""}
+                                    disabled={!((dirty && isValid) || returned)}>Оформить заказ</OrderButton>
                             </form>
                         );
                     }}
@@ -188,15 +211,19 @@ export const OrderForm = ({ setModal }) => {
                     <div className={classes.mastersList}>
                         {
                             masters.map(master => 
-                            <div key={master.id} id={master.id} className={classes.masterItem + ' mstr_itm'}>
+                            <div key={master.id} id={master.id} className={classes.masterItem + ' mstr_itm' + (+chosenMaster === master.id ? ' ' + classes.active : '')}>
                                 <div className={classes.masterName}>{master.name}</div>
                                 <div className={classes.masterRating}>Рейтинг: {master.rating}</div>
                                 <OrderButton onClick={e => chooseMaster(e)} className={classes.masterBtn}>Выбрать</OrderButton>
                             </div>
                             )
                         }
+                        <div className={classes.return} onClick={returnForm}>
+                            <img src="/images/icons/top.png" alt="Назад" />
+                        </div>
                     </div>
-                    <OrderButton onClick={() => {addOrder()}} className={classes.masterBtn}>Оформить заказ</OrderButton>
+                    <OrderButton onClick={() => {addOrder()}} className={(chosenMaster === null ? "disabledBtn" : '')}
+                    disabled={chosenMaster === null}>Оформить заказ</OrderButton>
                 </div>
             }
         </div>

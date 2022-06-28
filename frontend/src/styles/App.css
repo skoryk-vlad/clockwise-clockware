@@ -20,6 +20,7 @@
 }
 .admin-body {
   width: 100%;
+  margin: 0px 0px 0px 200px;
 }
 .admin-body__title {
   font-size: 25px;
@@ -33,38 +34,10 @@
 .admin-body__btns > *:not(:last-child) {
   margin: 0px 5px 0px 0px;
 }
-.admin-body__table {
-  background-color: #ccc;
-  border: 0;
-  width: 100%;
-  font-size: 18px;
-  border-collapse: collapse;
-}
-.admin-body__table th,
-.admin-body__table td {
-  padding: 5px 10px;
-  border: 0;
-  outline: 0;
-}
-.admin-body__table th:not(:last-child),
-.admin-body__table td:not(:last-child) {
-  border-right: 1px solid #000;
-}
-.admin-body__table tr:nth-child(even) {
-  background-color: #eee;
-}
-.admin-body__table thead {
-  background-color: #aaa;
-}
 
-.admin-body__link {
-  width: 100px;
-}
-.admin-body__link span {
-  cursor: pointer;
-}
-.admin-body__link span:hover {
-  text-decoration: underline;
+.adminError {
+  font-size: 20px;
+  margin: 10px;
 }
 
 .login {

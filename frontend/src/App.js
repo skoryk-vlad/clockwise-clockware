@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet';
 import { BrowserRouter } from 'react-router-dom';
+import Server from './API/Server';
 import { AppRouter } from './components/AppRouter';
 import { AuthContext } from './context/context';
 import './styles/App.css';
@@ -9,12 +10,18 @@ import './styles/reset.css';
 function App() {
     const [isAuth, setIsAuth] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-
+    
     useEffect(() => {
-        if(localStorage.getItem('auth')) {
-            setIsAuth(true);
+        async function fetchData() {
+            if(localStorage.getItem('token')) {
+                const c = await Server.checkAuth(localStorage.getItem('token'));
+                setIsAuth(c.auth);
+            } else {
+                setIsAuth(false);
+            }
+            setIsLoading(false);
         }
-        setIsLoading(false);
+        fetchData();
     }, []);
 
     return (

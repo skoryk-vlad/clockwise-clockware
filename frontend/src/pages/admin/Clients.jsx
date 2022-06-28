@@ -22,6 +22,10 @@ export const Clients = () => {
 
     const [modalUpd, setModalUpd] = useState(false);
     const [idUpd, setIdUpd] = useState(null);
+    const [updClient, setUpdClient] = useState({
+        name: '',
+        email: ''
+    });
 
     const [fetchClients, isClientsLoading, Error] = useFetching(async () => {
         const clients = await Server.getClients();
@@ -32,6 +36,11 @@ export const Clients = () => {
     useEffect(() => {
         fetchClients();
     }, []);
+
+    useEffect(() => {
+        if(idUpd)
+            setUpdClient(clients.find(c => c.id === +idUpd));
+    }, [idUpd]);
 
     const deleteClient = async (event) => {
         const id = event.target.closest('tr').id;
@@ -48,7 +57,7 @@ export const Clients = () => {
         fetchClients();
     }
     const updateClient = async () => {
-        await Server.updateClientById(idUpd, newClient);
+        await Server.updateClientById(idUpd, updClient);
         setModalUpd(false);
         setNewClient({
             name: '',
@@ -77,8 +86,8 @@ export const Clients = () => {
                     <OrderButton onClick={() => addClient()}>Добавить</OrderButton>
                 </MyModal>
                 <MyModal visible={modalUpd} setVisible={setModalUpd}>
-                    <MyInput value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})} placeholder="Имя клиента..." />
-                    <MyInput value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} placeholder="Почта клиента..." />
+                    <MyInput value={updClient.name} onChange={e => setUpdClient({...updClient, name: e.target.value})} placeholder="Имя клиента..." />
+                    <MyInput value={updClient.email} onChange={e => setUpdClient({...updClient, email: e.target.value})} placeholder="Почта клиента..." />
                     <OrderButton onClick={() => updateClient()}>Изменить</OrderButton>
                 </MyModal>
 
@@ -88,10 +97,10 @@ export const Clients = () => {
                     <Loader />
                 }
                 {Error &&
-                    <h2>Произошла ошибка ${Error}</h2>
+                    <h2 className='adminError'>Произошла ошибка ${Error}</h2>
                 }
-                {clients.length === 0 &&
-                    <h2>Отсутствуют записи</h2>
+                {clients.length === 0 && !isClientsLoading && !Error &&
+                    <h2 className='adminError'>Отсутствуют записи</h2>
                 }
             </div>
         </div>

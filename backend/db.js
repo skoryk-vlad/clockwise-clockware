@@ -1,10 +1,12 @@
-const pg = require('pg');
-const pool = new pg.Pool({
-    user: 'postgres',
-    password: 'root',
-    host: 'localhost',
-    port: 5432,
-    database: 'clockware'
-});
+const { Client } = require('pg');
 
-module.exports = pool;
+const config = JSON.parse(process.env.DB_CONNECT);
+if(config?.ssl?.rejectUnauthorized) {
+  config.ssl.rejectUnauthorized = config.ssl.rejectUnauthorized === 'false' ? false : true;
+}
+
+const client = new Client(config);
+
+client.connect();
+
+module.exports = client;

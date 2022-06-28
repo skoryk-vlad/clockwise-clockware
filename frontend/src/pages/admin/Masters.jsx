@@ -10,29 +10,43 @@ import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { OrderButton } from '../../components/OrderButton/OrderButton';
 import { Helmet } from 'react-helmet';
 import { AdminTable } from '../../components/AdminTable/AdminTable';
+import { MySelect } from '../../components/select/MySelect';
 
 export const Masters = () => {
     const [masters, setMasters] = useState([]);
+    const [cities, setCities] = useState([]);
 
     const [newMaster, setNewMaster] = useState({
         name: '',
         rating: '',
-        city_id: ''
+        city_id: 1
     });
     const [modalAdd, setModalAdd] = useState(false);
 
     const [modalUpd, setModalUpd] = useState(false);
     const [idUpd, setIdUpd] = useState(null);
+    const [updMaster, setUpdMaster] = useState({
+        name: '',
+        rating: '',
+        city: 1
+    });
 
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
         const masters = await Server.getMasters();
+        const cities = await Server.getCities();
 
         setMasters(masters);
+        setCities(cities);
     });
 
     useEffect(() => {
         fetchMasters();
     }, []);
+
+    useEffect(() => {
+        if(idUpd)
+            setUpdMaster(masters.find(m => m.id === +idUpd));
+    }, [idUpd]);
 
     const deleteMaster = async (event) => {
         const id = event.target.closest('tr').id;
@@ -45,17 +59,17 @@ export const Masters = () => {
         setNewMaster({
             name: '',
             rating: '',
-            city_id: ''
+            city: 1
         });
         fetchMasters();
     }
     const updateMaster = async () => {
-        await Server.updateMasterById(idUpd, newMaster);
+        await Server.updateMasterById(idUpd, updMaster);
         setModalUpd(false);
-        setNewMaster({
+        setUpdMaster({
             name: '',
             rating: '',
-            city_id: ''
+            city: 1
         });
         fetchMasters();
     }
@@ -77,23 +91,29 @@ export const Masters = () => {
                 <MyModal visible={modalAdd} setVisible={setModalAdd}>
                     <MyInput value={newMaster.name} onChange={e => setNewMaster({...newMaster, name: e.target.value})} placeholder="Имя мастера..." />
                     <MyInput value={newMaster.rating} onChange={e => setNewMaster({...newMaster, rating: e.target.value})} placeholder="Рейтинг мастера..." />
-                    <MyInput value={newMaster.city_id} onChange={e => setNewMaster({...newMaster, city_id: e.target.value})} placeholder="id города мастера..." />
-                    <OrderButton onClick={() => addMaster()}>Добавить</OrderButton>
+                    <MySelect
+                        value={newMaster.city} onChange={e => setNewMaster({...newMaster, city: e})}
+                        options={cities.map(city => ({ value: city.id, name: city.name }))}
+                    />
+                    <AdminButton onClick={() => addMaster()}>Добавить</AdminButton>
                 </MyModal>
                 <MyModal visible={modalUpd} setVisible={setModalUpd}>
-                    <MyInput value={newMaster.name} onChange={e => setNewMaster({...newMaster, name: e.target.value})} placeholder="Имя мастера..." />
-                    <MyInput value={newMaster.rating} onChange={e => setNewMaster({...newMaster, rating: e.target.value})} placeholder="Рейтинг мастера..." />
-                    <MyInput value={newMaster.city_id} onChange={e => setNewMaster({...newMaster, city_id: e.target.value})} placeholder="id города мастера..." />
-                    <OrderButton onClick={() => updateMaster()}>Изменить</OrderButton>
+                    <MyInput value={updMaster.name} onChange={e => setUpdMaster({...updMaster, name: e.target.value})} placeholder="Имя мастера..." />
+                    <MyInput value={updMaster.rating} onChange={e => setUpdMaster({...updMaster, rating: e.target.value})} placeholder="Рейтинг мастера..." />
+                    <MySelect
+                        value={cities.find(c => c.name === updMaster.city)?.id} onChange={e => setUpdMaster({...updMaster, city: e})}
+                        options={cities.map(city => ({ value: city.id, name: city.name }))}
+                    />
+                    <AdminButton onClick={() => updateMaster()}>Изменить</AdminButton>
                 </MyModal>
 
                 <AdminTable dataArr={masters} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteMaster(e)} />
 
                 {Error &&
-                    <h2>Произошла ошибка ${Error}</h2>
+                    <h2 className='adminError'>Произошла ошибка ${Error}</h2>
                 }
-                {masters.length === 0 &&
-                    <h2>Отсутствуют записи</h2>
+                {masters.length === 0 && !isMastersLoading && !Error &&
+                    <h2 className='adminError'>Отсутствуют записи</h2>
                 }
                 {isMastersLoading &&
                     <Loader />

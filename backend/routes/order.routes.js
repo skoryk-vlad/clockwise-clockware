@@ -4,6 +4,7 @@ const OrderController = require('../controllers/order.controller');
 const router = new Router();
 
 router.post('/order', OrderController.addOrder);
+router.post('/order/client', OrderController.addOrderClient);
 router.get('/order', OrderController.getOrders);
 router.get('/order/:id', OrderController.getOrderById);
 router.put('/order', OrderController.updateOrder);

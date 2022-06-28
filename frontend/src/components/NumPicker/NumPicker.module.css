@@ -1,10 +1,10 @@
-.timePicker {
+.numPicker {
     display: flex;
     width: 100%;
     margin: 0px 0px 15px 0px;
 }
 
-.timeItem {
+.numItem {
     border: 1px solid #6F2CFF;
     color: #6F2CFF;
     width: 100%;
@@ -16,17 +16,33 @@
     cursor: pointer;
     transition: .3s ease;
 }
-.timeItem:hover {
+.numItem:hover {
     background-color: #eee;
 }
-.timeItem:not(:last-child) {
+.numItem:not(:last-child) {
     border-right: 0;
 }
 .active {
     background-color: #6F2CFF;
     color: #fff;
 }
-.timeItem.active:hover {
+.numItem.active:hover {
     background-color: #6F2CFF;
+    color: #fff;
+}
+
+.disabled {
+    background-color: #ccc;
+    border-color: #aaa;
+    color: #fff;
+    cursor: default;
+}
+.disabled:hover {
+    background-color: #ccc;
+    border-color: #aaa;
+    color: #fff;
+}
+.disabled.active:hover {
+    background-color: #ccc;
     color: #fff;
 }

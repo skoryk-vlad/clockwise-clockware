@@ -52,3 +52,12 @@
 .link span:hover {
     text-decoration: underline;
 }
+.adminBody__link {
+    width: 100px;
+}
+.adminBody__link span {
+    cursor: pointer;
+}
+.adminBody__link span:hover {
+    text-decoration: underline;
+}

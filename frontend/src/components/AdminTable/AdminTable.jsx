@@ -4,8 +4,6 @@ import classes from './AdminTable.module.css';
 
 export const AdminTable = ({ dataArr, setModalUpd, setIdUpd, deleteRow }) => {
 
-    console.log(deleteRow);
-
     const colTitles = [];
 
     for(let key in dataArr[0]) {
@@ -27,11 +25,9 @@ export const AdminTable = ({ dataArr, setModalUpd, setIdUpd, deleteRow }) => {
                 <tbody>
                     {dataArr.map(el =>
                         <tr key={el.id} id={el.id}>
-                            {colTitles.map(col => <td key={col}>{el[col]}</td>)}
-                            <td className='admin-body__link'><span onClick={e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }}>Изменить</span></td>
-                            <td className='admin-body__link'><span onClick={e => deleteRow(e)}>Удалить</span></td>
-                            {/* <td className='admin-body__link'><span >Изменить</span></td>
-                            <td className='admin-body__link'><span >Удалить</span></td> */}
+                            {colTitles.map(col => <td key={col}>{String(el[col])}</td>)}
+                            <td className={classes.adminBody__link}><span onClick={e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }}>Изменить</span></td>
+                            <td className={classes.adminBody__link}><span onClick={e => deleteRow(e)}>Удалить</span></td>
                         </tr>
                     )}
                 </tbody>

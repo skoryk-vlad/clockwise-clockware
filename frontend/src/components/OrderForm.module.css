@@ -30,7 +30,9 @@ label {
 .mastersList {
     position: relative;
     display: flex;
+    flex-wrap: wrap;
     margin: 0px 0px 20px 0px;
+    justify-content: center;
 }
 .masterItem {
     height: 150px;
@@ -42,9 +44,11 @@ label {
     padding: 10px;
     display: flex;
     flex-direction: column;
+    transition: .3s ease;
+    border: 1px solid #fff;
 }
 .masterItem:not(:last-child) {
-    margin: 0px 10px 0px 0px;
+    margin: 0px 10px 10px 0px;
 }
 
 .masterName {
@@ -57,4 +61,33 @@ label {
 }
 .active {
     background-color: #ccc;
+    border-color: #aaa;
+}
+/* .disabledButton {
+    background-color: ;
+} */
+
+
+.return {
+    position: absolute;
+    top: -35px;
+    left: -35px;
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: .3s ease;
+}
+.return:hover {
+    background-color: #eee;
+}
+.return img {
+    width: 80%;
+    height: 80%;
+    transform: rotate(-90deg);
 }

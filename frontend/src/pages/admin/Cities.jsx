@@ -18,6 +18,7 @@ export const Cities = () => {
 
     const [modalUpd, setModalUpd] = useState(false);
     const [idUpd, setIdUpd] = useState(null);
+    const [updCity, setUpdCity] = useState('');
 
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         const cities = await Server.getCities();
@@ -28,6 +29,11 @@ export const Cities = () => {
     useEffect(() => {
         fetchCities();
     }, []);
+
+    useEffect(() => {
+        if(idUpd)
+            setUpdCity(cities.find(c => c.id === +idUpd).name);
+    }, [idUpd]);
 
     const deleteCity = async (event) => {
         const id = event.target.closest('tr').id;
@@ -42,7 +48,7 @@ export const Cities = () => {
         fetchCities();
     }
     const updateCity = async () => {
-        await Server.updateCityById(idUpd, newCity);
+        await Server.updateCityById(idUpd, updCity);
         setModalUpd(false);
         setNewCity('');
         fetchCities();
@@ -67,17 +73,17 @@ export const Cities = () => {
                     <AdminButton onClick={() => addCity()}>Добавить</AdminButton>
                 </MyModal>
                 <MyModal visible={modalUpd} setVisible={setModalUpd}>
-                    <MyInput value={newCity} onChange={e => setNewCity(e.target.value)} placeholder="Название города..." />
+                    <MyInput value={updCity} onChange={e => setUpdCity(e.target.value)} placeholder="Название города..." />
                     <AdminButton onClick={() => updateCity()}>Изменить</AdminButton>
                 </MyModal>
 
                 <AdminTable dataArr={cities} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteCity(e)} />
                 
                 {Error &&
-                    <h2>Произошла ошибка ${Error}</h2>
+                    <h2 className='adminError'>Произошла ошибка ${Error}</h2>
                 }
-                {cities.length === 0 &&
-                    <h2>Отсутствуют записи</h2>
+                {cities.length === 0 && !isCitiesLoading && !Error &&
+                    <h2 className='adminError'>Отсутствуют записи</h2>
                 }
                 {isCitiesLoading &&
                     <Loader />

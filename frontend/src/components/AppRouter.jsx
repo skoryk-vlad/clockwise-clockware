@@ -1,5 +1,6 @@
 import React, { useContext } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import Server from '../API/Server';
 import { AuthContext } from '../context/context';
 import { publicRoutes, privateRoutes } from '../router/routes'
 import { Loader } from './Loader/Loader';
