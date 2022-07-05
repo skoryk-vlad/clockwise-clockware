@@ -2,8 +2,8 @@ const db = require('../db');
 
 class OrderController {
     async addOrder(req, res) {
-        const { client_id, master_id, city_id, watch_size, date, time } = req.body.params;
-        const newOrder = await db.query(`INSERT INTO orders (client_id, master_id, city_id, watch_size, date, time) values ($1, $2, $3, $4, $5, $6) RETURNING * `, [client_id, master_id, city_id, watch_size, date, time]);
+        const { client, master, city, watch_size, date, time, completed } = req.body;
+        const newOrder = await db.query(`INSERT INTO orders (client_id, master_id, city_id, watch_size, date, time, completed) values ($1, $2, $3, $4, $5, $6, $7) RETURNING * `, [client, master, city, watch_size, date, time, completed]);
         res.json(newOrder.rows[0]);
     }
     async getOrders(req, res) {
@@ -18,9 +18,13 @@ class OrderController {
         res.json(order.rows[0]);
     }
     async updateOrder(req, res) {
-        const { id, client, master, city, watch_size, date, time } = req.body.params;
-        console.log(id, client, master, city, watch_size, date, time);
-        const order = await db.query('UPDATE orders set client_id = $1, master_id = $2, city_id = $3, watch_size = $4, date = $5, time = $6 where id = $7 RETURNING *', [client, master, city, watch_size, date, time, id]);
+        const { id, client, master, city, watch_size, date, time, completed } = req.body;
+        const order = await db.query('UPDATE orders set client_id = $1, master_id = $2, city_id = $3, watch_size = $4, date = $5, time = $6, completed = $8 where id = $7 RETURNING *', [client, master, city, watch_size, date, time, id, completed]);
+        res.json(order.rows[0]);
+    }
+    async completeOrder(req, res) {
+        const { id } = req.body;
+        const order = await db.query('UPDATE orders set completed = true where id = $1 RETURNING *', [id]);
         res.json(order.rows[0]);
     }
     async deleteOrder(req, res) {

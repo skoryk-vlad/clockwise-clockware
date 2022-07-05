@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet';
 import { BrowserRouter } from 'react-router-dom';
-import Server from './API/Server';
+import { AuthService } from './API/Server';
 import { AppRouter } from './components/AppRouter';
 import { AuthContext } from './context/context';
 import './styles/App.css';
@@ -14,8 +14,8 @@ function App() {
     useEffect(() => {
         async function fetchData() {
             if(localStorage.getItem('token')) {
-                const c = await Server.checkAuth(localStorage.getItem('token'));
-                setIsAuth(c.auth);
+                const checkAuth = await AuthService.checkAuth(localStorage.getItem('token'));
+                setIsAuth(checkAuth.auth);
             } else {
                 setIsAuth(false);
             }

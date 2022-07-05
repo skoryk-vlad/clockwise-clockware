@@ -13,3 +13,14 @@
     background-color: #ccc;
     /* color: #fff; */
 }
+
+.disabledBtn {
+    background-color: #aaa;
+    border-color: #777;
+    cursor: default;
+    color: #eee;
+}
+.disabledBtn:hover {
+    background-color: #aaa;
+    color: #eee;
+}

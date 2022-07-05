@@ -1,23 +1,22 @@
 const Router = require('express');
+require('dotenv').config({ path: `.env.local` });
 const AuthController = require('../controllers/auth.controller');
 const jwt = require('jsonwebtoken');
 
 const router = new Router();
 
-const tokenKey = 'gknfg5sd7-vgf5tva37sd-g9kvop12-ds';
-
-const authenticateJWT = (req, res, next) => {
+const authJWT = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (authHeader) {
         const token = authHeader.split(' ')[1];
 
-        jwt.verify(token, tokenKey, (err, user) => {
+        jwt.verify(token, process.env.JWT_TOKEN_KEY, (err) => {
             if (err) {
+                // return res.status(403).json({auth: false});
                 return res.json({auth: false});
             }
 
-            req.user = user;
             next();
         });
     } else {
@@ -26,6 +25,7 @@ const authenticateJWT = (req, res, next) => {
 };
 
 router.post('/auth', AuthController.login);
-router.get('/admin', authenticateJWT, AuthController.check);
+router.get('/admin', authJWT, AuthController.check);
 
-module.exports = router;
+module.exports = {router, authJWT};
+// module.exports = router;

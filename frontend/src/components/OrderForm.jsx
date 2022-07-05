@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import Server from '../API/Server';
+import { CityService, MasterService, OrderService } from '../API/Server';
 import { useFetching } from '../hooks/useFetching';
 import { OrderButton } from './OrderButton/OrderButton';
 import { MyInput } from './input/MyInput';
@@ -10,7 +10,7 @@ import classes from './OrderForm.module.css';
 
 export const OrderForm = ({ setModal }) => {
     const [isForm, setIsForm] = useState(true);
-    const [masters, setMasters] = useState([]);
+    const [availMasters, setAvailMasters] = useState([]);
     const [order, setOrder] = useState({});
     const [returned, setReturned] = useState(false);
     const [chosenMaster, setChosenMaster] = useState(null);
@@ -23,9 +23,10 @@ export const OrderForm = ({ setModal }) => {
 
     const [cities, setCities] = useState([]);
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
-        const cities = await Server.getCities();
+        const cities = await CityService.getCities();
+        const masters = await MasterService.getMasters();
 
-        setCities(cities);
+        setCities(cities.filter(c => masters.filter(m => m.city === c.name).length !== 0));
     });
     useEffect(() => {
         fetchCities();
@@ -80,9 +81,8 @@ export const OrderForm = ({ setModal }) => {
     };
     
     const addOrder = async () => {
-        Server.addOrderAndClient(order);
+        OrderService.addOrderAndClient(order);
         setIsForm(true);
-        setMasters([]);
         setModal(false);
         setReturned(false);
         setChosenMaster(null);
@@ -99,8 +99,8 @@ export const OrderForm = ({ setModal }) => {
     const findMasters = async (values, {resetForm}) => {
         resetForm({});
         setOrder(values);
-        const masters = await Server.getMastersByCity(values.city);
-        setMasters(masters);
+        const availableMasters = await MasterService.getAvailableMasters(values.city, values.date, values.time, values.watch_size);
+        setAvailMasters(availableMasters);
         setIsForm(false);
     }
 
@@ -172,9 +172,10 @@ export const OrderForm = ({ setModal }) => {
                                 <div className={classes.formRow}>
                                     <label htmlFor="city">Город</label>
                                     <MySelect
-                                        name="city" id="city" value={values.city || 1}
+                                        name="city" id="city" value={values.city}
                                         onChange={value => handleChange("city")(value)}
                                         options={cities.map(city => ({ value: city.id, name: city.name }))}
+                                        // options={cities.filter(c => masters.filter(m => m.city === c.name).length !== 0).map(city => ({ value: city.id, name: city.name }))}
                                     />
                                 </div>
 
@@ -210,7 +211,7 @@ export const OrderForm = ({ setModal }) => {
                 <div className={classes.mastersBlock}>
                     <div className={classes.mastersList}>
                         {
-                            masters.map(master => 
+                            availMasters.map(master => 
                             <div key={master.id} id={master.id} className={classes.masterItem + ' mstr_itm' + (+chosenMaster === master.id ? ' ' + classes.active : '')}>
                                 <div className={classes.masterName}>{master.name}</div>
                                 <div className={classes.masterRating}>Рейтинг: {master.rating}</div>

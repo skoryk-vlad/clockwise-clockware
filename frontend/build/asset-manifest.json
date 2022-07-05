@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/static/css/main.fc714000.css",
-    "main.js": "/static/js/main.10feb86a.js",
+    "main.css": "/static/css/main.eaf9ed0f.css",
+    "main.js": "/static/js/main.75378d49.js",
     "static/media/watch.jpg": "/static/media/watch.f4e135c6d82b12fe2922.jpg",
     "index.html": "/index.html",
-    "main.fc714000.css.map": "/static/css/main.fc714000.css.map",
-    "main.10feb86a.js.map": "/static/js/main.10feb86a.js.map"
+    "main.eaf9ed0f.css.map": "/static/css/main.eaf9ed0f.css.map",
+    "main.75378d49.js.map": "/static/js/main.75378d49.js.map"
   },
   "entrypoints": [
-    "static/css/main.fc714000.css",
-    "static/js/main.10feb86a.js"
+    "static/css/main.eaf9ed0f.css",
+    "static/js/main.75378d49.js"
   ]
 }

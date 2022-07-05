@@ -37,6 +37,10 @@
     background-color: #eee;
 }
 
+.table th:nth-child(1) {
+    width: 45px;
+}
+
 .table thead {
     background-color: #aaa;
 }
@@ -60,4 +64,12 @@
 }
 .adminBody__link span:hover {
     text-decoration: underline;
+}
+
+.colTitle {
+    cursor: pointer;
+    transition: .3s ease;
+}
+.colTitle:hover {
+    background-color: #999;
 }

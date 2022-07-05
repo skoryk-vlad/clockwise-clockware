@@ -1,7 +1,7 @@
 .numPicker {
     display: flex;
     width: 100%;
-    margin: 0px 0px 15px 0px;
+    /* margin: 0px 0px 15px 0px; */
 }
 
 .numItem {

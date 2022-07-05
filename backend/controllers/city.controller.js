@@ -2,7 +2,7 @@ const db = require('../db');
 
 class CityController {
     async addCity(req, res) {
-        const {name} = req.body.params;
+        const {name} = req.body;
         const newCity = await db.query(`INSERT INTO city (name) values ($1) RETURNING * `, [name]);
         res.json(newCity.rows[0]);
     }
@@ -16,7 +16,7 @@ class CityController {
         res.json(city.rows[0]);
     }
     async updateCity(req, res) {
-        const {id, name} = req.body.params;
+        const {id, name} = req.body;
         const city = await db.query('UPDATE city set name = $1 where id = $2 RETURNING *', [name, id]);
         res.json(city.rows[0]);
     }

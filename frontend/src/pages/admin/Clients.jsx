@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Server from '../../API/Server';
+import { ClientService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -7,9 +7,9 @@ import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { MyInput } from '../../components/input/MyInput';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { OrderButton } from '../../components/OrderButton/OrderButton';
-import { Helmet } from 'react-helmet';
 import { AdminTable } from '../../components/AdminTable/AdminTable';
+import classes from './AdminForm.module.css';
+import { Formik } from 'formik';
 
 export const Clients = () => {
     const [clients, setClients] = useState([]);
@@ -28,13 +28,14 @@ export const Clients = () => {
     });
 
     const [fetchClients, isClientsLoading, Error] = useFetching(async () => {
-        const clients = await Server.getClients();
+        const clients = await ClientService.getClients(localStorage.getItem('token'));
 
         setClients(clients);
     });
 
     useEffect(() => {
         fetchClients();
+        document.title = "Клиенты - Clockwise Clockware";
     }, []);
 
     useEffect(() => {
@@ -44,11 +45,11 @@ export const Clients = () => {
 
     const deleteClient = async (event) => {
         const id = event.target.closest('tr').id;
-        await Server.deleteClientById(id);
+        await ClientService.deleteClientById(id, localStorage.getItem('token'));
         fetchClients();
     }
-    const addClient = async () => {
-        await Server.addClient(newClient);
+    const addClient = async (client) => {
+        await ClientService.addClient(client, localStorage.getItem('token'));
         setModalAdd(false);
         setNewClient({
             name: '',
@@ -56,8 +57,8 @@ export const Clients = () => {
         });
         fetchClients();
     }
-    const updateClient = async () => {
-        await Server.updateClientById(idUpd, updClient);
+    const updateClient = async (client) => {
+        await ClientService.updateClientById(client, localStorage.getItem('token'));
         setModalUpd(false);
         setNewClient({
             name: '',
@@ -68,9 +69,6 @@ export const Clients = () => {
 
     return (
         <div className='admin-container'>
-            {/* <Helmet>
-                <title>Клиенты - Clockwise Clockware</title>
-            </Helmet> */}
             <Navbar />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Клиенты</h1>
@@ -80,18 +78,16 @@ export const Clients = () => {
                         Добавить
                     </AdminButton>
                 </div>
-                <MyModal visible={modalAdd} setVisible={setModalAdd}>
-                    <MyInput value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})} placeholder="Имя клиента..." />
-                    <MyInput value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} placeholder="Почта клиента..." />
-                    <OrderButton onClick={() => addClient()}>Добавить</OrderButton>
-                </MyModal>
-                <MyModal visible={modalUpd} setVisible={setModalUpd}>
-                    <MyInput value={updClient.name} onChange={e => setUpdClient({...updClient, name: e.target.value})} placeholder="Имя клиента..." />
-                    <MyInput value={updClient.email} onChange={e => setUpdClient({...updClient, email: e.target.value})} placeholder="Почта клиента..." />
-                    <OrderButton onClick={() => updateClient()}>Изменить</OrderButton>
-                </MyModal>
 
-                <AdminTable dataArr={clients} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteClient(e)} />
+                <ModalForm modal={modalAdd} setModal={setModalAdd}
+                            value={newClient}
+                            onClick={addClient} btnTitle={'Добавить'} />
+
+                <ModalForm modal={modalUpd} setModal={setModalUpd}
+                            value={updClient}
+                            onClick={updateClient} btnTitle={'Изменить'} />
+
+                <AdminTable dataArr={clients} setArray={setClients} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteClient(e)} />
 
                 {isClientsLoading &&
                     <Loader />
@@ -104,5 +100,102 @@ export const Clients = () => {
                 }
             </div>
         </div>
+    )
+}
+
+const ModalForm = ({ modal, setModal, value, onClick, btnTitle }) => {
+    const [initialValues, setInitialValues] = useState({
+        name: '',
+        email: ''
+    });
+
+    useEffect(() => {
+        setInitialValues(value)
+    }, [value]);
+    
+    const validate = (values) => {
+        let errors = {};
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+        if (!values.name) {
+            errors.name = "Требуется имя";
+        } else if (values.name.trim().length < 3) {
+            errors.name = "Имя должно быть не короче 3-х букв";
+        }
+
+        if (!values.email) {
+            errors.email = "Требуется почта";
+        } else if (!regex.test(values.email)) {
+            errors.email = "Неправильный формат";
+        }
+
+        return errors;
+    };
+
+    const submitForm = async (values, {resetForm}) => {
+        resetForm({});
+        onClick(values);
+    }
+    
+    return (
+        <MyModal visible={modal} setVisible={setModal}>
+            <Formik
+                enableReinitialize
+                initialValues={initialValues}
+                validate={validate}
+                onSubmit={submitForm}
+            >
+                {(formik) => {
+                    const {
+                        values,
+                        handleChange,
+                        handleSubmit,
+                        errors,
+                        touched,
+                        handleBlur,
+                        isValid,
+                        dirty
+                    } = formik;
+                    return (
+                        <form onSubmit={handleSubmit} className={classes.form}>
+                            <div className={classes.formRow}>
+                                <div className={classes.rowTop}>
+                                    <label htmlFor="name">Название</label>
+                                    {errors.name && touched.name && (
+                                        <div className={classes.error}>{errors.name}</div>
+                                    )}
+                                </div>
+                                <MyInput
+                                    type="text" name="name" id="name"
+                                    value={values.name}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    placeholder="Имя клиента..."
+                                />
+                            </div>
+
+                            <div className={classes.formRow}>
+                                <div className={classes.rowTop}>
+                                    <label htmlFor="email">Почта</label>
+                                    {errors.email && touched.email && (
+                                        <div className={classes.error}>{errors.email}</div>
+                                    )}
+                                </div>
+                                <MyInput
+                                    type="email" name="email" id="email"
+                                    value={values.email}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    placeholder="Почта клиента..."
+                                />
+                            </div>
+                            
+                            <AdminButton type="submit" className={!(dirty && isValid) ? "disabledBtn" : ""}
+                                disabled={!(dirty && isValid)}>{btnTitle}</AdminButton>
+                        </form>
+                    );
+                }}
+            </Formik>
+        </MyModal>
     )
 }
