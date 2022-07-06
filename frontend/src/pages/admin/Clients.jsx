@@ -27,6 +27,9 @@ export const Clients = () => {
         email: ''
     });
 
+    const [error, setError] = useState('');
+    const [errorModal, setErrorModal] = useState(false);
+
     const [fetchClients, isClientsLoading, Error] = useFetching(async () => {
         const clients = await ClientService.getClients(localStorage.getItem('token'));
 
@@ -44,27 +47,42 @@ export const Clients = () => {
     }, [idUpd]);
 
     const deleteClient = async (event) => {
-        const id = event.target.closest('tr').id;
-        await ClientService.deleteClientById(id, localStorage.getItem('token'));
-        fetchClients();
+        try {
+            const id = event.target.closest('tr').id;
+            await ClientService.deleteClientById(id, localStorage.getItem('token'));
+            fetchClients();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
     const addClient = async (client) => {
-        await ClientService.addClient(client, localStorage.getItem('token'));
-        setModalAdd(false);
-        setNewClient({
-            name: '',
-            email: ''
-        });
-        fetchClients();
+        try {
+            await ClientService.addClient(client, localStorage.getItem('token'));
+            setModalAdd(false);
+            setNewClient({
+                name: '',
+                email: ''
+            });
+            fetchClients();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
     const updateClient = async (client) => {
-        await ClientService.updateClientById(client, localStorage.getItem('token'));
-        setModalUpd(false);
-        setNewClient({
-            name: '',
-            email: ''
-        });
-        fetchClients();
+        try {
+            await ClientService.updateClientById(client, localStorage.getItem('token'));
+            setModalUpd(false);
+            setNewClient({
+                name: '',
+                email: ''
+            });
+            fetchClients();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
 
     return (
@@ -88,6 +106,8 @@ export const Clients = () => {
                             onClick={updateClient} btnTitle={'Изменить'} />
 
                 <AdminTable dataArr={clients} setArray={setClients} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteClient(e)} />
+
+                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
 
                 {isClientsLoading &&
                     <Loader />

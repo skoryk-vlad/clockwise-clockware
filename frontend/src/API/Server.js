@@ -62,8 +62,8 @@ export class MasterService {
         const response = await axios.get(`${API_URL}/api/master?city_id=${city_id}`);
         return response.data;
     }
-    static async getAvailableMasters(city_id, date, time, watch_size) {
-        const response = await axios.get(`${API_URL}/api/availmaster?city_id=${city_id}&date=${date}&time=${time}&watch_size=${watch_size}`);
+    static async getAvailableMasters(city, date, time, watch_size) {
+        const response = await axios.get(`${API_URL}/api/availmaster?city=${city}&date=${date}&time=${time}&watch_size=${watch_size}`);
         return response.data;
     }
 }

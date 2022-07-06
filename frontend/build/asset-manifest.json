@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/static/css/main.eaf9ed0f.css",
-    "main.js": "/static/js/main.75378d49.js",
+    "main.js": "/static/js/main.6149daef.js",
     "static/media/watch.jpg": "/static/media/watch.f4e135c6d82b12fe2922.jpg",
     "index.html": "/index.html",
     "main.eaf9ed0f.css.map": "/static/css/main.eaf9ed0f.css.map",
-    "main.75378d49.js.map": "/static/js/main.75378d49.js.map"
+    "main.6149daef.js.map": "/static/js/main.6149daef.js.map"
   },
   "entrypoints": [
     "static/css/main.eaf9ed0f.css",
-    "static/js/main.75378d49.js"
+    "static/js/main.6149daef.js"
   ]
 }

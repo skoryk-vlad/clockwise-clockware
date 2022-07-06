@@ -27,7 +27,7 @@ export const Orders = () => {
         watch_size: 1,
         date: '',
         time: '',
-        completed: false
+        completed: 'false'
     });
     const [modalAdd, setModalAdd] = useState(false);
 
@@ -40,8 +40,11 @@ export const Orders = () => {
         watch_size: 1,
         date: '',
         time: '',
-        completed: false
+        completed: 'false'
     });
+
+    const [error, setError] = useState('');
+    const [errorModal, setErrorModal] = useState(false);
 
     const checkZero = (num) => {
         return num > 9 ? num : '0' + num;
@@ -82,37 +85,52 @@ export const Orders = () => {
     }, [idUpd]);
 
     const deleteOrder = async (event) => {
-        const id = event.target.closest('tr').id;
-        await OrderService.deleteOrderById(id, localStorage.getItem('token'));
-        fetchOrders();
+        try {
+            const id = event.target.closest('tr').id;
+            await OrderService.deleteOrderById(id, localStorage.getItem('token'));
+            fetchOrders();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
     const addOrder = async (order) => {
-        await OrderService.addOrder(order, localStorage.getItem('token'));
-        setModalAdd(false);
-        setNewOrder({
-            client: 1,
-            master: 1,
-            city: 1,
-            watch_size: 1,
-            date: '',
-            time: '',
-            completed: false
-        });
-        fetchOrders();
+        try {
+            await OrderService.addOrder(order, localStorage.getItem('token'));
+            setModalAdd(false);
+            setNewOrder({
+                client: 1,
+                master: 1,
+                city: 1,
+                watch_size: 1,
+                date: '',
+                time: '',
+                completed: 'false'
+            });
+            fetchOrders();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
     const updateOrder = async (order) => {
-        await OrderService.updateOrderById(order, localStorage.getItem('token'));
-        setModalUpd(false);
-        setUpdOrder({
-            client: 1,
-            master: 1,
-            city: 1,
-            watch_size: 1,
-            date: '',
-            time: '',
-            completed: false
-        });
-        fetchOrders();
+        try {
+            await OrderService.updateOrderById(order, localStorage.getItem('token'));
+            setModalUpd(false);
+            setUpdOrder({
+                client: 1,
+                master: 1,
+                city: 1,
+                watch_size: 1,
+                date: '',
+                time: '',
+                completed: 'false'
+            });
+            fetchOrders();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
 
     return (
@@ -139,6 +157,8 @@ export const Orders = () => {
 
                 <AdminTable dataArr={orders} setArray={setOrders} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteOrder(e)} />
 
+                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
+
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка {Error}</h2>
                 }
@@ -161,7 +181,7 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
         watch_size: 1,
         date: '',
         time: '',
-        completed: false
+        completed: 'false'
     });
 
     useEffect(() => {
@@ -193,10 +213,15 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
             errors.time = "Требуется выбрать время";
         }
 
+        if (!values.completed) {
+            errors.completed = "Требуется выбрать время";
+        }
+
         return errors;
     };
 
-    const submitForm = async (values) => {
+    const submitForm = async (values, {resetForm}) => {
+        resetForm({});
         onClick(values);
     }
 
@@ -291,7 +316,7 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                                     )}
                                 </div>
                                 <Toggler name="completed" id="completed"
-                                    value={values.completed} titles={[true, false]} 
+                                    value={values.completed} titles={['Выполнен', 'Не выполнен']} 
                                     onClick={e => handleChange("completed")(e.target.dataset.state)}/>
                             </div>
 

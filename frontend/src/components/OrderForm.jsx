@@ -75,9 +75,9 @@ export const OrderForm = ({ setModal }) => {
     };
 
     const chooseMaster = (e) => {
-        const master_id = e.target.closest(`.mstr_itm`).id;
-        setChosenMaster(master_id);
-        setOrder({...order, master_id: master_id});
+        const master = e.target.closest(`.mstr_itm`).id;
+        setChosenMaster(master);
+        setOrder({...order, master: master});
     };
     
     const addOrder = async () => {

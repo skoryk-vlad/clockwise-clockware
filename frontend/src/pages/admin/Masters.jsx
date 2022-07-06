@@ -31,6 +31,9 @@ export const Masters = () => {
         city: 1
     });
 
+    const [error, setError] = useState('');
+    const [errorModal, setErrorModal] = useState(false);
+
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
         const masters = await MasterService.getMasters();
         const cities = await CityService.getCities();
@@ -52,29 +55,44 @@ export const Masters = () => {
     }, [idUpd]);
 
     const deleteMaster = async (event) => {
-        const id = event.target.closest('tr').id;
-        await MasterService.deleteMasterById(id, localStorage.getItem('token'));
-        fetchMasters();
+        try {
+            const id = event.target.closest('tr').id;
+            await MasterService.deleteMasterById(id, localStorage.getItem('token'));
+            fetchMasters();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
     const addMaster = async (master) => {
-        await MasterService.addMaster(master, localStorage.getItem('token'));
-        setModalAdd(false);
-        setNewMaster({
-            name: '',
-            rating: '',
-            city: 3
-        });
-        fetchMasters();
+        try {
+            await MasterService.addMaster(master, localStorage.getItem('token'));
+            setModalAdd(false);
+            setNewMaster({
+                name: '',
+                rating: '',
+                city: 3
+            });
+            fetchMasters();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
     const updateMaster = async (master) => {
-        await MasterService.updateMasterById(master, localStorage.getItem('token'));
-        setModalUpd(false);
-        setUpdMaster({
-            name: '',
-            rating: '',
-            city: 1
-        });
-        fetchMasters();
+        try {
+            await MasterService.updateMasterById(master, localStorage.getItem('token'));
+            setModalUpd(false);
+            setUpdMaster({
+                name: '',
+                rating: '',
+                city: 1
+            });
+            fetchMasters();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
 
     return (
@@ -98,6 +116,8 @@ export const Masters = () => {
                             onClick={updateMaster} btnTitle={'Изменить'} />
 
                 <AdminTable dataArr={masters} setArray={setMasters} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteMaster(e)} />
+
+                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>

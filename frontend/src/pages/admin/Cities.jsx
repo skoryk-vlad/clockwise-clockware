@@ -20,6 +20,9 @@ export const Cities = () => {
     const [modalUpd, setModalUpd] = useState(false);
     const [idUpd, setIdUpd] = useState(null);
     const [updCity, setUpdCity] = useState('');
+    
+    const [error, setError] = useState('');
+    const [errorModal, setErrorModal] = useState(false);
 
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -38,21 +41,36 @@ export const Cities = () => {
     }, [idUpd]);
 
     const deleteCity = async (event) => {
-        const id = event.target.closest('tr').id;
-        await CityService.deleteCityById(id, localStorage.getItem('token'));
-        fetchCities();
+        try {
+            const id = event.target.closest('tr').id;
+            await CityService.deleteCityById(id, localStorage.getItem('token'));
+            fetchCities();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
     const addCity = async (name) => {
-        await CityService.addCity(name, localStorage.getItem('token'));
-        setModalAdd(false);
-        setNewCity('');
-        fetchCities();
+        try {
+            await CityService.addCity(name, localStorage.getItem('token'));
+            setModalAdd(false);
+            setNewCity('');
+            fetchCities();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
     const updateCity = async (name) => {
-        await CityService.updateCityById(idUpd, name, localStorage.getItem('token'));
-        setModalUpd(false);
-        setNewCity('');
-        fetchCities();
+        try {
+            await CityService.updateCityById(idUpd, name, localStorage.getItem('token'));
+            setModalUpd(false);
+            setNewCity('');
+            fetchCities();
+        } catch(e) {
+            setError(e.response.data);
+            setErrorModal(true);
+        }
     }
 
     return (
@@ -76,6 +94,8 @@ export const Cities = () => {
                             onClick={updateCity} btnTitle={'Изменить'} />
 
                 <AdminTable dataArr={cities} setArray={setCities} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteCity(e)} />
+
+                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>
