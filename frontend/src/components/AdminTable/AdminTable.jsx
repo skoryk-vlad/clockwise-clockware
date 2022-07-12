@@ -4,17 +4,17 @@ import classes from './AdminTable.module.css';
 
 
 
-export const AdminTable = ({ dataArr, setModalUpd, setIdUpd, deleteRow, completeOrd }) => {
+export const AdminTable = ({ dataArr, columns, btnTitles, btnFuncs }) => {
 
     const [sortedBy, setSortedBy] = useState({
         column: '',
         direction: true
     });
 
-    const colTitles = [];
+    const colData = [];
 
     for(let key in dataArr[0]) {
-        colTitles.push(key);
+        colData.push(key);
     }
 
     const sortByColumn = (column) => {
@@ -43,34 +43,19 @@ export const AdminTable = ({ dataArr, setModalUpd, setIdUpd, deleteRow, complete
                 <thead>
                     <tr>
                         {
-                            colTitles.map(title => <th className={classes.colTitle} onClick={e => sortByColumn(e.target.textContent)} key={title}>{title}</th>)
+                            columns.map((title, index) => 
+                                <th className={classes.colTitle} onClick={e => sortByColumn(e.target.dataset.col)}
+                                data-col={colData[index]} key={title}>{title}</th>
+                            )
                         }
-                        {!completeOrd
-                        ?
-                            <>
-                                <th>Изменение</th>
-                                <th>Удаление</th>
-                            </>
-                        :
-                            <th>Выполнение</th>
-                        }
+                        {btnTitles.map(title => <th key={title}>{title}</th>)}
                     </tr>
                 </thead>
                 <tbody>
                     {dataArr.map(el =>
                         <tr key={el.id} id={el.id}>
-                            {colTitles.map(col => <td key={col}>{String(el[col])}</td>)}
-                            {/* <td className={classes.adminBody__link}><span onClick={e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }}>Изменить</span></td> */}
-                            {/* <td className={classes.adminBody__link}><span onClick={e => deleteRow(e)}>Удалить</span></td> */}
-                            {!completeOrd
-                            ?
-                                <>
-                                    <td className={classes.adminBody__link}><span onClick={e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }}>Изменить</span></td>
-                                    <td className={classes.adminBody__link}><span onClick={e => deleteRow(e)}>Удалить</span></td>
-                                </>
-                            :
-                            <td className={classes.adminBody__link}><span onClick={e => completeOrd(e)}>Выполнен</span></td>
-                            }
+                            {colData.map(col => <td key={col}>{String(el[col])}</td>)}
+                            {btnFuncs.map((func, i) => <td key={i} className={classes.adminBody__link}><span onClick={func}>{btnTitles[i]}</span></td>)}
                         </tr>
                     )}
                 </tbody>

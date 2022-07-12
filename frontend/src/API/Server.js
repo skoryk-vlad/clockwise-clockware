@@ -62,8 +62,8 @@ export class MasterService {
         const response = await axios.get(`${API_URL}/api/master?city_id=${city_id}`);
         return response.data;
     }
-    static async getAvailableMasters(city, date, time, watch_size) {
-        const response = await axios.get(`${API_URL}/api/availmaster?city=${city}&date=${date}&time=${time}&watch_size=${watch_size}`);
+    static async getAvailableMasters(cityId, date, time, watch_size) {
+        const response = await axios.get(`${API_URL}/api/availmaster?cityId=${cityId}&date=${date}&time=${time}&watch_size=${watch_size}`);
         return response.data;
     }
 }
@@ -128,8 +128,8 @@ export class OrderService {
         }});
         return response.data;
     }
-    static async completeOrderById(id, token) {
-        const response = await axios.post(`${API_URL}/api/order/complete`, {id}, {
+    static async changeStatusById(id, statusId, rating, token) {
+        const response = await axios.post(`${API_URL}/api/order/status`, {id, statusId, rating}, {
             headers: {
             'Authorization': 'Bearer ' + token
         }});
@@ -163,11 +163,9 @@ export class AuthService {
     }
 }
 
-// export default class Server {
-
-//     static async getOrdersByMasterAndDate({ city, date }) {
-//         const response = await axios.get(`${API_URL}/api/master?city_id=${city}`);
-
-//         return response.data;
-//     }
-// }
+export class StatusService {
+    static async getStatuses() {
+        const response = await axios.get(`${API_URL}/api/status`);
+        return response.data;
+    }
+}

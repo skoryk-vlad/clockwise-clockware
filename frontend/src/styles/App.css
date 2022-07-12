@@ -90,3 +90,14 @@
   align-items: center;
   height: 60px;
 }
+
+.admin-main__title {
+  text-align: center;
+  font-size: 30px;
+  margin: 0px 0px 15px 0px;
+}
+
+.modalMessage {
+  font-size: 20px;
+  text-align: center;
+}

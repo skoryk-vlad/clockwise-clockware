@@ -91,3 +91,7 @@ label {
     height: 80%;
     transform: rotate(-90deg);
 }
+.warning {
+    font-size: 20px;
+    text-align: center;
+}

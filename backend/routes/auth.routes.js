@@ -13,8 +13,7 @@ const authJWT = (req, res, next) => {
 
         jwt.verify(token, process.env.JWT_TOKEN_KEY, (err) => {
             if (err) {
-                // return res.status(403).json({auth: false});
-                return res.json({auth: false});
+                return res.status(401).json({auth: false});
             }
 
             next();
@@ -28,4 +27,3 @@ router.post('/auth', AuthController.login);
 router.get('/admin', authJWT, AuthController.check);
 
 module.exports = {router, authJWT};
-// module.exports = router;

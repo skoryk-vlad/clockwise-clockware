@@ -10,6 +10,7 @@ import classes from './OrderForm.module.css';
 
 export const OrderForm = ({ setModal }) => {
     const [isForm, setIsForm] = useState(true);
+    const [sended, setSended] = useState(false);
     const [availMasters, setAvailMasters] = useState([]);
     const [order, setOrder] = useState({});
     const [returned, setReturned] = useState(false);
@@ -32,13 +33,17 @@ export const OrderForm = ({ setModal }) => {
         fetchCities();
     }, []);
 
+    // useEffect(() => {
+    //     setSended(false);
+    // }, [isForm]);
+
     const [initialValues, setInitialValues] = useState({
         name: "",
         email: "",
         watch_size: 1,
-        city: 1,
+        cityId: 1,
         date: "",
-        time: ""
+        time: null
     });
 
     const validate = (values) => {
@@ -57,62 +62,66 @@ export const OrderForm = ({ setModal }) => {
             errors.email = "Неправильный формат";
         }
 
-        if (!values.city) {
-            errors.city = "Требуется выбрать город";
+        if (!values.cityId) {
+            errors.cityId = "Требуется выбрать город";
         }
 
         if (!values.date) {
             errors.date = "Требуется выбрать дату";
-        } else if((new Date(values.date)).getTime() < (new Date()).getTime()) {
+        } else if((new Date(values.date)).getTime() < date.getTime() - (date.getTime() % 86400000)) {
             errors.date = "Выбрана неверная дата";
         }
 
         if (!values.time) {
             errors.time = "Требуется выбрать время";
+        } else if(values.date === minDate && values.time < date.getHours() + 1) {
+            errors.time = "Выбрано неверное время";
         }
 
         return errors;
     };
 
     const chooseMaster = (e) => {
-        const master = e.target.closest(`.mstr_itm`).id;
-        setChosenMaster(master);
-        setOrder({...order, master: master});
+        const masterId = e.target.closest(`.mstr_itm`).id;
+        setChosenMaster(+masterId);
+        setOrder({...order, masterId: +masterId});
     };
     
     const addOrder = async () => {
-        OrderService.addOrderAndClient(order);
+        await OrderService.addOrderAndClient(order);
         setIsForm(true);
-        setModal(false);
+        setSended(true);
         setReturned(false);
         setChosenMaster(null);
         setInitialValues({
             name: "",
             email: "",
             watch_size: 1,
-            city: 1,
+            cityId: 1,
             date: "",
-            time: ""
+            time: null
         });
     }
-
     const findMasters = async (values, {resetForm}) => {
         resetForm({});
         setOrder(values);
-        const availableMasters = await MasterService.getAvailableMasters(values.city, values.date, values.time, values.watch_size);
-        setAvailMasters(availableMasters);
+        setChosenMaster(null)
+        const availableMasters = await MasterService.getAvailableMasters(values.cityId, values.date, values.time, values.watch_size);
+        setAvailMasters(availableMasters.sort((a, b) => a.rating < b.rating ? 1 : -1).map(m => m.rating ? m : {...m, rating: '-'}));
         setIsForm(false);
     }
 
     const returnForm = () => {
-        setInitialValues({...order, time: +order.time});
+        setInitialValues(order);
         setReturned(true);
         setIsForm(true);
     }
 
     return (
         <div>
-            {isForm 
+            {
+            !sended ?
+            isForm 
                 ?
                 <Formik initialValues={initialValues}
                     validate={validate}
@@ -127,7 +136,8 @@ export const OrderForm = ({ setModal }) => {
                             touched,
                             handleBlur,
                             isValid,
-                            dirty
+                            dirty,
+                            setFieldValue
                         } = formik;
                         return (
                             <form onSubmit={handleSubmit} className={classes.form}>
@@ -146,6 +156,7 @@ export const OrderForm = ({ setModal }) => {
                                         placeholder="Имя"
                                     />
                                 </div>
+                                
                                 <div className={classes.formRow}>
                                     <div className={classes.rowTop}>
                                         <label htmlFor="email">Почта</label>
@@ -165,17 +176,18 @@ export const OrderForm = ({ setModal }) => {
                                 <div className={classes.formRow}>
                                     <label htmlFor="watch_size">Размер часов</label>
                                     <NumPicker name="watch_size" id="watch_size"
-                                        from='1' to='3'
-                                        value={values.watch_size} onClick={e => handleChange("watch_size")(e.target.dataset.num)} />
+                                        from='1' to='3' onBlur={handleBlur}
+                                        value={values.watch_size}
+                                        onClick={e => setFieldValue( "watch_size", parseInt(e.target.dataset.num))}
+                                    />
                                 </div>
 
                                 <div className={classes.formRow}>
-                                    <label htmlFor="city">Город</label>
-                                    <MySelect
-                                        name="city" id="city" value={values.city}
-                                        onChange={value => handleChange("city")(value)}
+                                    <label htmlFor="cityId">Город</label>
+                                    <MySelect onBlur={handleBlur}
+                                        name="cityId" id="cityId" value={values.cityId}
+                                        onChange={value => setFieldValue( "cityId", parseInt(value))}
                                         options={cities.map(city => ({ value: city.id, name: city.name }))}
-                                        // options={cities.filter(c => masters.filter(m => m.city === c.name).length !== 0).map(city => ({ value: city.id, name: city.name }))}
                                     />
                                 </div>
 
@@ -186,7 +198,9 @@ export const OrderForm = ({ setModal }) => {
                                             <div className={classes.error}>{errors.date}</div>
                                         )}
                                     </div>
-                                    <MyInput name="date" id="date" type="date" min={minDate} value={values.date} onChange={handleChange} />
+                                    <MyInput name="date" id="date" type="date"
+                                            onBlur={handleBlur} min={minDate}
+                                            value={values.date} onChange={handleChange} />
                                 </div>
 
                                 <div className={classes.formRow}>
@@ -196,9 +210,12 @@ export const OrderForm = ({ setModal }) => {
                                             <div className={classes.error}>{errors.time}</div>
                                         )}
                                     </div>
-                                    <NumPicker name="time" id="time" min={values.date === minDate ? date.getHours() + 1 : 0}
+                                    <NumPicker name="time" id="time" 
+                                        min={!errors.date ? (values.date === minDate ? date.getHours() + 1 : 0) : 19}
                                         from='10' to='18' count={values.watch_size}
-                                        value={values.time} onClick={e => handleChange("time")(e.target.dataset.num)} />
+                                        value={values.time} onBlur={handleBlur}
+                                        onClick={e => setFieldValue( "time", parseInt(e.target.dataset.num))}
+                                    />
                                 </div>
 
                                 <OrderButton type="submit" className={!((dirty && isValid) || returned) ? "disabledBtn" : ""}
@@ -219,6 +236,10 @@ export const OrderForm = ({ setModal }) => {
                             </div>
                             )
                         }
+                        {
+                            availMasters.length === 0 &&
+                                <div className={classes.warning}>К сожалению, мастеров на это время в этот день нет. Выберите другое время или дату.</div>
+                        }
                         <div className={classes.return} onClick={returnForm}>
                             <img src="/images/icons/top.png" alt="Назад" />
                         </div>
@@ -226,6 +247,9 @@ export const OrderForm = ({ setModal }) => {
                     <OrderButton onClick={() => {addOrder()}} className={(chosenMaster === null ? "disabledBtn" : '')}
                     disabled={chosenMaster === null}>Оформить заказ</OrderButton>
                 </div>
+            :
+            <div className='modalMessage'>Заказ успешно получен! <br/>
+                        Для подтверждения заказа перейдите по ссылке, отправленно на вашу электронную почту!</div>
             }
         </div>
     )

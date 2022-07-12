@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CityService } from '../../API/Server';
+import { AuthService, CityService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -10,6 +10,7 @@ import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { AdminTable } from '../../components/AdminTable/AdminTable';
 import { Formik } from 'formik';
 import classes from './AdminForm.module.css';
+import { Navigate } from 'react-router-dom';
 
 export const Cities = () => {
     const [cities, setCities] = useState([]);
@@ -23,6 +24,8 @@ export const Cities = () => {
     
     const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState(false);
+    
+    const [redirect, setRedirect] = useState(false);
 
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -31,14 +34,32 @@ export const Cities = () => {
     });
 
     useEffect(() => {
-        fetchCities();
         document.title = "Города - Clockwise Clockware";
+
+        async function checkAuth() {
+            if(localStorage.getItem('token')) {
+                try{
+                    await AuthService.checkAuth(localStorage.getItem('token'));
+                } catch(e) {
+                    setRedirect(true);
+                }
+            } else {
+                setRedirect(true);
+            }
+        }
+        checkAuth();
+        
+        fetchCities();
     }, []);
 
     useEffect(() => {
         if (idUpd)
             setUpdCity(cities.find(c => c.id === +idUpd).name);
     }, [idUpd]);
+
+    if (redirect) {
+        return <Navigate push to="/admin/login" />
+    }
 
     const deleteCity = async (event) => {
         try {
@@ -93,7 +114,11 @@ export const Cities = () => {
                             value={updCity}
                             onClick={updateCity} btnTitle={'Изменить'} />
 
-                <AdminTable dataArr={cities} setArray={setCities} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteCity(e)} />
+                <AdminTable dataArr={cities}
+                            columns={['id', 'Имя']}
+                            btnTitles={['Изменение', 'Удаление']}
+                            btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteCity(e)]}
+                />
 
                 <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
 
@@ -135,7 +160,8 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle }) => {
         return errors;
     };
 
-    const submitForm = async (values) => {
+    const submitForm = async (values, {resetForm}) => {
+        resetForm({});
         onClick(values.name);
     }
     

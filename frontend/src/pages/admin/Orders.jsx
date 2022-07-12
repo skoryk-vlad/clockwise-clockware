@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CityService, MasterService, ClientService, OrderService } from '../../API/Server';
+import { CityService, MasterService, ClientService, OrderService, AuthService, StatusService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -12,39 +12,44 @@ import { MySelect } from '../../components/select/MySelect';
 import { NumPicker } from '../../components/NumPicker/NumPicker';
 import classes from './AdminForm.module.css';
 import { Formik } from 'formik';
-import { Toggler } from '../../components/Toggler/Toggler';
+import { Navigate } from 'react-router-dom';
 
 export const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
     const [masters, setMasters] = useState([]);
     const [clients, setClients] = useState([]);
+    const [statuses, setStatuses] = useState([]);
 
     const [newOrder, setNewOrder] = useState({
-        client: 1,
-        master: 1,
-        city: 1,
+        clientId: 1,
+        masterId: 1,
+        cityId: 1,
         watch_size: 1,
         date: '',
-        time: '',
-        completed: 'false'
+        time: null,
+        rating: 0,
+        statusId: 1
     });
     const [modalAdd, setModalAdd] = useState(false);
 
     const [modalUpd, setModalUpd] = useState(false);
     const [idUpd, setIdUpd] = useState(null);
     const [updOrder, setUpdOrder] = useState({
-        client: 1,
-        master: 1,
-        city: 1,
+        clientId: 1,
+        masterId: 1,
+        cityId: 1,
         watch_size: 1,
         date: '',
-        time: '',
-        completed: 'false'
+        time: null,
+        rating: 0,
+        statusId: 1
     });
 
     const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState(false);
+
+    const [redirect, setRedirect] = useState(false);
 
     const checkZero = (num) => {
         return num > 9 ? num : '0' + num;
@@ -60,36 +65,61 @@ export const Orders = () => {
         const cities = await CityService.getCities();
         const masters = await MasterService.getMasters();
         const clients = await ClientService.getClients(localStorage.getItem('token'));
+        const statuses = await StatusService.getStatuses();
 
         setOrders(orders.map(o => ({ ...o, date: toDate(o.date) })));
         setCities(cities);
         setMasters(masters);
         setClients(clients);
+        setStatuses(statuses);
     });
 
     useEffect(() => {
-        fetchOrders();
         document.title = "Заказы - Clockwise Clockware";
+
+        async function checkAuth() {
+            if (localStorage.getItem('token')) {
+                try {
+                    await AuthService.checkAuth(localStorage.getItem('token'));
+                } catch (e) {
+                    setRedirect(true);
+                }
+            } else {
+                setRedirect(true);
+            }
+        }
+        checkAuth();
+
+        fetchOrders();
     }, []);
 
     useEffect(() => {
         if (idUpd) {
-            const order = orders.find(o => o.id === +idUpd);
-            setUpdOrder({
+            let order = orders.find(o => o.id === +idUpd);
+            order = {
                 ...order,
-                city: cities.find(c => c.name === order.city).id,
-                master: masters.find(m => m.name === order.master).id,
-                client: clients.find(c => c.name === order.client).id
+                cityId: cities.find(c => c.name === order.city).id,
+                masterId: masters.find(m => m.name === order.master).id,
+                clientId: clients.find(c => c.name === order.client).id,
+                statusId: statuses.find(s => s.name === order.status).id
+            };
+            ['city', 'master', 'client', 'status'].forEach(function (k) {
+                delete order[k];
             });
+            setUpdOrder(order);
         }
     }, [idUpd]);
+
+    if (redirect) {
+        return <Navigate push to="/admin/login" />
+    }
 
     const deleteOrder = async (event) => {
         try {
             const id = event.target.closest('tr').id;
             await OrderService.deleteOrderById(id, localStorage.getItem('token'));
             fetchOrders();
-        } catch(e) {
+        } catch (e) {
             setError(e.response.data);
             setErrorModal(true);
         }
@@ -99,16 +129,17 @@ export const Orders = () => {
             await OrderService.addOrder(order, localStorage.getItem('token'));
             setModalAdd(false);
             setNewOrder({
-                client: 1,
-                master: 1,
-                city: 1,
+                clientId: 1,
+                masterId: 1,
+                cityId: 1,
                 watch_size: 1,
                 date: '',
-                time: '',
-                completed: 'false'
+                time: null,
+                rating: 0,
+                statusId: 1
             });
             fetchOrders();
-        } catch(e) {
+        } catch (e) {
             setError(e.response.data);
             setErrorModal(true);
         }
@@ -118,16 +149,17 @@ export const Orders = () => {
             await OrderService.updateOrderById(order, localStorage.getItem('token'));
             setModalUpd(false);
             setUpdOrder({
-                client: 1,
-                master: 1,
-                city: 1,
+                clientId: 1,
+                masterId: 1,
+                cityId: 1,
                 watch_size: 1,
                 date: '',
-                time: '',
-                completed: 'false'
+                time: null,
+                rating: 0,
+                statusId: 1
             });
             fetchOrders();
-        } catch(e) {
+        } catch (e) {
             setError(e.response.data);
             setErrorModal(true);
         }
@@ -146,18 +178,24 @@ export const Orders = () => {
                 </div>
 
                 <ModalForm modal={modalAdd} setModal={setModalAdd}
-                            value={newOrder} cities={cities}
-                            masters={masters} clients={clients}
-                            onClick={addOrder} btnTitle={'Добавить'} />
+                    value={newOrder} cities={cities}
+                    masters={masters} clients={clients}
+                    statuses={statuses}
+                    onClick={addOrder} btnTitle={'Добавить'} />
 
                 <ModalForm modal={modalUpd} setModal={setModalUpd}
-                            value={updOrder} cities={cities}
-                            masters={masters} clients={clients}
-                            onClick={updateOrder} btnTitle={'Изменить'} />
+                    value={updOrder} cities={cities}
+                    masters={masters} clients={clients}
+                    statuses={statuses}
+                    onClick={updateOrder} btnTitle={'Изменить'} />
 
-                <AdminTable dataArr={orders} setArray={setOrders} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteOrder(e)} />
+                <AdminTable dataArr={orders}
+                    columns={['id', 'Клиент', 'Мастер', 'Город', 'Размер часов', 'Дата', 'Время', 'Рейтинг', 'Статус']}
+                    btnTitles={['Изменение', 'Удаление']}
+                    btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteOrder(e)]}
+                />
 
-                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
+                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{ fontSize: '20px' }}>{error}.</p></MyModal>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка {Error}</h2>
@@ -173,15 +211,16 @@ export const Orders = () => {
     )
 }
 
-const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients, masters }) => {
+const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients, masters, statuses }) => {
     const [initialValues, setInitialValues] = useState({
-        client: 1,
-        master: 1,
-        city: 1,
+        clientId: 1,
+        masterId: 1,
+        cityId: 1,
         watch_size: 1,
         date: '',
-        time: '',
-        completed: 'false'
+        time: null,
+        rating: 0,
+        statusId: 1
     });
 
     useEffect(() => {
@@ -191,45 +230,45 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
     const validate = (values) => {
         let errors = {};
 
-        if (!values.client) {
-            errors.city = "Требуется клиент";
+        if (!values.clientId) {
+            errors.clientId = "Требуется клиент";
         }
-        if (!values.master) {
-            errors.city = "Требуется мастер";
+        if (!values.masterId) {
+            errors.masterId = "Требуется мастер";
         }
-        if (!values.city) {
+        if (!values.cityId) {
             errors.city = "Требуется город";
         }
         if (!values.watch_size) {
-            errors.city = "Требуется размер часов";
+            errors.watch_size = "Требуется размер часов";
         }
         if (!values.date) {
             errors.date = "Требуется выбрать дату";
-        } else if((new Date(values.date)).getTime() < (new Date()).getTime()) {
-            errors.date = "Выбрана неверная дата";
         }
 
         if (!values.time) {
             errors.time = "Требуется выбрать время";
         }
 
-        if (!values.completed) {
-            errors.completed = "Требуется выбрать время";
+        if (!values.rating && values.rating !== 0) {
+            errors.rating = "Требуется рейтинг";
+        } else if (values.rating < 0 || values.rating > 5) {
+            errors.rating = "Рейтинг должен находиться в диапазоне 0-5";
+        } else if (parseInt(values.rating) !== values.rating) {
+            errors.rating = "Рейтинг должен быть целым числом";
+        }
+
+        if (!values.statusId) {
+            errors.statusId = "Требуется выбрать статус";
         }
 
         return errors;
     };
 
-    const submitForm = async (values, {resetForm}) => {
+    const submitForm = async (values, { resetForm }) => {
         resetForm({});
         onClick(values);
     }
-
-    const checkZero = (num) => {
-        return num > 9 ? num : '0' + num;
-    };
-    const date = new Date();
-    const minDate = `${date.getFullYear()}-${checkZero(date.getMonth() + 1)}-${checkZero(date.getDate())}`;
 
     return (
         <MyModal visible={modal} setVisible={setModal}>
@@ -248,52 +287,60 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                         touched,
                         handleBlur,
                         isValid,
-                        dirty
+                        dirty,
+                        setFieldValue
                     } = formik;
                     return (
                         <form onSubmit={handleSubmit} className={classes.form}>
                             <div className={classes.formRow}>
-                                <label htmlFor="client">Клиент</label>
+                                <label htmlFor="clientId">Клиент</label>
                                 <MySelect
-                                    name="client" id="client" value={values.client}
-                                    onChange={value => handleChange("client")(value)}
+                                    name="clientId" id="clientId" value={values.clientId}
+                                    onChange={value => setFieldValue("clientId", parseInt(value))}
+                                    onBlur={handleBlur}
                                     options={clients.map(client => ({ value: client.id, name: `${client.name} (${client.email})` }))}
                                 />
                             </div>
 
                             <div className={classes.formRow}>
-                                <label htmlFor="city">Город</label>
+                                <label htmlFor="cityId">Город</label>
                                 <MySelect
-                                    name="city" id="city" value={values.city}
-                                    onChange={value => handleChange("city")(value)}
+                                    name="cityId" id="cityId" value={values.cityId}
+                                    onChange={value => setFieldValue("cityId", parseInt(value))}
+                                    onBlur={handleBlur}
                                     options={cities.map(city => ({ value: city.id, name: city.name }))}
                                 />
                             </div>
 
                             <div className={classes.formRow}>
-                                <label htmlFor="master">Мастер</label>
+                                <label htmlFor="masterId">Мастер</label>
                                 <MySelect
-                                    name="master" id="master" value={values.master}
-                                    onChange={value => handleChange("master")(value)}
-                                    options={masters.filter(m => m.city === cities.find(c => c.id === +values.city).name).map(master => ({ value: master.id, name: master.name }))}
+                                    name="masterId" id="masterId" value={values.masterId}
+                                    onChange={value => setFieldValue("masterId", parseInt(value))}
+                                    onBlur={handleBlur}
+                                    options={masters.filter(m => m.city === cities.find(c => c.id === +values.cityId).name).map(master => ({ value: master.id, name: master.name }))}
                                 />
                             </div>
-
+                            
                             <div className={classes.formRow}>
                                 <label htmlFor="watch_size">Размер часов</label>
                                 <NumPicker name="watch_size" id="watch_size"
-                                    from='1' to='3'
-                                    value={values.watch_size} onClick={e => handleChange("watch_size")(e.target.dataset.num)} />
+                                    from='1' to='3' onBlur={handleBlur}
+                                    value={values.watch_size}
+                                    onClick={e => setFieldValue("watch_size", parseInt(e.target.dataset.num))}
+                                />
                             </div>
 
                             <div className={classes.formRow}>
                                 <div className={classes.rowTop}>
                                     <label htmlFor="date">Дата</label>
-                                    {errors.date && (
+                                    {errors.date && touched.date && (
                                         <div className={classes.error}>{errors.date}</div>
                                     )}
                                 </div>
-                                <MyInput name="date" id="date" min={minDate} type="date" value={values.date} onChange={handleChange} />
+                                <MyInput name="date" id="date"
+                                    type="date" value={values.date}
+                                    onChange={handleChange} onBlur={handleBlur} />
                             </div>
 
                             <div className={classes.formRow}>
@@ -303,21 +350,37 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                                         <div className={classes.error}>{errors.time}</div>
                                     )}
                                 </div>
-                                <NumPicker name="time" id="time" min={values.date === minDate ? date.getHours() + 1 : 0}
+                                <NumPicker name="time" id="time" onBlur={handleBlur}
                                     from='10' to='18' count={values.watch_size}
-                                    value={values.time} onClick={e => handleChange("time")(e.target.dataset.num)} />
+                                    value={values.time}
+                                    onClick={e => setFieldValue("time", parseInt(e.target.dataset.num))}
+                                />
                             </div>
 
                             <div className={classes.formRow}>
                                 <div className={classes.rowTop}>
-                                    <label htmlFor="completed">Выполнен</label>
-                                    {errors.completed && touched.completed && (
-                                        <div className={classes.error}>{errors.completed}</div>
+                                    <label htmlFor="rating">Рейтинг</label>
+                                    {errors.rating && touched.rating && (
+                                        <div className={classes.error}>{errors.rating}</div>
                                     )}
                                 </div>
-                                <Toggler name="completed" id="completed"
-                                    value={values.completed} titles={['Выполнен', 'Не выполнен']} 
-                                    onClick={e => handleChange("completed")(e.target.dataset.state)}/>
+                                <MyInput
+                                    type="number" name="rating" id="rating"
+                                    value={values.rating}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    placeholder="Рейтинг..."
+                                />
+                            </div>
+                            
+                            <div className={classes.formRow}>
+                                <label htmlFor="statusId">Статус</label>
+                                <MySelect
+                                    name="statusId" id="statusId" value={values.statusId}
+                                    onChange={value => setFieldValue("statusId", parseInt(value))}
+                                    onBlur={handleBlur}
+                                    options={statuses.map(status => ({ value: status.id, name: status.name }))}
+                                />
                             </div>
 
                             <AdminButton type="submit" className={!(dirty && isValid) ? "disabledBtn" : ""}

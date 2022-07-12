@@ -1,12 +1,8 @@
 const db = require('../db');
 
 const validate = async (props, neededProps) => {
-    let missing = [];
-    neededProps.forEach(prop => {
-        if (!props.hasOwnProperty(prop)) {
-            missing.push(prop);
-        }
-    });
+    const missing = neededProps.filter(prop => !props[prop]);
+    
     if (missing.length !== 0) {
         return `Missing propert${missing.length === 1 ? 'y' : 'ies'} '${missing.join(', ')}'`;
     }
@@ -19,20 +15,11 @@ const validate = async (props, neededProps) => {
         return "'name' length must be more than 3 characters";
     }
 
-    if (neededProps.indexOf('rating') !== -1) {
-        if(isNaN(props.rating)) {
-            return "'rating' must be 'integer'";
+    if (neededProps.indexOf('cityId') !== -1) {
+        if(isNaN(props.cityId)) {
+            return "'cityId' must be 'integer'";
         }
-        if(props.rating < 1 || props.rating > 5) {
-            return "'rating' must be between 1 and 5";
-        }
-    }
-
-    if (neededProps.indexOf('city') !== -1) {
-        if(isNaN(props.city)) {
-            return "'city' must be 'integer'";
-        }
-        const city = await db.query('SELECT * FROM city WHERE id=$1', [props.city]);
+        const city = await db.query('SELECT * FROM city WHERE id=$1', [props.cityId]);
         if(city.rows.length === 0) {
             return "No such city";
         }
@@ -77,19 +64,19 @@ const validate = async (props, neededProps) => {
 
 class MasterController {
     async addMaster(req, res) {
-        const error = await validate(req.body, ['name', 'rating', 'city']);
+        const error = await validate(req.body, ['name', 'cityId']);
 
         if(error) {
             res.status(400).json(error);
             return;
         }
 
-        const {name, rating, city} = req.body;
-        const newMaster = await db.query(`INSERT INTO master (name, rating, city_id) values ($1, $2, $3) RETURNING * `, [name, rating, city]);
-        res.json(newMaster.rows[0]);
+        const {name, cityId} = req.body;
+        const newMaster = await db.query(`INSERT INTO master (name, city_id) values ($1, $2) RETURNING * `, [name, cityId]);
+        res.status(201).json(newMaster.rows[0]);
     }
     async getMasters(req, res) {
-        let com = 'SELECT m.id, m.name, m.rating, c.name "city" FROM master m, city c WHERE m.city_id = c.id';
+        let com = 'SELECT m.id, m.name, c.name "city" FROM master m, city c WHERE m.city_id = c.id';
         const values = [];
 
         if(req.query.city_id) {
@@ -102,7 +89,7 @@ class MasterController {
         }
 
         const masters = await db.query(com, values);
-        res.json(masters.rows);
+        res.status(200).json(masters.rows);
     }
     async getMasterById(req, res) {
         const error = await validate(req.params, ['id']);
@@ -114,34 +101,47 @@ class MasterController {
 
         const id = req.params.id;
         const master = await db.query('SELECT * FROM master WHERE id=$1', [id]);
-        res.json(master.rows[0]);
+        res.status(200).json(master.rows[0]);
     }
     async getAvailableMasters(req, res) {
-        const error = await validate(req.query, ['city', 'date', 'time', 'watch_size']);
+        const error = await validate(req.query, ['cityId', 'date', 'time', 'watch_size']);
 
         if(error) {
             res.status(400).json(error);
             return;
         }
 
-        const {city, date, time, watch_size} = req.query;
-        const notAvailmasters = await db.query('SELECT DISTINCT master_id FROM orders WHERE city_id=$1 AND date=$2 AND time BETWEEN $3 - watch_size + 1 AND $3 + $4 - 1', [city, date, time, watch_size]);
-        const toDel = notAvailmasters.rows.map(m => m.master_id);
-        const masters = await db.query('SELECT * FROM master WHERE city_id=$1', [city]);
-        const resu = masters.rows.filter(m => toDel.indexOf(m.id) === -1);
-        res.json(resu);
+        const {cityId, date, time, watch_size} = req.query;
+        const notAvailMasters = await db.query('SELECT DISTINCT master_id FROM orders WHERE city_id=$1 AND date=$2 AND time BETWEEN $3 - watch_size + 1 AND $3 + $4 - 1', [cityId, date, time, watch_size]);
+        const toDel = notAvailMasters.rows.map(m => m.master_id);
+        const masters = await db.query('SELECT * FROM master WHERE city_id=$1', [cityId]);
+        let availMasters = masters.rows.filter(m => toDel.indexOf(m.id) === -1);
+
+        availMasters = await Promise.all(availMasters.map(async master => {
+            const orders = await db.query('SELECT * FROM orders WHERE rating IS NOT NULL AND master_id=$1', [master.id]);
+            let rating = 0, count = 0;
+            orders.rows.forEach(o => {
+                if(o.rating) {
+                    rating += o.rating;
+                    count++;
+                }
+            });
+            return {...master, rating: (rating / count) ? (rating / count).toFixed(1) : null};
+        }));
+
+        res.status(200).json(availMasters);
     }
     async updateMaster(req, res) {
-        const error = await validate(req.body, ['id', 'name', 'rating', 'city']);
+        const error = await validate(req.body, ['id', 'name', 'cityId']);
 
         if(error) {
             res.status(400).json(error);
             return;
         }
 
-        const {id, name, rating, city} = req.body;
-        const master = await db.query('UPDATE master set name = $1, rating = $2, city_id = $3 where id = $4 RETURNING *', [name, rating, city, id]);
-        res.json(master.rows[0]);
+        const {id, name, cityId} = req.body;
+        const master = await db.query('UPDATE master set name = $1, city_id = $2 where id = $3 RETURNING *', [name, cityId, id]);
+        res.status(200).json(master.rows[0]);
     }
     async deleteMaster(req, res) {
         let error = await validate(req.params, ['id']);
@@ -159,7 +159,7 @@ class MasterController {
         }
 
         const master = await db.query('DELETE FROM master WHERE id=$1 RETURNING *', [id]);
-        res.json(master.rows[0]);
+        res.status(200).json(master.rows[0]);
     }
 }
 

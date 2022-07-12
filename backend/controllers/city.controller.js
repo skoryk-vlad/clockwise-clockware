@@ -1,12 +1,8 @@
 const db = require('../db');
 
 const validate = (props, neededProps) => {
-    let missing = [];
-    neededProps.forEach(prop => {
-        if (!props.hasOwnProperty(prop)) {
-            missing.push(prop);
-        }
-    });
+    const missing = neededProps.filter(prop => !props[prop]);
+    
     if (missing.length !== 0) {
         return `Missing propert${missing.length === 1 ? 'y' : 'ies'} '${missing.join(', ')}'`;
     }
@@ -32,12 +28,18 @@ class CityController {
         }
 
         const { name } = req.body;
-        const newCity = await db.query(`INSERT INTO city (name) values ($1) RETURNING * `, [name]);
-        res.json(newCity.rows[0]);
+
+        let city = await db.query('SELECT * FROM city WHERE name=$1', [name]);
+
+        if(city.rows.length === 0) {
+            city = await db.query(`INSERT INTO city (name) values ($1) RETURNING * `, [name]);
+        }
+
+        res.status(201).json(city.rows[0]);
     }
     async getCities(req, res) {
         const cities = await db.query('SELECT * FROM city');
-        res.json(cities.rows);
+        res.status(200).json(cities.rows);
     }
     async getCityById(req, res) {
         const error = validate(req.params, ['id']);
@@ -49,7 +51,7 @@ class CityController {
 
         const id = req.params.id;
         const city = await db.query('SELECT * FROM city WHERE id=$1', [id]);
-        res.json(city.rows[0]);
+        res.status(200).json(city.rows[0]);
     }
     async updateCity(req, res) {
         const error = validate(req.body, ['id', 'name']);
@@ -61,7 +63,7 @@ class CityController {
 
         const { id, name } = req.body;
         const city = await db.query('UPDATE city set name = $1 where id = $2 RETURNING *', [name, id]);
-        res.json(city.rows[0]);
+        res.status(200).json(city.rows[0]);
     }
     async deleteCity(req, res) {
         let error = validate(req.params, ['id']);
@@ -84,7 +86,7 @@ class CityController {
         }
 
         const city = await db.query('DELETE FROM city WHERE id=$1 RETURNING *', [id]);
-        res.json(city.rows[0]);
+        res.status(200).json(city.rows[0]);
     }
 }
 

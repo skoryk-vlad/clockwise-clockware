@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CityService, MasterService } from '../../API/Server';
+import { AuthService, CityService, MasterService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -11,6 +11,7 @@ import { AdminTable } from '../../components/AdminTable/AdminTable';
 import { MySelect } from '../../components/select/MySelect';
 import { Formik } from 'formik';
 import classes from './AdminForm.module.css';
+import { Navigate } from 'react-router-dom';
 
 export const Masters = () => {
     const [masters, setMasters] = useState([]);
@@ -19,7 +20,7 @@ export const Masters = () => {
     const [newMaster, setNewMaster] = useState({
         name: '',
         rating: '',
-        city: 1
+        cityId: 1
     });
     const [modalAdd, setModalAdd] = useState(false);
 
@@ -28,11 +29,13 @@ export const Masters = () => {
     const [updMaster, setUpdMaster] = useState({
         name: '',
         rating: '',
-        city: 1
+        cityId: 1
     });
 
     const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState(false);
+    
+    const [redirect, setRedirect] = useState(false);
 
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
         const masters = await MasterService.getMasters();
@@ -43,16 +46,36 @@ export const Masters = () => {
     });
 
     useEffect(() => {
-        fetchMasters();
         document.title = "Мастера - Clockwise Clockware";
+
+        async function checkAuth() {
+            if(localStorage.getItem('token')) {
+                try{
+                    await AuthService.checkAuth(localStorage.getItem('token'));
+                } catch(e) {
+                    setRedirect(true);
+                }
+            } else {
+                setRedirect(true);
+            }
+        }
+        checkAuth();
+        
+        fetchMasters();
     }, []);
 
     useEffect(() => {
         if(idUpd){
-            const master = masters.find(m => m.id === +idUpd);
-            setUpdMaster({...master, city: cities.find(c => c.name === master.city).id});
+            let master = masters.find(m => m.id === +idUpd);
+            master = {...master, cityId: cities.find(c => c.name === master.city).id};
+            delete master.city;
+            setUpdMaster(master);
         }
     }, [idUpd]);
+
+    if (redirect) {
+        return <Navigate push to="/admin/login" />
+    }
 
     const deleteMaster = async (event) => {
         try {
@@ -71,7 +94,7 @@ export const Masters = () => {
             setNewMaster({
                 name: '',
                 rating: '',
-                city: 3
+                cityId: 1
             });
             fetchMasters();
         } catch(e) {
@@ -86,7 +109,7 @@ export const Masters = () => {
             setUpdMaster({
                 name: '',
                 rating: '',
-                city: 1
+                cityId: 1
             });
             fetchMasters();
         } catch(e) {
@@ -115,7 +138,11 @@ export const Masters = () => {
                             value={updMaster} cities={cities}
                             onClick={updateMaster} btnTitle={'Изменить'} />
 
-                <AdminTable dataArr={masters} setArray={setMasters} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteMaster(e)} />
+                <AdminTable dataArr={masters}
+                            columns={['id', 'Имя', 'Город']}
+                            btnTitles={['Изменение', 'Удаление']}
+                            btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteMaster(e)]}
+                />
 
                 <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
 
@@ -137,8 +164,8 @@ export const Masters = () => {
 const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities }) => {
     const [initialValues, setInitialValues] = useState({
         name: '',
-        rating: '',
-        city: 1
+        // rating: '',
+        cityId: 1
     });
 
     useEffect(() => {
@@ -154,21 +181,15 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities }) => {
             errors.name = "Имя должно быть не короче 3-х букв";
         }
 
-        if (!values.rating && values.rating !== 0) {
-            errors.rating = "Требуется рейтинг";
-        } else if (values.rating < 1 || values.rating > 5) {
-            errors.rating = "Рейтинг должен находиться в диапазоне 1-5";
-        } else if (parseInt(values.rating) !== values.rating) {
-            errors.rating = "Рейтинг должен быть целым числом";
-        }
-        if (!values.city) {
-            errors.city = "Требуется город";
+        if (!values.cityId) {
+            errors.cityId = "Требуется город";
         }
 
         return errors;
     };
 
-    const submitForm = async (values) => {
+    const submitForm = async (values, {resetForm}) => {
+        resetForm({});
         onClick(values);
     }
     
@@ -189,7 +210,8 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities }) => {
                         touched,
                         handleBlur,
                         isValid,
-                        dirty
+                        dirty,
+                        setFieldValue
                     } = formik;
                     return (
                         <form onSubmit={handleSubmit} className={classes.form}>
@@ -208,28 +230,12 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities }) => {
                                     placeholder="Имя мастера..."
                                 />
                             </div>
-
+                            
                             <div className={classes.formRow}>
-                                <div className={classes.rowTop}>
-                                    <label htmlFor="rating">Рейтинг</label>
-                                    {errors.rating && touched.rating && (
-                                        <div className={classes.error}>{errors.rating}</div>
-                                    )}
-                                </div>
-                                <MyInput
-                                    type="number" name="rating" id="rating"
-                                    value={values.rating}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    placeholder="Рейтинг мастера..."
-                                />
-                            </div>
-
-                            <div className={classes.formRow}>
-                                <label htmlFor="city">Город</label>
+                                <label htmlFor="cityId">Город</label>
                                 <MySelect
-                                    name="city" id="city" value={values.city || 1}
-                                    onChange={value => handleChange("city")(value)}
+                                    name="cityId" id="cityId" value={values.cityId}
+                                    onChange={value => setFieldValue( "cityId", parseInt(value))}
                                     options={cities.map(city => ({ value: city.id, name: city.name }))}
                                 />
                             </div>

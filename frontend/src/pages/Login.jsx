@@ -14,7 +14,6 @@ export const Login = () => {
     const [redirect, setRedirect] = useState(false);
     const [modal, setModal] = useState(false);
     const [error, setError] = useState('');
-    const {isAuth, setIsAuth} = useContext(AuthContext);
 
     const [authInfo, setAuthInfo] = useState({
         login: 'admin@example.com',
@@ -23,9 +22,6 @@ export const Login = () => {
 
     useEffect(() => {
         document.title = "Авторизация - Clockwise Clockware";
-        if(isAuth) {
-            setRedirect(true);
-        }
     }, []);
 
     const login = async event => {
@@ -33,7 +29,6 @@ export const Login = () => {
         const data = await AuthService.auth(authInfo);
         if(data.token) {
             localStorage.setItem('token', data.token);
-            setIsAuth(true);
             setRedirect(true);
         } else {
             localStorage.removeItem('token');

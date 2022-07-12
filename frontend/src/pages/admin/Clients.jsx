@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ClientService } from '../../API/Server';
+import { AuthService, ClientService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -10,6 +10,7 @@ import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { AdminTable } from '../../components/AdminTable/AdminTable';
 import classes from './AdminForm.module.css';
 import { Formik } from 'formik';
+import { Navigate } from 'react-router-dom';
 
 export const Clients = () => {
     const [clients, setClients] = useState([]);
@@ -30,6 +31,8 @@ export const Clients = () => {
     const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState(false);
 
+    const [redirect, setRedirect] = useState(false);
+
     const [fetchClients, isClientsLoading, Error] = useFetching(async () => {
         const clients = await ClientService.getClients(localStorage.getItem('token'));
 
@@ -37,14 +40,32 @@ export const Clients = () => {
     });
 
     useEffect(() => {
-        fetchClients();
         document.title = "Клиенты - Clockwise Clockware";
+
+        async function checkAuth() {
+            if(localStorage.getItem('token')) {
+                try{
+                    await AuthService.checkAuth(localStorage.getItem('token'));
+                } catch(e) {
+                    setRedirect(true);
+                }
+            } else {
+                setRedirect(true);
+            }
+        }
+        checkAuth();
+
+        fetchClients();
     }, []);
 
     useEffect(() => {
         if(idUpd)
             setUpdClient(clients.find(c => c.id === +idUpd));
     }, [idUpd]);
+
+    if (redirect) {
+        return <Navigate push to="/admin/login" />
+    }
 
     const deleteClient = async (event) => {
         try {
@@ -105,7 +126,11 @@ export const Clients = () => {
                             value={updClient}
                             onClick={updateClient} btnTitle={'Изменить'} />
 
-                <AdminTable dataArr={clients} setArray={setClients} setModalUpd={setModalUpd} setIdUpd={setIdUpd} deleteRow={e => deleteClient(e)} />
+                <AdminTable dataArr={clients}
+                            columns={['id', 'Имя', 'Почта']}
+                            btnTitles={['Изменение', 'Удаление']}
+                            btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteClient(e)]}
+                />
 
                 <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
 

@@ -7,7 +7,7 @@ const router = new Router();
 router.post('/order/client', OrderController.addOrderClient);
 
 router.post('/order', authModule.authJWT, OrderController.addOrder);
-router.post('/order/complete', authModule.authJWT, OrderController.completeOrder);
+router.post('/order/status', authModule.authJWT, OrderController.changeStatus);
 router.get('/order', authModule.authJWT, OrderController.getOrders);
 router.get('/order/:id', authModule.authJWT, OrderController.getOrderById);
 router.put('/order', authModule.authJWT, OrderController.updateOrder);

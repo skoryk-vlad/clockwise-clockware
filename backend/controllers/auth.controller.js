@@ -10,7 +10,7 @@ class AuthController {
             })
         }
     
-        return res.status(404).json({ message: 'Username or password incorrect' })
+        return res.status(401).json({ message: 'Username or password incorrect' })
     }
     async check(req, res) {
         res.json({auth: true});

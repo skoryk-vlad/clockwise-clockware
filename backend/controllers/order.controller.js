@@ -1,12 +1,10 @@
 const db = require('../db');
+const sendConfMail = require('../mailer');
+const jwt = require('jsonwebtoken');
 
 const validate = async (props, neededProps) => {
-    let missing = [];
-    neededProps.forEach(prop => {
-        if (!props.hasOwnProperty(prop)) {
-            missing.push(prop);
-        }
-    });
+    const missing = neededProps.filter(prop => !props[prop] && (prop !== 'rating'));
+    
     if (missing.length !== 0) {
         return `Missing propert${missing.length === 1 ? 'y' : 'ies'} '${missing.join(', ')}'`;
     }
@@ -49,38 +47,53 @@ const validate = async (props, neededProps) => {
         }
     }
     
-    if (neededProps.indexOf('city') !== -1) {
-        if(isNaN(props.city)) {
-            return "'city' must be 'integer'";
+    if (neededProps.indexOf('cityId') !== -1) {
+        if(isNaN(props.cityId)) {
+            return "'cityId' must be 'integer'";
         }
-        const city = await db.query('SELECT * FROM city WHERE id=$1', [props.city]);
+        const city = await db.query('SELECT * FROM city WHERE id=$1', [props.cityId]);
         if(city.rows.length === 0) {
             return "No such city";
         }
     }
 
-    if (neededProps.indexOf('master') !== -1) {
-        if(isNaN(props.master)) {
-            return "'master' must be 'integer'";
+    if (neededProps.indexOf('masterId') !== -1) {
+        if(isNaN(props.masterId)) {
+            return "'masterId' must be 'integer'";
         }
-        const master = await db.query('SELECT * FROM master WHERE id=$1', [props.master]);
+        const master = await db.query('SELECT * FROM master WHERE id=$1', [props.masterId]);
         if(master.rows.length === 0) {
             return "No such master";
         }
     }
 
-    if (neededProps.indexOf('client') !== -1) {
-        if(isNaN(props.client)) {
-            return "'client' must be 'integer'";
+    if (neededProps.indexOf('clientId') !== -1) {
+        if(isNaN(props.clientId)) {
+            return "'clientId' must be 'integer'";
         }
-        const client = await db.query('SELECT * FROM client WHERE id=$1', [props.client]);
+        const client = await db.query('SELECT * FROM client WHERE id=$1', [props.clientId]);
         if(client.rows.length === 0) {
             return "No such client";
         }
     }
 
-    if (neededProps.indexOf('completed') !== -1 && (props.completed !== 'true' && props.completed !== 'false')) {
-        return "'completed' must be 'true' or 'false'";
+    if (neededProps.indexOf('statusId') !== -1) {
+        if(isNaN(props.statusId)) {
+            return "'statusId' must be 'integer'";
+        }
+        const status = await db.query('SELECT * FROM status WHERE id=$1', [props.statusId]);
+        if(status.rows.length === 0) {
+            return "No such status";
+        }
+    }
+    
+    if (neededProps.indexOf('rating') !== -1) {
+        if(isNaN(props.rating)) {
+            return "'rating' must be 'integer'";
+        }
+        if(props.rating < 0 || props.rating > 5) {
+            return "'rating' must be between 0 and 5";
+        }
     }
 
     if (neededProps.indexOf('name') !== -1 && props.name.trim().length < 3) {
@@ -99,22 +112,22 @@ const validate = async (props, neededProps) => {
 
 class OrderController {
     async addOrder(req, res) {
-        const error = await validate(req.body, ['client', 'master', 'city', 'watch_size', 'date', 'time', 'completed']);
+        const error = await validate(req.body, ['clientId', 'masterId', 'cityId', 'watch_size', 'date', 'time', 'statusId', 'rating']);
 
         if(error) {
             res.status(400).json(error);
             return;
         }
 
-        const { client, master, city, watch_size, date, time, completed } = req.body;
-        const newOrder = await db.query(`INSERT INTO orders (client_id, master_id, city_id, watch_size, date, time, completed) values ($1, $2, $3, $4, $5, $6, $7) RETURNING * `, [client, master, city, watch_size, date, time, completed]);
-        res.json(newOrder.rows[0]);
+        const { clientId, masterId, cityId, watch_size, date, time, statusId, rating } = req.body;
+        const newOrder = await db.query(`INSERT INTO orders (client_id, master_id, city_id, watch_size, date, time, status_id, rating) values ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING * `, [clientId, masterId, cityId, watch_size, date, time, statusId, rating]);
+        res.status(201).json(newOrder.rows[0]);
     }
     async getOrders(req, res) {
-        let com = 'SELECT o.id, cl.name "client", m.name "master", c.name "city", o.watch_size, o.date, o.time, completed FROM orders o, city c, client cl, master m WHERE o.city_id = c.id AND o.client_id = cl.id AND o.master_id = m.id';
+        let com = 'SELECT o.id, cl.name "client", m.name "master", c.name "city", o.watch_size, o.date, o.time, o.rating, s.name "status" FROM orders o, city c, client cl, master m, status s WHERE o.city_id = c.id AND o.client_id = cl.id AND o.master_id = m.id AND o.status_id = s.id';
 
         const orders = await db.query(com);
-        res.json(orders.rows);
+        res.status(200).json(orders.rows);
     }
     async getOrderById(req, res) {
         const error = await validate(req.params, ['id']);
@@ -126,31 +139,31 @@ class OrderController {
 
         const id = req.params.id;
         const order = await db.query('SELECT * FROM orders WHERE id=$1', [id]);
-        res.json(order.rows[0]);
+        res.status(200).json(order.rows[0]);
     }
     async updateOrder(req, res) {
-        const error = await validate(req.body, ['id', 'client', 'master', 'city', 'watch_size', 'date', 'time', 'completed']);
+        const error = await validate(req.body, ['id', 'clientId', 'masterId', 'cityId', 'watch_size', 'date', 'time', 'statusId', 'rating']);
 
         if(error) {
             res.status(400).json(error);
             return;
         }
 
-        const { id, client, master, city, watch_size, date, time, completed } = req.body;
-        const order = await db.query('UPDATE orders set client_id = $1, master_id = $2, city_id = $3, watch_size = $4, date = $5, time = $6, completed = $8 where id = $7 RETURNING *', [client, master, city, watch_size, date, time, id, completed]);
-        res.json(order.rows[0]);
+        const { id, clientId, masterId, cityId, watch_size, date, time, statusId, rating } = req.body;
+        const order = await db.query('UPDATE orders set client_id = $1, master_id = $2, city_id = $3, watch_size = $4, date = $5, time = $6, status_id = $8, rating = $9 where id = $7 RETURNING *', [clientId, masterId, cityId, watch_size, date, time, id, statusId, rating]);
+        res.status(200).json(order.rows[0]);
     }
-    async completeOrder(req, res) {
-        const error = await validate(req.body, ['id']);
+    async changeStatus(req, res) {
+        const error = await validate(req.body, ['id', 'statusId', 'rating']);
 
         if(error) {
             res.status(400).json(error);
             return;
         }
 
-        const { id } = req.body;
-        const order = await db.query('UPDATE orders set completed = true where id = $1 RETURNING *', [id]);
-        res.json(order.rows[0]);
+        const { id, statusId, rating } = req.body;
+        const order = await db.query('UPDATE orders set status_id = $2, rating = $3 where id = $1 RETURNING *', [id, statusId, rating]);
+        res.status(200).json(order.rows[0]);
     }
     async deleteOrder(req, res) {
         const error = await validate(req.params, ['id']);
@@ -162,30 +175,36 @@ class OrderController {
 
         const id = req.params.id;
         const order = await db.query('DELETE FROM orders WHERE id=$1 RETURNING *', [id]);
-        res.json(order.rows[0]);
+        res.status(200).json(order.rows[0]);
     }
     async addOrderClient(req, res) {
-        const error = await validate(req.body, ['name', 'email', 'master', 'city', 'watch_size', 'date', 'time']);
+        const error = await validate(req.body, ['name', 'email', 'masterId', 'cityId', 'watch_size', 'date', 'time']);
 
         if(error) {
             res.status(400).json(error);
             return;
         }
 
-        const { name, email, master, city, watch_size, date, time } = req.body;
+        const { name, email, masterId, cityId, watch_size, date, time } = req.body;
 
-        let client = (await db.query('SELECT * FROM client WHERE email=$1', [email])).rows;
+        const com = `do $$ declare selected_client client%rowtype;
+                     needed_email client.email%type := '${email}';
+                     begin select * from client into selected_client where email = needed_email;
+                     IF not found THEN INSERT INTO client (name, email) values ('${name}', needed_email);
+                     select * from client into selected_client where email = needed_email; END IF;
+                     INSERT INTO orders (client_id, master_id, city_id, watch_size, date, time)
+                     values (selected_client.id, '${masterId}', '${cityId}', '${watch_size}', '${date}', '${time}'); end $$;
+                     select * from orders where id=(select max(id) from orders);`;
 
-        if(client.length === 0) {
-            client = (await db.query(`INSERT INTO client (name, email) values ($1, $2) RETURNING * `, [name, email])).rows;
-        }
+        const newOrder = await db.query(com);
 
-        const newOrder = await db.query(`INSERT INTO orders (client_id, master_id, city_id, watch_size, date, time) values ($1, $2, $3, $4, $5, $6) RETURNING * `, [client[0].id, master, city, watch_size, date, time]);
-        
-        // let com = 'do $$ declare selected_client client%rowtype; needed_email client.email%type := $1; begin select * from client into selected_client where email = needed_email; IF not found THEN INSERT INTO client (name, email) values ($2, needed_email); select * from client into selected_client where email = needed_email; END IF; INSERT INTO orders (client_id, master_id, city_id, watch_size, date, time) values (selected_client.id, $3, $4, $5, $6, &7); end $$';
-        // await db.query(com, [email, name, master_id, city, watch_size, date, time]);
+        const token = jwt.sign({ orderId: newOrder[1].rows[0].id }, process.env.JWT_TOKEN_KEY, {expiresIn: '1h'});
 
-        res.json(newOrder);
+        const link = `${process.env.BASE_LINK}/confirmation/${token}`;
+    
+        sendConfMail(email, link);
+
+        res.status(201).json(newOrder[1].rows[0]);
     }
 }
 
