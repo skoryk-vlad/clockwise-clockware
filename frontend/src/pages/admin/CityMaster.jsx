@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AuthService, CityService, MasterService } from '../../API/Server';
+import { AuthService, CityMasterService, CityService, MasterService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -11,34 +11,43 @@ import { AdminTable } from '../../components/AdminTable/AdminTable';
 import { Formik } from 'formik';
 import classes from './AdminForm.module.css';
 import { Navigate } from 'react-router-dom';
+import { MySelect } from '../../components/select/MySelect';
 
-export const Masters = () => {
+export const CityMaster = () => {
+    const [connections, setConnections] = useState([]);
+    const [cities, setCities] = useState([]);
     const [masters, setMasters] = useState([]);
 
-    const [newMaster, setNewMaster] = useState({
-        name: ''
+    const [newConnection, setNewConnection] = useState({
+        cityId: 1,
+        masterId: 1
     });
     const [modalAdd, setModalAdd] = useState(false);
 
     const [modalUpd, setModalUpd] = useState(false);
     const [idUpd, setIdUpd] = useState(null);
-    const [updMaster, setUpdMaster] = useState({
-        name: ''
+    const [updConnection, setUpdConnection] = useState({
+        cityId: 1,
+        masterId: 1
     });
-
+    
     const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState(false);
     
     const [redirect, setRedirect] = useState(false);
 
-    const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
+    const [fetchConnections, isConnectionsLoading, Error] = useFetching(async () => {
+        const connections = await CityMasterService.getConnections();
+        const cities = await CityService.getCities();
         const masters = await MasterService.getMasters();
 
+        setConnections(connections);
+        setCities(cities);
         setMasters(masters);
     });
 
     useEffect(() => {
-        document.title = "Мастера - Clockwise Clockware";
+        document.title = "Города и мастера - Clockwise Clockware";
 
         async function checkAuth() {
             if(localStorage.getItem('token')) {
@@ -53,12 +62,21 @@ export const Masters = () => {
         }
         checkAuth();
         
-        fetchMasters();
+        fetchConnections();
     }, []);
 
     useEffect(() => {
-        if(idUpd) {
-            setUpdMaster(masters.find(m => m.id === +idUpd));
+        if (idUpd) {
+            let connection = connections.find(c => c.id === +idUpd);
+            connection = {
+                ...connection,
+                cityId: cities.find(c => c.name === connection.city).id,
+                masterId: masters.find(m => m.name === connection.master).id
+            };
+            ['city', 'master'].forEach(function (k) {
+                delete connection[k];
+            });
+            setUpdConnection(connection);
         }
     }, [idUpd]);
 
@@ -66,37 +84,39 @@ export const Masters = () => {
         return <Navigate push to="/admin/login" />
     }
 
-    const deleteMaster = async (event) => {
+    const deleteConnection = async (event) => {
         try {
             const id = event.target.closest('tr').id;
-            await MasterService.deleteMasterById(id, localStorage.getItem('token'));
-            fetchMasters();
+            await CityMasterService.deleteConnectionById(id, localStorage.getItem('token'));
+            fetchConnections();
         } catch(e) {
             setError(e.response.data);
             setErrorModal(true);
         }
     }
-    const addMaster = async (master) => {
+    const addConnection = async (connection) => {
         try {
-            await MasterService.addMaster(master, localStorage.getItem('token'));
+            await CityMasterService.addConnection(connection, localStorage.getItem('token'));
             setModalAdd(false);
-            setNewMaster({
-                name: ''
+            setNewConnection({
+                cityId: 1,
+                masterId: 1
             });
-            fetchMasters();
+            fetchConnections();
         } catch(e) {
-            setError(e.response.data);
+            setError('e.response.data');
             setErrorModal(true);
         }
     }
-    const updateMaster = async (master) => {
+    const updateConnection = async (connection) => {
         try {
-            await MasterService.updateMasterById(master, localStorage.getItem('token'));
+            await CityMasterService.updateConnectionById(connection, localStorage.getItem('token'));
             setModalUpd(false);
-            setUpdMaster({
-                name: ''
+            setNewConnection({
+                cityId: 1,
+                masterId: 1
             });
-            fetchMasters();
+            fetchConnections();
         } catch(e) {
             setError(e.response.data);
             setErrorModal(true);
@@ -107,7 +127,7 @@ export const Masters = () => {
         <div className='admin-container'>
             <Navbar />
             <div className='admin-body'>
-                <h1 className='admin-body__title'>Мастера</h1>
+                <h1 className='admin-body__title'>Города и мастера</h1>
 
                 <div className="admin-body__btns">
                     <AdminButton onClick={() => setModalAdd(true)}>
@@ -116,17 +136,19 @@ export const Masters = () => {
                 </div>
 
                 <ModalForm modal={modalAdd} setModal={setModalAdd}
-                            value={newMaster}
-                            onClick={addMaster} btnTitle={'Добавить'} />
-
+                            value={newConnection}
+                            cities={cities} masters={masters}
+                            onClick={addConnection} btnTitle={'Добавить'} />
+                
                 <ModalForm modal={modalUpd} setModal={setModalUpd}
-                            value={updMaster}
-                            onClick={updateMaster} btnTitle={'Изменить'} />
+                            value={updConnection}
+                            cities={cities} masters={masters}
+                            onClick={updateConnection} btnTitle={'Изменить'} />
 
-                <AdminTable dataArr={masters}
-                            columns={['id', 'Имя']}
+                <AdminTable dataArr={connections}
+                            columns={['id', 'Город', 'Мастер']}
                             btnTitles={['Изменение', 'Удаление']}
-                            btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteMaster(e)]}
+                            btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteConnection(e)]}
                 />
 
                 <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
@@ -134,38 +156,27 @@ export const Masters = () => {
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>
                 }
-                {masters.length === 0 && !isMastersLoading && !Error &&
+                {connections.length === 0 && !isConnectionsLoading && !Error &&
                     <h2 className='adminError'>Отсутствуют записи</h2>
                 }
-                {isMastersLoading &&
+                {isConnectionsLoading &&
                     <Loader />
                 }
-
             </div>
         </div>
     )
 }
 
-const ModalForm = ({ modal, setModal, value, onClick, btnTitle }) => {
+
+const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, masters }) => {
     const [initialValues, setInitialValues] = useState({
-        name: ''
+        cityId: 1,
+        masterId: 1
     });
 
     useEffect(() => {
         setInitialValues(value)
     }, [value]);
-    
-    const validate = (values) => {
-        let errors = {};
-
-        if (!values.name) {
-            errors.name = "Требуется имя";
-        } else if (values.name.trim().length < 3) {
-            errors.name = "Имя должно быть не короче 3-х букв";
-        }
-
-        return errors;
-    };
 
     const submitForm = async (values, {resetForm}) => {
         resetForm({});
@@ -177,40 +188,35 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle }) => {
             <Formik 
                 enableReinitialize
                 initialValues={initialValues}
-                validate={validate}
                 onSubmit={submitForm}
             >
                 {(formik) => {
                     const {
                         values,
-                        handleChange,
                         handleSubmit,
-                        errors,
-                        touched,
-                        handleBlur,
-                        isValid,
-                        dirty
+                        setFieldValue
                     } = formik;
                     return (
                         <form onSubmit={handleSubmit} className={classes.form}>
                             <div className={classes.formRow}>
-                                <div className={classes.rowTop}>
-                                    <label htmlFor="name">Название</label>
-                                    {errors.name && touched.name && (
-                                        <div className={classes.error}>{errors.name}</div>
-                                    )}
-                                </div>
-                                <MyInput
-                                    type="text" name="name" id="name"
-                                    value={values.name}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    placeholder="Имя мастера..."
+                                <label htmlFor="cityId">Город</label>
+                                <MySelect
+                                    name="cityId" id="cityId" value={values.cityId}
+                                    onChange={value => setFieldValue("cityId", parseInt(value))}
+                                    options={cities.map(city => ({ value: city.id, name: city.name }))}
+                                />
+                            </div>
+
+                            <div className={classes.formRow}>
+                                <label htmlFor="masterId">Мастер</label>
+                                <MySelect
+                                    name="masterId" id="masterId" value={values.masterId}
+                                    onChange={value => setFieldValue("masterId", parseInt(value))}
+                                    options={masters.map(master => ({ value: master.id, name: master.name }))}
                                 />
                             </div>
                             
-                            <AdminButton type="submit" className={!(dirty && isValid) ? "disabledBtn" : ""}
-                                disabled={!(dirty && isValid)}>{btnTitle}</AdminButton>
+                            <AdminButton type="submit" disabled={false}>{btnTitle}</AdminButton>
                         </form>
                     );
                 }}

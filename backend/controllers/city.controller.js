@@ -62,7 +62,13 @@ class CityController {
         }
 
         const { id, name } = req.body;
-        const city = await db.query('UPDATE city set name = $1 where id = $2 RETURNING *', [name, id]);
+
+        let city = await db.query('SELECT * FROM city WHERE name=$1', [name]);
+
+        if(city.rows.length === 0) {
+            city = await db.query('UPDATE city set name = $1 where id = $2 RETURNING *', [name, id]);
+        }
+        
         res.status(200).json(city.rows[0]);
     }
     async deleteCity(req, res) {
@@ -74,9 +80,9 @@ class CityController {
         }
 
         const id = req.params.id;
-        const cityMasters = await db.query('SELECT * FROM master WHERE city_id=$1', [id]);
-        if(cityMasters.rows.length !== 0) {
-            res.status(400).json("There are rows in the table 'master' that depend on this city");
+        const cityConnections = await db.query('SELECT * FROM city_master WHERE city_id=$1', [id]);
+        if(cityConnections.rows.length !== 0) {
+            res.status(400).json("There are rows in the table 'city_master' that depend on this city");
             return;
         }
         const cityOrders = await db.query('SELECT * FROM orders WHERE city_id=$1', [id]);

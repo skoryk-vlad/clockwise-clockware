@@ -3,7 +3,7 @@ const sendConfMail = require('../mailer');
 const jwt = require('jsonwebtoken');
 
 const validate = async (props, neededProps) => {
-    const missing = neededProps.filter(prop => !props[prop] && (prop !== 'rating'));
+    const missing = neededProps.filter(prop => !props[prop] && (prop !== 'rating' || props.rating != 0));
     
     if (missing.length !== 0) {
         return `Missing propert${missing.length === 1 ? 'y' : 'ies'} '${missing.join(', ')}'`;
@@ -120,6 +120,14 @@ class OrderController {
         }
 
         const { clientId, masterId, cityId, watch_size, date, time, statusId, rating } = req.body;
+
+        const overlapsOrders = await db.query('SELECT * FROM orders WHERE city_id=$1 AND date=$2 AND master_id=$5 AND time BETWEEN $3 - watch_size + 1 AND $3 + $4 - 1', [cityId, date, time, watch_size, masterId]);
+
+        if(overlapsOrders.rows.length !== 0) {
+            res.status(400).json("The order overlaps with others. Select another master, date or time");
+            return;
+        }
+
         const newOrder = await db.query(`INSERT INTO orders (client_id, master_id, city_id, watch_size, date, time, status_id, rating) values ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING * `, [clientId, masterId, cityId, watch_size, date, time, statusId, rating]);
         res.status(201).json(newOrder.rows[0]);
     }
@@ -150,6 +158,14 @@ class OrderController {
         }
 
         const { id, clientId, masterId, cityId, watch_size, date, time, statusId, rating } = req.body;
+
+        const overlapsOrders = await db.query('SELECT * FROM orders WHERE city_id=$1 AND date=$2 AND master_id=$5 AND time BETWEEN $3 - watch_size + 1 AND $3 + $4 - 1', [cityId, date, time, watch_size, masterId]);
+
+        if(overlapsOrders.rows.length !== 0 && !overlapsOrders.rows.find(o => o.id = id)) {
+            res.status(400).json("The order overlaps with others. Select another master, date or time");
+            return;
+        }
+        
         const order = await db.query('UPDATE orders set client_id = $1, master_id = $2, city_id = $3, watch_size = $4, date = $5, time = $6, status_id = $8, rating = $9 where id = $7 RETURNING *', [clientId, masterId, cityId, watch_size, date, time, id, statusId, rating]);
         res.status(200).json(order.rows[0]);
     }
@@ -186,6 +202,13 @@ class OrderController {
         }
 
         const { name, email, masterId, cityId, watch_size, date, time } = req.body;
+
+        const overlapsOrders = await db.query('SELECT * FROM orders WHERE city_id=$1 AND date=$2 AND master_id=$5 AND time BETWEEN $3 - watch_size + 1 AND $3 + $4 - 1', [cityId, date, time, watch_size, masterId]);
+
+        if(overlapsOrders.rows.length !== 0) {
+            res.status(400).json("The order overlaps with others. Select another master, date or time");
+            return;
+        }
 
         const com = `do $$ declare selected_client client%rowtype;
                      needed_email client.email%type := '${email}';

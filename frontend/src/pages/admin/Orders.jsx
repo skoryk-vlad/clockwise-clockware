@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CityService, MasterService, ClientService, OrderService, AuthService, StatusService } from '../../API/Server';
+import { CityService, MasterService, ClientService, OrderService, AuthService, StatusService, CityMasterService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -20,6 +20,7 @@ export const Orders = () => {
     const [masters, setMasters] = useState([]);
     const [clients, setClients] = useState([]);
     const [statuses, setStatuses] = useState([]);
+    const [connections, setConnections] = useState([]);
 
     const [newOrder, setNewOrder] = useState({
         clientId: 1,
@@ -66,12 +67,14 @@ export const Orders = () => {
         const masters = await MasterService.getMasters();
         const clients = await ClientService.getClients(localStorage.getItem('token'));
         const statuses = await StatusService.getStatuses();
+        const connections = await CityMasterService.getConnectionsId();
 
         setOrders(orders.map(o => ({ ...o, date: toDate(o.date) })));
         setCities(cities);
         setMasters(masters);
         setClients(clients);
         setStatuses(statuses);
+        setConnections(connections);
     });
 
     useEffect(() => {
@@ -139,6 +142,7 @@ export const Orders = () => {
                 statusId: 1
             });
             fetchOrders();
+            return true;
         } catch (e) {
             setError(e.response.data);
             setErrorModal(true);
@@ -180,13 +184,13 @@ export const Orders = () => {
                 <ModalForm modal={modalAdd} setModal={setModalAdd}
                     value={newOrder} cities={cities}
                     masters={masters} clients={clients}
-                    statuses={statuses}
+                    statuses={statuses} connections={connections}
                     onClick={addOrder} btnTitle={'Добавить'} />
 
                 <ModalForm modal={modalUpd} setModal={setModalUpd}
                     value={updOrder} cities={cities}
                     masters={masters} clients={clients}
-                    statuses={statuses}
+                    statuses={statuses} connections={connections}
                     onClick={updateOrder} btnTitle={'Изменить'} />
 
                 <AdminTable dataArr={orders}
@@ -211,7 +215,7 @@ export const Orders = () => {
     )
 }
 
-const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients, masters, statuses }) => {
+const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients, masters, statuses, connections }) => {
     const [initialValues, setInitialValues] = useState({
         clientId: 1,
         masterId: 1,
@@ -266,8 +270,9 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
     };
 
     const submitForm = async (values, { resetForm }) => {
-        resetForm({});
-        onClick(values);
+        if(await onClick(values)){
+            resetForm({});
+        }
     }
 
     return (
@@ -318,7 +323,7 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                                     name="masterId" id="masterId" value={values.masterId}
                                     onChange={value => setFieldValue("masterId", parseInt(value))}
                                     onBlur={handleBlur}
-                                    options={masters.filter(m => m.city === cities.find(c => c.id === +values.cityId).name).map(master => ({ value: master.id, name: master.name }))}
+                                    options={masters.filter(m => connections.filter(c => c.city_id === values.cityId).map(c => c.master_id).includes(m.id)).map(city => ({ value: city.id, name: city.name }))}
                                 />
                             </div>
                             

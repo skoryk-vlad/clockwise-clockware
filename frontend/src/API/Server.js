@@ -169,3 +169,35 @@ export class StatusService {
         return response.data;
     }
 }
+
+export class CityMasterService {
+    static async getConnections() {
+        const response = await axios.get(`${API_URL}/api/city-master`);
+        return response.data;
+    }
+    static async getConnectionsId() {
+        const response = await axios.get(`${API_URL}/api/city-master/ids`);
+        return response.data;
+    }
+    static async addConnection(connection, token) {
+        const response = await axios.post(`${API_URL}/api/city-master`, connection, {
+            headers: {
+            'Authorization': 'Bearer ' + token
+        }});
+        return response.data;
+    }
+    static async deleteConnectionById(id, token) {
+        const response = await axios.delete(`${API_URL}/api/city-master/${id}`, {
+            headers: {
+            'Authorization': 'Bearer ' + token
+        }});
+        return response.data;
+    }
+    static async updateConnectionById(connection, token) {
+        const response = await axios.put(`${API_URL}/api/city-master`, connection, {
+            headers: {
+            'Authorization': 'Bearer ' + token
+        }});
+        return response.data;
+    }
+}

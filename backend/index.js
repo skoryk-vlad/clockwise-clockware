@@ -9,6 +9,7 @@ const orderRouter = require('./routes/order.routes');
 const authRouter = require('./routes/auth.routes');
 const statusRouter = require('./routes/status.routes');
 const confirmationRouter = require('./routes/confirmation.routes');
+const cityMasterRouter = require('./routes/city-master.routes');
 
 const PORT = process.env.PORT || 3001;
 
@@ -23,6 +24,7 @@ app.use('/api', masterRouter);
 app.use('/api', orderRouter);
 app.use('/api', authRouter.router);
 app.use('/api', statusRouter);
+app.use('/api', cityMasterRouter);
 app.use('/', confirmationRouter);
 
 

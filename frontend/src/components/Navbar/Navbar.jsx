@@ -20,6 +20,7 @@ export const Navbar = () => {
                 <NavLink className = { navData => navData.isActive ? [classes.active, classes.navbar__link].join(' ') : classes.navbar__link } to="/admin/masters">Мастера</NavLink>
                 <NavLink className = { navData => navData.isActive ? [classes.active, classes.navbar__link].join(' ') : classes.navbar__link } to="/admin/clients">Клиенты</NavLink>
                 <NavLink className = { navData => navData.isActive ? [classes.active, classes.navbar__link].join(' ') : classes.navbar__link } to="/admin/orders">Заказы</NavLink>
+                <NavLink className = { navData => navData.isActive ? [classes.active, classes.navbar__link].join(' ') : classes.navbar__link } to="/admin/city-master">Мастера по городам</NavLink>
                 <NavLink onClick={logout} className={classes.navbar__link} to="/">Выйти</NavLink>
             </div>
         </div>
