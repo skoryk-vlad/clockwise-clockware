@@ -29,13 +29,6 @@ export const Header = ({ onClick }) => {
                                 Этапы
                             </Link>
                         </li>
-                        <li className={classes.menuHeader__item}>
-                            <Link className={classes.menuHeader__link}
-                            activeClass={classes.active} to="etaps" spy={true}
-                                smooth={true} offset={-50} duration={500} >
-                                Примеры
-                            </Link>
-                        </li>
                     </ul>
                 </nav>
                 <div className={classes.header__block}>

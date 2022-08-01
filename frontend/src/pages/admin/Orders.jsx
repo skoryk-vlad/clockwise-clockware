@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CityService, MasterService, ClientService, OrderService, AuthService, StatusService, CityMasterService } from '../../API/Server';
+import { CityService, MasterService, ClientService, OrderService, AuthService, StatusService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -15,37 +15,28 @@ import { Formik } from 'formik';
 import { Navigate } from 'react-router-dom';
 
 export const Orders = () => {
+    const defaultOrder = {
+        clientId: 1,
+        masterId: 1,
+        cityId: 1,
+        watch_size: 1,
+        date: '',
+        time: null,
+        rating: 0,
+        statusId: 1
+    };
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
     const [masters, setMasters] = useState([]);
     const [clients, setClients] = useState([]);
     const [statuses, setStatuses] = useState([]);
-    const [connections, setConnections] = useState([]);
 
-    const [newOrder, setNewOrder] = useState({
-        clientId: 1,
-        masterId: 1,
-        cityId: 1,
-        watch_size: 1,
-        date: '',
-        time: null,
-        rating: 0,
-        statusId: 1
-    });
+    const [newOrder, setNewOrder] = useState(defaultOrder);
     const [modalAdd, setModalAdd] = useState(false);
 
     const [modalUpd, setModalUpd] = useState(false);
     const [idUpd, setIdUpd] = useState(null);
-    const [updOrder, setUpdOrder] = useState({
-        clientId: 1,
-        masterId: 1,
-        cityId: 1,
-        watch_size: 1,
-        date: '',
-        time: null,
-        rating: 0,
-        statusId: 1
-    });
+    const [updOrder, setUpdOrder] = useState(defaultOrder);
 
     const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState(false);
@@ -62,42 +53,38 @@ export const Orders = () => {
     }
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        const orders = await OrderService.getOrders(localStorage.getItem('token'));
-        const cities = await CityService.getCities();
-        const masters = await MasterService.getMasters();
-        const clients = await ClientService.getClients(localStorage.getItem('token'));
-        const statuses = await StatusService.getStatuses();
-        const connections = await CityMasterService.getConnectionsId();
+        const orders = await OrderService.getOrders();
 
         setOrders(orders.map(o => ({ ...o, date: toDate(o.date) })));
-        setCities(cities);
-        setMasters(masters);
-        setClients(clients);
-        setStatuses(statuses);
-        setConnections(connections);
     });
 
     useEffect(() => {
         document.title = "Заказы - Clockwise Clockware";
 
         async function checkAuth() {
-            if (localStorage.getItem('token')) {
-                try {
-                    await AuthService.checkAuth(localStorage.getItem('token'));
-                } catch (e) {
-                    setRedirect(true);
-                }
-            } else {
+            try {
+                await AuthService.checkAuth();
+
+                const cities = await CityService.getCities();
+                const masters = await MasterService.getMasters();
+                const clients = await ClientService.getClients();
+                const statuses = await StatusService.getStatuses();
+                
+                setCities(cities);
+                setMasters(masters);
+                setClients(clients);
+                setStatuses(statuses);
+
+                fetchOrders();
+            } catch (e) {
                 setRedirect(true);
             }
         }
         checkAuth();
-
-        fetchOrders();
     }, []);
 
     useEffect(() => {
-        if (idUpd) {
+        if (orders.find(o => o.id === +idUpd)) {
             let order = orders.find(o => o.id === +idUpd);
             order = {
                 ...order,
@@ -111,7 +98,7 @@ export const Orders = () => {
             });
             setUpdOrder(order);
         }
-    }, [idUpd]);
+    }, [idUpd, orders]);
 
     if (redirect) {
         return <Navigate push to="/admin/login" />
@@ -120,7 +107,7 @@ export const Orders = () => {
     const deleteOrder = async (event) => {
         try {
             const id = event.target.closest('tr').id;
-            await OrderService.deleteOrderById(id, localStorage.getItem('token'));
+            await OrderService.deleteOrderById(id);
             fetchOrders();
         } catch (e) {
             setError(e.response.data);
@@ -129,18 +116,9 @@ export const Orders = () => {
     }
     const addOrder = async (order) => {
         try {
-            await OrderService.addOrder(order, localStorage.getItem('token'));
+            await OrderService.addOrder(order);
             setModalAdd(false);
-            setNewOrder({
-                clientId: 1,
-                masterId: 1,
-                cityId: 1,
-                watch_size: 1,
-                date: '',
-                time: null,
-                rating: 0,
-                statusId: 1
-            });
+            setNewOrder(defaultOrder);
             fetchOrders();
             return true;
         } catch (e) {
@@ -150,18 +128,8 @@ export const Orders = () => {
     }
     const updateOrder = async (order) => {
         try {
-            await OrderService.updateOrderById(order, localStorage.getItem('token'));
+            await OrderService.updateOrderById(order);
             setModalUpd(false);
-            setUpdOrder({
-                clientId: 1,
-                masterId: 1,
-                cityId: 1,
-                watch_size: 1,
-                date: '',
-                time: null,
-                rating: 0,
-                statusId: 1
-            });
             fetchOrders();
         } catch (e) {
             setError(e.response.data);
@@ -184,13 +152,13 @@ export const Orders = () => {
                 <ModalForm modal={modalAdd} setModal={setModalAdd}
                     value={newOrder} cities={cities}
                     masters={masters} clients={clients}
-                    statuses={statuses} connections={connections}
+                    statuses={statuses}
                     onClick={addOrder} btnTitle={'Добавить'} />
 
                 <ModalForm modal={modalUpd} setModal={setModalUpd}
                     value={updOrder} cities={cities}
                     masters={masters} clients={clients}
-                    statuses={statuses} connections={connections}
+                    statuses={statuses}
                     onClick={updateOrder} btnTitle={'Изменить'} />
 
                 <AdminTable dataArr={orders}
@@ -215,7 +183,7 @@ export const Orders = () => {
     )
 }
 
-const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients, masters, statuses, connections }) => {
+const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients, masters, statuses }) => {
     const [initialValues, setInitialValues] = useState({
         clientId: 1,
         masterId: 1,
@@ -316,14 +284,14 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                                     options={cities.map(city => ({ value: city.id, name: city.name }))}
                                 />
                             </div>
-
+                            
                             <div className={classes.formRow}>
                                 <label htmlFor="masterId">Мастер</label>
                                 <MySelect
                                     name="masterId" id="masterId" value={values.masterId}
                                     onChange={value => setFieldValue("masterId", parseInt(value))}
                                     onBlur={handleBlur}
-                                    options={masters.filter(m => connections.filter(c => c.city_id === values.cityId).map(c => c.master_id).includes(m.id)).map(city => ({ value: city.id, name: city.name }))}
+                                    options={masters.filter(m => m.cities.includes(values.cityId)).map(city => ({ value: city.id, name: city.name }))}
                                 />
                             </div>
                             

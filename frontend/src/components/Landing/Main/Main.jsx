@@ -26,9 +26,9 @@ export const Main = ({ onClick }) => {
             <Element name='benefits'>
                 <section className={classes.main__benefits}>
                     <div className={classes.benefits__container + ' container'}>
-                        <div className={classes.benefits__top}>
-                            <h2 className={classes.benefits__title}>Почему Clockwise Clockware?</h2>
-                            <div className={classes.benefits__subtitle}>Наши преимущества</div>
+                        <div className={classes.top}>
+                            <h2 className={classes.title}>Почему Clockwise Clockware?</h2>
+                            <div className={classes.subtitle}>Наши преимущества</div>
                         </div>
                         <div name='benefits' className={classes.benefits__items}>
                             <div className={classes.benefits__item + ' ' + classes.itemBenefits}>
@@ -51,6 +51,39 @@ export const Main = ({ onClick }) => {
                                 </div>
                                 <div className={classes.itemBenefits__title}>Качество</div>
                                 <div className={classes.itemBenefits__text}>Специалисты центра ежегодно посещают тренинги по повышению квалификации и используют только новейшее оборудование для ремонта часов. Поэтому наши клиенты могут быть уверены: их часы в надежных руках.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </Element>
+            <Element name='etaps'>
+                <section className={classes.main__etaps}>
+                    <div className={classes.etaps__container + ' container'}>
+                        <div className={classes.top}>
+                            <h2 className={classes.title}>Етапы ремонта часов</h2>
+                            <div className={classes.subtitle}>Что необходимо сделать</div>
+                        </div>
+                        <div name='benefits' className={classes.etaps__items}>
+                            <div className={classes.etaps__item + ' ' + classes.itemEtaps}>
+                                <div className={classes.itemEtaps__icon}>
+                                    <img src="/images/icons/04.png" alt="More insight" />
+                                </div>
+                                <div className={classes.itemEtaps__title}>1. Оформление</div>
+                                <div className={classes.itemEtaps__text}>Оформление заказа с выбором даты, времени, города и указания контактных данных.</div>
+                            </div>
+                            <div className={classes.etaps__item + ' ' + classes.itemEtaps}>
+                                <div className={classes.itemEtaps__icon}>
+                                    <img src="/images/icons/05.png" alt="More personal" />
+                                </div>
+                                <div className={classes.itemEtaps__title}>2. Подтверждение</div>
+                                <div className={classes.itemEtaps__text}>Подтверждение заказа по отправленной на почту ссылке.</div>
+                            </div>
+                            <div className={classes.etaps__item + ' ' + classes.itemEtaps}>
+                                <div className={classes.itemEtaps__icon}>
+                                    <img src="/images/icons/06.png" alt="More effective" />
+                                </div>
+                                <div className={classes.itemEtaps__title}>3. Выполнение</div>
+                                <div className={classes.itemEtaps__text}>Выполнение мастером Вашего заказа в указанное время.</div>
                             </div>
                         </div>
                     </div>

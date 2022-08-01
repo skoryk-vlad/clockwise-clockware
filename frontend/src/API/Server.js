@@ -3,64 +3,58 @@ import axios from 'axios';
 const API_URL = 'https://clockclock-back.herokuapp.com';
 // const API_URL = 'http://localhost:3001';
 
+const api = axios.create({
+    baseURL: `${API_URL}/api`
+});
+
+
+api.interceptors.request.use(config => {
+    if(localStorage.getItem('token')){
+        config.headers['Authorization'] = 'Bearer '+ localStorage.getItem('token');
+    }
+    
+    return config;
+}, error => {
+    return Promise.reject(error);
+});
 
 export class CityService {
     static async getCities() {
         const response = await axios.get(`${API_URL}/api/city`);
+        console.log(response);
         return response.data;
     }
-    static async addCity(name, token) {
-        const response = await axios.post(`${API_URL}/api/city`, {name}, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async addCity(name) {
+        const { data } = await api.post(`/city`, { name });
+        return data;
     }
-    static async deleteCityById(id, token) {
-        const response = await axios.delete(`${API_URL}/api/city/${id}`, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async deleteCityById(id) {
+        const { data } = await api.delete(`/city/${id}`);
+        return data;
     }
-    static async updateCityById(id, name, token) {
-        const response = await axios.put(`${API_URL}/api/city`, { id, name }, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async updateCityById(id, name) {
+        const { data } = await api.put(`/city`, { id, name });
+        return data;
     }
 }
 
 export class MasterService {
     static async getMasters() {
         const response = await axios.get(`${API_URL}/api/master`);
+        console.log(response);
         return response.data;
     }
-    static async addMaster(newMaster, token) {
-        const response = await axios.post(`${API_URL}/api/master`, newMaster, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async addMaster(newMaster) {
+        const { data } = await api.post(`/master`, newMaster);
+        return data;
     }
-    static async deleteMasterById(id, token) {
-        const response = await axios.delete(`${API_URL}/api/master/${id}`, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async deleteMasterById(id) {
+        const { data } = await api.delete(`/master/${id}`);
+        return data;
     }
-    static async updateMasterById(updMaster, token) {
-        const response = await axios.put(`${API_URL}/api/master`, updMaster, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
-    }
-    static async getMastersByCity(city_id) {
-        const response = await axios.get(`${API_URL}/api/master?city_id=${city_id}`);
-        return response.data;
+    static async updateMasterById(updMaster) {
+        const { data } = await api.put(`/master`, updMaster);
+        return data;
     }
     static async getAvailableMasters(cityId, date, time, watch_size) {
         const response = await axios.get(`${API_URL}/api/availmaster?cityId=${cityId}&date=${date}&time=${time}&watch_size=${watch_size}`);
@@ -69,135 +63,71 @@ export class MasterService {
 }
 
 export class ClientService {
-    static async getClients(token) {
-        const response = await axios.get(`${API_URL}/api/client`, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async getClients() {
+        const { data } = await api.get(`/client`);
+        return data;
     }
-    static async addClient(newClient, token) {
-        const response = await axios.post(`${API_URL}/api/client`, newClient, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async addClient(newClient) {
+        const { data } = await api.post(`/client`, newClient);
+        return data;
     }
-    static async deleteClientById(id, token) {
-        const response = await axios.delete(`${API_URL}/api/client/${id}`, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async deleteClientById(id) {
+        const { data } = await api.delete(`/client/${id}`);
+        return data;
     }
-    static async updateClientById(updClient, token) {
-        const response = await axios.put(`${API_URL}/api/client`, updClient, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async updateClientById(updClient) {
+        const { data } = await api.put(`/client`, updClient);
+        return data;
     }
 }
 
 export class OrderService {
-    static async getOrders(token) {
-        const response = await axios.get(`${API_URL}/api/order`, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async getOrders() {
+        const { data } = await api.get(`/order`);
+        return data;
     }
-    static async addOrder(newOrder, token) {
-        const response = await axios.post(`${API_URL}/api/order`, newOrder, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async addOrder(newOrder) {
+        const { data } = await api.post(`/order`, newOrder);
+        return data;
     }
-    static async deleteOrderById(id, token) {
-        const response = await axios.delete(`${API_URL}/api/order/${id}`, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async deleteOrderById(id) {
+        const { data } = await api.delete(`/order/${id}`);
+        return data;
     }
-    static async updateOrderById(updOrder, token) {
-        const response = await axios.put(`${API_URL}/api/order`, updOrder, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async updateOrderById(updOrder) {
+        const { data } = await api.put(`/order`, updOrder);
+        return data;
     }
-    static async changeStatusById(id, statusId, rating, token) {
-        const response = await axios.post(`${API_URL}/api/order/status`, {id, statusId, rating}, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+    static async changeStatusById(id, statusId, rating) {
+        const { data } = await api.post(`/order/status`, { id, statusId, rating });
+        return data;
     }
 
     static async addOrderAndClient(order) {
-        const response = await axios.post(`${API_URL}/api/order/client`, order);
-        
-        return response.data;
+        const { data } = await api.post(`/order/client`, order);
+        return data;
     }
 }
 
 export class AuthService {
     static async auth(authInfo) {
-        try{
+        try {
             const response = await axios.post(`${API_URL}/api/auth`, authInfo);
             return response.data;
-        } catch(e) {
+        } catch (e) {
             return e;
         }
     }
 
-    static async checkAuth(token) {
-        const response = await axios.get(`${API_URL}/api/admin`, {
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
-        });
-        return response.data;
+    static async checkAuth() {
+        const { data } = await api.get(`/admin`);
+        return data;
     }
 }
 
 export class StatusService {
     static async getStatuses() {
-        const response = await axios.get(`${API_URL}/api/status`);
-        return response.data;
-    }
-}
-
-export class CityMasterService {
-    static async getConnections() {
-        const response = await axios.get(`${API_URL}/api/city-master`);
-        return response.data;
-    }
-    static async getConnectionsId() {
-        const response = await axios.get(`${API_URL}/api/city-master/ids`);
-        return response.data;
-    }
-    static async addConnection(connection, token) {
-        const response = await axios.post(`${API_URL}/api/city-master`, connection, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
-    }
-    static async deleteConnectionById(id, token) {
-        const response = await axios.delete(`${API_URL}/api/city-master/${id}`, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
-    }
-    static async updateConnectionById(connection, token) {
-        const response = await axios.put(`${API_URL}/api/city-master`, connection, {
-            headers: {
-            'Authorization': 'Bearer ' + token
-        }});
-        return response.data;
+        const { data } = await api.get(`/status`);
+        return data;
     }
 }

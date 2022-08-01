@@ -1,10 +1,9 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { Navigate } from 'react-router-dom';
 import { AuthService } from '../API/Server';
 import { OrderButton } from '../components/OrderButton/OrderButton';
 import { MyInput } from '../components/input/MyInput';
 import { MyModal } from '../components/modal/MyModal';
-import { AuthContext } from '../context/context'
 import '../styles/App.css';
 import '../styles/reset.css';
 import { useEffect } from 'react';

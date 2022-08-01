@@ -27,3 +27,11 @@
     background-color: #6F2CFF;
     color: #fff;
 }
+select.mySelect option:hover {
+    color: #fff;
+    box-shadow: 0 0 10px 100px #6F2CFF inset;
+}
+select.mySelect option:checked {
+    color: #fff;
+    box-shadow: 0 0 10px 100px #6F2CFF inset;
+}

@@ -13,20 +13,18 @@ import { Formik } from 'formik';
 import { Navigate } from 'react-router-dom';
 
 export const Clients = () => {
-    const [clients, setClients] = useState([]);
-
-    const [newClient, setNewClient] = useState({
+    const defaultClient = {
         name: '',
         email: ''
-    });
+    };
+    const [clients, setClients] = useState([]);
+
+    const [newClient, setNewClient] = useState(defaultClient);
     const [modalAdd, setModalAdd] = useState(false);
 
     const [modalUpd, setModalUpd] = useState(false);
     const [idUpd, setIdUpd] = useState(null);
-    const [updClient, setUpdClient] = useState({
-        name: '',
-        email: ''
-    });
+    const [updClient, setUpdClient] = useState(defaultClient);
 
     const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState(false);
@@ -43,25 +41,20 @@ export const Clients = () => {
         document.title = "Клиенты - Clockwise Clockware";
 
         async function checkAuth() {
-            if(localStorage.getItem('token')) {
-                try{
-                    await AuthService.checkAuth(localStorage.getItem('token'));
-                } catch(e) {
-                    setRedirect(true);
-                }
-            } else {
+            try{
+                await AuthService.checkAuth();
+                fetchClients();
+            } catch(e) {
                 setRedirect(true);
             }
         }
         checkAuth();
-
-        fetchClients();
     }, []);
 
     useEffect(() => {
-        if(idUpd)
+        if(clients.find(c => c.id === +idUpd))
             setUpdClient(clients.find(c => c.id === +idUpd));
-    }, [idUpd]);
+    }, [idUpd, clients]);
 
     if (redirect) {
         return <Navigate push to="/admin/login" />
@@ -70,7 +63,7 @@ export const Clients = () => {
     const deleteClient = async (event) => {
         try {
             const id = event.target.closest('tr').id;
-            await ClientService.deleteClientById(id, localStorage.getItem('token'));
+            await ClientService.deleteClientById(id);
             fetchClients();
         } catch(e) {
             setError(e.response.data);
@@ -79,12 +72,9 @@ export const Clients = () => {
     }
     const addClient = async (client) => {
         try {
-            await ClientService.addClient(client, localStorage.getItem('token'));
+            await ClientService.addClient(client);
             setModalAdd(false);
-            setNewClient({
-                name: '',
-                email: ''
-            });
+            setNewClient(defaultClient);
             fetchClients();
         } catch(e) {
             setError(e.response.data);
@@ -93,12 +83,8 @@ export const Clients = () => {
     }
     const updateClient = async (client) => {
         try {
-            await ClientService.updateClientById(client, localStorage.getItem('token'));
+            await ClientService.updateClientById(client);
             setModalUpd(false);
-            setNewClient({
-                name: '',
-                email: ''
-            });
             fetchClients();
         } catch(e) {
             setError(e.response.data);

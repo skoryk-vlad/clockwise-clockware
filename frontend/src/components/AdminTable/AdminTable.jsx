@@ -54,7 +54,7 @@ export const AdminTable = ({ dataArr, columns, btnTitles, btnFuncs }) => {
                 <tbody>
                     {dataArr.map(el =>
                         <tr key={el.id} id={el.id}>
-                            {colData.map(col => <td key={col}>{String(el[col])}</td>)}
+                            {colData.map(col => <td key={col}>{el[col] || '-'}</td>)}
                             {btnFuncs.map((func, i) => <td key={i} className={classes.adminBody__link}><span onClick={func}>{btnTitles[i]}</span></td>)}
                         </tr>
                     )}

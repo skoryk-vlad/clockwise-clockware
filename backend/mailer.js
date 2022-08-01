@@ -1,4 +1,5 @@
-const nodemailer = require('nodemailer')
+const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken');
 
 let transporter = nodemailer.createTransport({
     service: "Outlook365",
@@ -14,7 +15,11 @@ let transporter = nodemailer.createTransport({
     },
 });
 
-const sendConfMail = async (email, link) => {
+const sendConfMail = async (email, orderId) => {
+    const token = jwt.sign({ orderId }, process.env.JWT_TOKEN_KEY, {expiresIn: '1h'});
+
+    const link = `${process.env.BASE_LINK}/confirmation/${token}`;
+
     return await transporter.sendMail({
         from: '"Clockwise Clockware" <clockwise-clockware@outlook.com>',
         to: email,

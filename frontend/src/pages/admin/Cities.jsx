@@ -37,26 +37,21 @@ export const Cities = () => {
         document.title = "Города - Clockwise Clockware";
 
         async function checkAuth() {
-            if(localStorage.getItem('token')) {
-                try{
-                    await AuthService.checkAuth(localStorage.getItem('token'));
-                } catch(e) {
-                    setRedirect(true);
-                }
-            } else {
+            try{
+                await AuthService.checkAuth();
+                fetchCities();
+            } catch(e) {
                 setRedirect(true);
             }
         }
         checkAuth();
-        
-        fetchCities();
     }, []);
 
     useEffect(() => {
-        if (idUpd)
+        if (cities.find(c => c.id === +idUpd))
             setUpdCity(cities.find(c => c.id === +idUpd).name);
-    }, [idUpd]);
-
+    }, [idUpd, cities]);
+    
     if (redirect) {
         return <Navigate push to="/admin/login" />
     }
@@ -64,7 +59,7 @@ export const Cities = () => {
     const deleteCity = async (event) => {
         try {
             const id = event.target.closest('tr').id;
-            await CityService.deleteCityById(id, localStorage.getItem('token'));
+            await CityService.deleteCityById(id);
             fetchCities();
         } catch(e) {
             setError(e.response.data);
@@ -73,7 +68,7 @@ export const Cities = () => {
     }
     const addCity = async (name) => {
         try {
-            await CityService.addCity(name, localStorage.getItem('token'));
+            await CityService.addCity(name);
             setModalAdd(false);
             setNewCity('');
             fetchCities();
@@ -84,9 +79,8 @@ export const Cities = () => {
     }
     const updateCity = async (name) => {
         try {
-            await CityService.updateCityById(idUpd, name, localStorage.getItem('token'));
+            await CityService.updateCityById(idUpd, name);
             setModalUpd(false);
-            setNewCity('');
             fetchCities();
         } catch(e) {
             setError(e.response.data);

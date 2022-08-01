@@ -41,10 +41,10 @@ export const Admin = () => {
     }
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        const orders = await OrderService.getOrders(localStorage.getItem('token'));
+        const orders = await OrderService.getOrders();
         const cities = await CityService.getCities();
         const masters = await MasterService.getMasters();
-        const clients = await ClientService.getClients(localStorage.getItem('token'));
+        const clients = await ClientService.getClients();
         const statuses = await StatusService.getStatuses();
 
         setOrdersCount(orders.length);
@@ -60,13 +60,9 @@ export const Admin = () => {
         document.title = "Админ-панель - Clockwise Clockware";
 
         async function checkAuth() {
-            if (localStorage.getItem('token')) {
-                try {
-                    await AuthService.checkAuth(localStorage.getItem('token'));
-                } catch (e) {
-                    setRedirect(true);
-                }
-            } else {
+            try {
+                await AuthService.checkAuth();
+            } catch (e) {
                 setRedirect(true);
             }
         }
@@ -79,7 +75,7 @@ export const Admin = () => {
         if (idUpd) {
             let order = orders.find(o => o.id === +idUpd);
             setInitialValues({
-                rating: 0,
+                rating: order.rating,
                 statusId: statuses.find(s => s.name === order.status).id
             })
         }
@@ -90,7 +86,7 @@ export const Admin = () => {
     }
 
     const changeStatus = async (values) => {
-        await OrderService.changeStatusById(idUpd, values.statusId, values.rating, localStorage.getItem('token'));
+        await OrderService.changeStatusById(idUpd, values.statusId, values.rating);
         setModal(false);
         fetchOrders();
     };

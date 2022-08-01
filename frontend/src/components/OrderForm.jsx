@@ -8,7 +8,7 @@ import { NumPicker } from './NumPicker/NumPicker';
 import { Formik } from 'formik';
 import classes from './OrderForm.module.css';
 
-export const OrderForm = ({ setModal }) => {
+export const OrderForm = () => {
     const [isForm, setIsForm] = useState(true);
     const [sended, setSended] = useState(false);
     const [availMasters, setAvailMasters] = useState([]);
@@ -27,15 +27,11 @@ export const OrderForm = ({ setModal }) => {
         const cities = await CityService.getCities();
         const masters = await MasterService.getMasters();
 
-        setCities(cities.filter(c => masters.filter(m => m.city === c.name).length !== 0));
+        setCities(cities.filter(c => masters.find(m => m.cities.includes(c.id))));
     });
     useEffect(() => {
         fetchCities();
     }, []);
-
-    // useEffect(() => {
-    //     setSended(false);
-    // }, [isForm]);
 
     const [initialValues, setInitialValues] = useState({
         name: "",
@@ -107,7 +103,7 @@ export const OrderForm = ({ setModal }) => {
         setOrder(values);
         setChosenMaster(null)
         const availableMasters = await MasterService.getAvailableMasters(values.cityId, values.date, values.time, values.watch_size);
-        setAvailMasters(availableMasters.sort((a, b) => a.rating < b.rating ? 1 : -1).map(m => m.rating ? m : {...m, rating: '-'}));
+        setAvailMasters(availableMasters.map(m => m.rating ? m : {...m, rating: '-'}));
         setIsForm(false);
     }
 
@@ -249,7 +245,7 @@ export const OrderForm = ({ setModal }) => {
                 </div>
             :
             <div className='modalMessage'>Заказ успешно получен! <br/>
-                        Для подтверждения заказа перейдите по ссылке, отправленно на вашу электронную почту!</div>
+                        Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!</div>
             }
         </div>
     )

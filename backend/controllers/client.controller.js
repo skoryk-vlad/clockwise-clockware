@@ -1,33 +1,9 @@
 const db = require('../db');
-
-const validate = (props, neededProps) => {
-    const missing = neededProps.filter(prop => !props[prop]);
-    
-    if (missing.length !== 0) {
-        return `Missing propert${missing.length === 1 ? 'y' : 'ies'} '${missing.join(', ')}'`;
-    }
-
-    if (neededProps.indexOf('id') !== -1 && isNaN(props.id)) {
-        return "'id' must be 'integer'";
-    }
-
-    if (neededProps.indexOf('name') !== -1 && props.name.trim().length < 3) {
-        return "'name' length must be more than 3 characters";
-    }
-
-    if (neededProps.indexOf('email') !== -1) {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-        if (!regex.test(props.email)) {
-            return "Wrong email format";
-        }
-    }
-    
-    return '';
-}
+const validate = require('../validate.js');
 
 class ClientController {
     async addClient(req, res) {
-        const error = validate(req.body, ['name', 'email']);
+        const error = await validate(req.body, ['name', 'email']);
 
         if(error) {
             res.status(400).json(error);
@@ -35,19 +11,15 @@ class ClientController {
         }
         
         const {name, email} = req.body;
-        let client = await db.query('SELECT * FROM client WHERE email=$1', [email]);
-
-        if(client.rows.length === 0) {
-            client = await db.query(`INSERT INTO client (name, email) values ($1, $2) RETURNING * `, [name, email]);
-        }
+        const client = await db.query(`SELECT * FROM addClient($1, $2)`, [name, email]);
         res.status(201).json(client.rows[0]);
     }
     async getClients(req, res) {
-        const clients = await db.query('SELECT * FROM client');
+        const clients = await db.query('SELECT * FROM client ORDER BY id');
         res.status(200).json(clients.rows);
     }
     async getClientById(req, res) {
-        const error = validate(req.params, ['id']);
+        const error = await validate(req.params, ['id']);
 
         if(error) {
             res.status(400).json(error);
@@ -59,7 +31,7 @@ class ClientController {
         res.status(200).json(client.rows[0]);
     }
     async updateClient(req, res) {
-        const error = validate(req.body, ['id', 'name', 'email']);
+        const error = await validate(req.body, ['id', 'name', 'email']);
 
         if(error) {
             res.status(400).json(error);
@@ -67,11 +39,11 @@ class ClientController {
         }
 
         const {id, name, email} = req.body;
-        const client = await db.query('UPDATE client set name = $1, email = $2 where id = $3 RETURNING *', [name, email, id]);
+        const client = await db.query('SELECT * FROM updateClient($1, $2, $3);', [id, name, email]);
         res.status(200).json(client.rows[0]);
     }
     async deleteClient(req, res) {
-        const error = validate(req.params, ['id']);
+        const error = await validate(req.params, ['id']);
 
         if(error) {
             res.status(400).json(error);

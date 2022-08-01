@@ -44,14 +44,14 @@
 
 
 
-.benefits__top {
+.top {
     margin: 0px 0px 46px 0px;
     text-align: center;
 }
-.benefits__title {
+.title {
     font-size: 54px;
 }
-.benefits__subtitle {
+.subtitle {
     font-size: 20px;
     margin: 15px 0px 0px 0px;
 }
@@ -90,7 +90,7 @@
 
 
 .main__order {
-    background-color: #fff;
+    background-color: #eee;
 }
 .order__container {
     display: flex;
@@ -104,4 +104,55 @@
     width: 450px;
     padding: 20px;
     border-width: 3px;
+}
+
+
+.main__etaps {
+
+}
+.etaps__container {
+    padding: 90px 170px;
+}
+.etaps__items {
+    display: flex;
+    margin: 0px -36px;
+}
+.itemEtaps {
+    position: relative;
+    padding: 0px 36px;
+    flex: 0 1 33.333%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.itemEtaps:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    z-index: 1000;
+    bottom: 50%;
+    right: -10%;
+    font-size: 30px;
+    font-weight: bold;
+    transform: translateX(-50%);
+}
+.itemEtaps__icon {
+    width: 50px;
+    height: 50px;
+    overflow: hidden;
+    margin: 0px 0px 42px 0px;
+}
+.itemEtaps__icon img {
+    width: 100%;
+}
+.itemEtaps__title {
+    font-weight: 700;
+    font-size: 19px;
+    line-height: 121%;
+}
+.itemEtaps__title:not(:last-child) {
+    margin: 0px 0px 16px 0px;
+}
+.itemEtaps__text {
+    font-size: 15px;
 }

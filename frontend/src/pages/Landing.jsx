@@ -18,13 +18,13 @@ export const Landing = () => {
         if(document.location.search) {
             const state = document.location.search.slice(1, document.location.search.length);
             if(state === 'success') {
-                setConfconfText('Заказ успешно подтвержден!')
+                setConfconfText('Заказ успешно подтвержден!');
+                setModalConf(true);
             } else if(state === 'error') {
-                setConfconfText('Произошла ошибка!')
+                setConfconfText('Произошла ошибка!');
+                setModalConf(true);
             }
-            setModalConf(true);
         }
-
     }, []);
 
     return (
@@ -35,7 +35,7 @@ export const Landing = () => {
             <TopButton />
             
             <MyModal visible={modal} setVisible={setModal}>
-                <OrderForm setModal={setModal} />
+                <OrderForm />
             </MyModal>
 
             <MyModal visible={modalConf} setVisible={setModalConf}>

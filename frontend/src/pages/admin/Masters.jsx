@@ -11,20 +11,22 @@ import { AdminTable } from '../../components/AdminTable/AdminTable';
 import { Formik } from 'formik';
 import classes from './AdminForm.module.css';
 import { Navigate } from 'react-router-dom';
+import { MySelect } from '../../components/select/MySelect';
 
 export const Masters = () => {
+    const defaultMaster = {
+        name: '',
+        cities: []
+    };
     const [masters, setMasters] = useState([]);
+    const [cities, setCities] = useState([]);
 
-    const [newMaster, setNewMaster] = useState({
-        name: ''
-    });
+    const [newMaster, setNewMaster] = useState(defaultMaster);
     const [modalAdd, setModalAdd] = useState(false);
 
     const [modalUpd, setModalUpd] = useState(false);
     const [idUpd, setIdUpd] = useState(null);
-    const [updMaster, setUpdMaster] = useState({
-        name: ''
-    });
+    const [updMaster, setUpdMaster] = useState(defaultMaster);
 
     const [error, setError] = useState('');
     const [errorModal, setErrorModal] = useState(false);
@@ -33,7 +35,7 @@ export const Masters = () => {
 
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
         const masters = await MasterService.getMasters();
-
+        
         setMasters(masters);
     });
 
@@ -41,26 +43,26 @@ export const Masters = () => {
         document.title = "Мастера - Clockwise Clockware";
 
         async function checkAuth() {
-            if(localStorage.getItem('token')) {
-                try{
-                    await AuthService.checkAuth(localStorage.getItem('token'));
-                } catch(e) {
-                    setRedirect(true);
-                }
-            } else {
+            try{
+                await AuthService.checkAuth();
+
+                const cities = await CityService.getCities();
+
+                setCities(cities);
+                
+                fetchMasters();
+            } catch(e) {
                 setRedirect(true);
             }
         }
         checkAuth();
-        
-        fetchMasters();
     }, []);
 
     useEffect(() => {
-        if(idUpd) {
+        if(masters.find(m => m.id === +idUpd)) {
             setUpdMaster(masters.find(m => m.id === +idUpd));
         }
-    }, [idUpd]);
+    }, [idUpd, masters]);
 
     if (redirect) {
         return <Navigate push to="/admin/login" />
@@ -80,9 +82,7 @@ export const Masters = () => {
         try {
             await MasterService.addMaster(master, localStorage.getItem('token'));
             setModalAdd(false);
-            setNewMaster({
-                name: ''
-            });
+            setNewMaster(defaultMaster);
             fetchMasters();
         } catch(e) {
             setError(e.response.data);
@@ -93,16 +93,13 @@ export const Masters = () => {
         try {
             await MasterService.updateMasterById(master, localStorage.getItem('token'));
             setModalUpd(false);
-            setUpdMaster({
-                name: ''
-            });
             fetchMasters();
         } catch(e) {
             setError(e.response.data);
             setErrorModal(true);
         }
     }
-
+    
     return (
         <div className='admin-container'>
             <Navbar />
@@ -116,15 +113,15 @@ export const Masters = () => {
                 </div>
 
                 <ModalForm modal={modalAdd} setModal={setModalAdd}
-                            value={newMaster}
+                            value={newMaster} cities={cities}
                             onClick={addMaster} btnTitle={'Добавить'} />
 
                 <ModalForm modal={modalUpd} setModal={setModalUpd}
-                            value={updMaster}
+                            value={updMaster} cities={cities}
                             onClick={updateMaster} btnTitle={'Изменить'} />
 
-                <AdminTable dataArr={masters}
-                            columns={['id', 'Имя']}
+                <AdminTable dataArr={masters.map(m => ({...m, cities: m.cities.map(mc => cities.find(c => c.id === mc).name).join(', ')}))}
+                            columns={['id', 'Имя', 'Города', 'Рейтинг']}
                             btnTitles={['Изменение', 'Удаление']}
                             btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteMaster(e)]}
                 />
@@ -146,9 +143,10 @@ export const Masters = () => {
     )
 }
 
-const ModalForm = ({ modal, setModal, value, onClick, btnTitle }) => {
+const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities }) => {
     const [initialValues, setInitialValues] = useState({
-        name: ''
+        name: '',
+        cities: []
     });
 
     useEffect(() => {
@@ -162,6 +160,10 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle }) => {
             errors.name = "Требуется имя";
         } else if (values.name.trim().length < 3) {
             errors.name = "Имя должно быть не короче 3-х букв";
+        }
+        
+        if (values.cities.length === 0) {
+            errors.cities = "Требуется выбрать хотя бы 1 город";
         }
 
         return errors;
@@ -208,11 +210,26 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle }) => {
                                     placeholder="Имя мастера..."
                                 />
                             </div>
+                            <div className={classes.formRow}>
+                                <div className={classes.rowTop}>
+                                    <label htmlFor="cities">Города</label>
+                                    {errors.cities && touched.cities && (
+                                        <div className={classes.error}>{errors.cities}</div>
+                                    )}
+                                </div>
+                                <MySelect multiple={true} size="4"
+                                    name="cities" id="cities" value={values.cities}
+                                    onChange={value => values.cities.includes(parseInt(value)) ? values.cities.splice(values.cities.indexOf(parseInt(value)), 1) : values.cities.push(parseInt(value))}
+                                    onBlur={handleBlur}
+                                    options={cities.map(city => ({ value: city.id, name: city.name }))}
+                                />
+                            </div>
                             
-                            <AdminButton type="submit" className={!(dirty && isValid) ? "disabledBtn" : ""}
-                                disabled={!(dirty && isValid)}>{btnTitle}</AdminButton>
+                            <AdminButton type="submit" className={!((dirty || touched.cities) && isValid) ? "disabledBtn" : ""}
+                                disabled={!((dirty || touched.cities) && isValid)}>{btnTitle}</AdminButton>
                         </form>
                     );
+
                 }}
             </Formik>
         </MyModal>

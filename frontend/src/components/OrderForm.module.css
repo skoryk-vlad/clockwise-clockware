@@ -35,7 +35,7 @@ label {
     justify-content: center;
 }
 .masterItem {
-    height: 150px;
+    /* height: 150px; */
     width: 150px;
     border-radius: 20px;
     font-size: 20px;
@@ -57,15 +57,12 @@ label {
     margin: 0px 0px 10px 0px;
 }
 .masterRating {
-    margin: 0px 0px 25px 0px;
+    margin: auto 0px 25px 0px;
 }
 .active {
     background-color: #ccc;
     border-color: #aaa;
 }
-/* .disabledButton {
-    background-color: ;
-} */
 
 
 .return {
