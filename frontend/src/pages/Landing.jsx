@@ -23,6 +23,12 @@ export const Landing = () => {
             } else if(state === 'error') {
                 setConfconfText('Произошла ошибка!');
                 setModalConf(true);
+            } else if(state === 'expired') {
+                setConfconfText('Истек срок подтверждения заказа!');
+                setModalConf(true);
+            } else if(state === 'confirmed') {
+                setConfconfText('Заказ уже был подтвержден!');
+                setModalConf(true);
             }
         }
     }, []);

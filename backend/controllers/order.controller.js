@@ -104,7 +104,7 @@ class OrderController {
 
         const newOrder = await db.query(`SELECT * FROM addOrderAndClient($1, $2, $3, $4, $5, $6, $7);`, [name, email, masterId, cityId, watch_size, date, time]);
 
-        sendConfMail(email, newOrder.rows[0].id);
+        sendConfMail(email, newOrder.rows[0].id, name);
 
         res.status(201).json(newOrder.rows[0]);
     }

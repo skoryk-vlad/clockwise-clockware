@@ -12,10 +12,16 @@ class ConfirmationController {
         if (token) {
             jwt.verify(token, process.env.JWT_TOKEN_KEY, async (err) => {
                 if (err) {
-                    return res.redirect(`${process.env.CLIENT_LINK}?error`);
+                    return res.redirect(`${process.env.CLIENT_LINK}?expired`);
                 }
                 
                 const orderId = parseJwt(token).orderId;
+
+                const orderConfimed = await db.query('SELECT * FROM orders WHERE id=$1 AND status_id=2', [orderId]);
+                if(orderConfimed.rows.length !== 0) {
+                    return res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
+                }
+
                 await db.query('UPDATE orders set status_id = 2 where id = $1 RETURNING *', [orderId]);
 
                 res.redirect(`${process.env.CLIENT_LINK}?success`);

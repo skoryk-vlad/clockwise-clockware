@@ -1,14 +1,11 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { AuthContext } from '../../context/context';
 import classes from './Navbar.module.css';
 
 export const Navbar = () => {
-    const {isAuth, setIsAuth} = useContext(AuthContext);
 
     const logout = () => {
         localStorage.removeItem('token');
-        setIsAuth(false);
     }
 
     return (

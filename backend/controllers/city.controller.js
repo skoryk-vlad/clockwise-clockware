@@ -16,11 +16,6 @@ class CityController {
     }
     async getCities(req, res) {
         const cities = await db.query('SELECT * FROM city ORDER BY id');
-        // res.set({
-        //     'page-size': 20,
-        //     'Access-Control-Expose-Headers': 'page-size',
-        //     'Access-Control-Allow-Origin': '*'
-        // })
         res.status(200).json(cities.rows);
     }
     async getCityById(req, res) {

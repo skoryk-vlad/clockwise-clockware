@@ -7,7 +7,6 @@ const api = axios.create({
     baseURL: `${API_URL}/api`
 });
 
-
 api.interceptors.request.use(config => {
     if(localStorage.getItem('token')){
         config.headers['Authorization'] = 'Bearer '+ localStorage.getItem('token');
@@ -21,7 +20,6 @@ api.interceptors.request.use(config => {
 export class CityService {
     static async getCities() {
         const response = await axios.get(`${API_URL}/api/city`);
-        console.log(response);
         return response.data;
     }
     static async addCity(name) {
@@ -41,7 +39,6 @@ export class CityService {
 export class MasterService {
     static async getMasters() {
         const response = await axios.get(`${API_URL}/api/master`);
-        console.log(response);
         return response.data;
     }
     static async addMaster(newMaster) {
