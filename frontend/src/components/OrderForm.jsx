@@ -46,6 +46,7 @@ export const OrderForm = () => {
         let errors = {};
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
+        
         if (!values.name) {
             errors.name = "Требуется имя";
         } else if (values.name.length < 3) {
