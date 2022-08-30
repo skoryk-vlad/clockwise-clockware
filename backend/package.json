@@ -4,11 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && set NODE_ENV=local && node build/index.js",
-    "ts": "set NODE_ENV=local && nodemon src/index.ts",
-    "serve": "set NODE_ENV=local && nodemon index.js",
-    "start": "set NODE_ENV=local && node build/index.js",
-    "prod": "set NODE_ENV=prod && nodemon index.js"
+    "build": "tsc && set NODE_ENV=local",
+    "serve": "set NODE_ENV=local && nodemon src/index.ts",
+    "start": "set NODE_ENV=local && node build/index.js"
   },
   "author": "",
   "license": "ISC",

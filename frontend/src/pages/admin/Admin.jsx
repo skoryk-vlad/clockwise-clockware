@@ -28,7 +28,7 @@ export const Admin = () => {
     
     const [initialValues, setInitialValues] = useState({
         rating: 0,
-        status_id: 1
+        status_id: null
     });
 
     const checkZero = (num) => {
