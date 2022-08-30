@@ -23,7 +23,7 @@ export type Order = {
     status_id: Status,
     rating: number
 }
-export type getOrderResponse = {
+export type GetOrderResponse = {
     id: number,
     client: string,
     master: string,
@@ -34,7 +34,7 @@ export type getOrderResponse = {
     status: string,
     rating: number
 }
-export type changeStatusOrderReq = {
+export type ChangeStatusOrderReq = {
     id: number,
     status_id: number,
     rating: number

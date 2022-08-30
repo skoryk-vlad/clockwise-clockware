@@ -1,4 +1,4 @@
-import { Order, Client, getOrderResponse, changeStatusOrderReq } from './../types';
+import { Order, Client, GetOrderResponse, ChangeStatusOrderReq } from './../types';
 import db from './../db';
 import { Request, Response } from 'express';
 import { validate } from '../validate';
@@ -20,7 +20,7 @@ export default class OrderController {
     }
     async getOrders(req: Request, res: Response): Promise<Response> {
         const com: string = 'select o.id, cl.name "client", m.name "master", c.name "city", o.watch_size, o.date, o.time, o.rating, s.name "status" from orders o join client cl on o.client_id = cl.id join master m on o.master_id = m.id join city c on o.city_id = c.id join status s on o.status_id = s.id order by id';
-        const orders: getOrderResponse[] = (await db.query(com)).rows;
+        const orders: GetOrderResponse[] = (await db.query(com)).rows;
         return res.status(200).json(orders);
     }
     async getOrderById(req: Request, res: Response): Promise<Response> {
@@ -29,7 +29,7 @@ export default class OrderController {
         if (error) return res.status(400).json(error);
 
         const id: number = Number(req.params.id);
-        const order: getOrderResponse[] = (await db.query('select o.id, cl.name "client", m.name "master", c.name "city", o.watch_size, o.date, o.time, o.rating, s.name "status" from orders o where o.id = $1 join client cl on o.client_id = cl.id join master m on o.master_id = m.id join city c on o.city_id = c.id join status s on o.status_id = s.id', [id])).rows;
+        const order: GetOrderResponse[] = (await db.query('select o.id, cl.name "client", m.name "master", c.name "city", o.watch_size, o.date, o.time, o.rating, s.name "status" from orders o where o.id = $1 join client cl on o.client_id = cl.id join master m on o.master_id = m.id join city c on o.city_id = c.id join status s on o.status_id = s.id', [id])).rows;
         return res.status(200).json(order[0]);
     }
     async updateOrder(req: Request, res: Response): Promise<Response> {
@@ -50,7 +50,7 @@ export default class OrderController {
 
         if (error) return res.status(400).json(error);
 
-        const { id, status_id, rating }: changeStatusOrderReq = req.body;
+        const { id, status_id, rating }: ChangeStatusOrderReq = req.body;
         const order: Order[] = (await db.query('UPDATE orders set status_id = $2, rating = $3 where id = $1 RETURNING *', [id, status_id, rating])).rows;
         return res.status(200).json(order[0]);
     }
