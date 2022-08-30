@@ -16,14 +16,14 @@ import { Navigate } from 'react-router-dom';
 
 export const Orders = () => {
     const defaultOrder = {
-        client_id: 1,
-        master_id: 1,
-        city_id: 1,
-        watch_size: 1,
+        client_id: null,
+        master_id: null,
+        city_id: null,
+        watch_size: null,
         date: '',
         time: null,
         rating: 0,
-        status_id: 1
+        status_id: null
     };
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
@@ -185,14 +185,14 @@ export const Orders = () => {
 
 const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients, masters, statuses }) => {
     const [initialValues, setInitialValues] = useState({
-        client_id: 1,
-        master_id: 1,
-        city_id: 1,
-        watch_size: 1,
+        client_id: null,
+        master_id: null,
+        city_id: null,
+        watch_size: null,
         date: '',
         time: null,
         rating: 0,
-        status_id: 1
+        status_id: null
     });
 
     useEffect(() => {

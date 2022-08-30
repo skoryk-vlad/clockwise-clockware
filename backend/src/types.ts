@@ -1,38 +1,49 @@
 export type City = {
-    id?: number,
+    id: number,
     name: string
 }
 export type Master = {
-    id?: number,
+    id: number,
     name: string,
     cities: number[]
 }
 export type Client = {
-    id?: number,
+    id: number,
     name: string,
     email: string
 }
-export type OrderId = {
-    id?: number,
+export type Order = {
+    id: number,
     client_id: number,
     master_id: number,
     city_id: number,
     watch_size: number,
-    date: Date | string,
+    date: string,
     time: number,
-    status_id: number,
+    status_id: Status,
     rating: number
 }
-export type Order = {
-    id?: number,
+export type getOrderResponse = {
+    id: number,
     client: string,
     master: string,
     city: string,
     watch_size: number,
-    date: Date | string,
+    date: string,
     time: number,
     status: string,
     rating: number
+}
+export type changeStatusOrderReq = {
+    id: number,
+    status_id: number,
+    rating: number
+}
+export type dbConfig = {
+    connectionString: string,
+    ssl?: {
+        rejectUnauthorized?: boolean
+    }
 }
 export type Status = 1 | 2 | 3 | 4;
 

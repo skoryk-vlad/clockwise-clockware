@@ -1,8 +1,7 @@
-import { Client } from 'pg';
+import { Client, ClientConfig } from 'pg';
 
-const config: any = JSON.parse(process.env.DB_CONNECT);
-if(config?.ssl?.rejectUnauthorized) {
-  config.ssl.rejectUnauthorized = config.ssl.rejectUnauthorized === 'false' ? false : true;
+const config: ClientConfig = {
+  connectionString: process.env.DB_CONNECT
 }
 
 const client: Client = new Client(config);

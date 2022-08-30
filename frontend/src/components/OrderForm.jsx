@@ -37,7 +37,7 @@ export const OrderForm = () => {
         name: "",
         email: "",
         watch_size: 1,
-        city_id: 1,
+        city_id: null,
         date: "",
         time: null
     });
