@@ -37,7 +37,7 @@ export const OrderForm = () => {
         name: "",
         email: "",
         watch_size: 1,
-        cityId: 1,
+        city_id: 1,
         date: "",
         time: null
     });
@@ -59,8 +59,8 @@ export const OrderForm = () => {
             errors.email = "Неправильный формат";
         }
 
-        if (!values.cityId) {
-            errors.cityId = "Требуется выбрать город";
+        if (!values.city_id) {
+            errors.city_id = "Требуется выбрать город";
         }
 
         if (!values.date) {
@@ -81,7 +81,7 @@ export const OrderForm = () => {
     const chooseMaster = (e) => {
         const masterId = e.target.closest(`.mstr_itm`).id;
         setChosenMaster(+masterId);
-        setOrder({...order, masterId: +masterId});
+        setOrder({...order, master_id: +masterId});
     };
     
     const addOrder = async () => {
@@ -94,7 +94,7 @@ export const OrderForm = () => {
             name: "",
             email: "",
             watch_size: 1,
-            cityId: 1,
+            city_id: 1,
             date: "",
             time: null
         });
@@ -103,7 +103,7 @@ export const OrderForm = () => {
         resetForm({});
         setOrder(values);
         setChosenMaster(null)
-        const availableMasters = await MasterService.getAvailableMasters(values.cityId, values.date, values.time, values.watch_size);
+        const availableMasters = await MasterService.getAvailableMasters(values.city_id, values.date, values.time, values.watch_size);
         setAvailMasters(availableMasters.map(m => m.rating ? m : {...m, rating: '-'}));
         setIsForm(false);
     }
@@ -180,10 +180,10 @@ export const OrderForm = () => {
                                 </div>
 
                                 <div className={classes.formRow}>
-                                    <label htmlFor="cityId">Город</label>
+                                    <label htmlFor="city_id">Город</label>
                                     <MySelect onBlur={handleBlur}
-                                        name="cityId" id="cityId" value={values.cityId}
-                                        onChange={value => setFieldValue( "cityId", parseInt(value))}
+                                        name="city_id" id="city_id" value={values.city_id}
+                                        onChange={value => setFieldValue( "city_id", parseInt(value))}
                                         options={cities.map(city => ({ value: city.id, name: city.name }))}
                                     />
                                 </div>
