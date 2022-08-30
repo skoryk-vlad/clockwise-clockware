@@ -51,6 +51,7 @@ export default class OrderController {
         if (error) return res.status(400).json(error);
 
         const { id, status_id, rating }: ChangeStatusOrderReq = req.body;
+        
         const order: Order[] = (await db.query('UPDATE orders set status_id = $2, rating = $3 where id = $1 RETURNING *', [id, status_id, rating])).rows;
         return res.status(200).json(order[0]);
     }
