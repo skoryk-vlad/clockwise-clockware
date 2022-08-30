@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'https://clockclock-back.herokuapp.com';
-// const API_URL = 'http://localhost:3001';
+// const API_URL = 'https://clockclock-back.herokuapp.com';
+const API_URL = 'http://localhost:3001';
 
 const api = axios.create({
     baseURL: `${API_URL}/api`
@@ -53,8 +53,8 @@ export class MasterService {
         const { data } = await api.put(`/master`, updMaster);
         return data;
     }
-    static async getAvailableMasters(cityId, date, time, watch_size) {
-        const response = await axios.get(`${API_URL}/api/availmaster?cityId=${cityId}&date=${date}&time=${time}&watch_size=${watch_size}`);
+    static async getAvailableMasters(city_id, date, time, watch_size) {
+        const response = await axios.get(`${API_URL}/api/availmaster?city_id=${city_id}&date=${date}&time=${time}&watch_size=${watch_size}`);
         return response.data;
     }
 }
@@ -95,8 +95,8 @@ export class OrderService {
         const { data } = await api.put(`/order`, updOrder);
         return data;
     }
-    static async changeStatusById(id, statusId, rating) {
-        const { data } = await api.post(`/order/status`, { id, statusId, rating });
+    static async changeStatusById(id, status_id, rating) {
+        const { data } = await api.post(`/order/status`, { id, status_id, rating });
         return data;
     }
 

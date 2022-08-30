@@ -1,26 +1,26 @@
-const nodemailer = require('nodemailer');
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
+import nodemailer, { Transporter, SentMessageInfo } from 'nodemailer';
 
-let transporter = nodemailer.createTransport({
+const transporter: Transporter = nodemailer.createTransport({
     service: "Outlook365",
     host: "smtp.office365.com",
-    port: "587",
+    port: 587,
     tls: {
         ciphers: "SSLv3",
         rejectUnauthorized: false,
     },
     auth: {
         user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
-    },
+        pass: process.env.MAIL_PASS
+    }
 });
 
-const sendConfMail = async (email, orderId, name) => {
-    const token = jwt.sign({ orderId }, process.env.JWT_TOKEN_KEY, {expiresIn: '3h'});
+const sendConfMail = async (email: string, order_id: number, name: string): Promise<SentMessageInfo> => {
+    const token: string = jwt.sign({ order_id }, process.env.JWT_TOKEN_KEY, { expiresIn: '3h' });
 
-    const link = `${process.env.BASE_LINK}/confirmation/${token}`;
+    const link: string = `${process.env.BASE_LINK}/api/confirmation/${token}`;
 
-    const html = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
+    const html: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
         <div style="max-width: 600px; background-color: #fff; margin: auto; border: 1px solid lightgray; border-radius: 2px;">
             <div style="overflow: hidden; height: 40px; display: flex; align-items: center; padding: 10px;">
                 <a href="${process.env.CLIENT_LINK}" style="overflow: hidden; width: 40px; height: 40px; cursor: pointer;">
@@ -44,7 +44,7 @@ const sendConfMail = async (email, orderId, name) => {
         to: email,
         subject: 'Confirmation',
         html: html
-    })
+    });
 }
 
-module.exports = sendConfMail;
+export { sendConfMail };

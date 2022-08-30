@@ -16,14 +16,14 @@ import { Navigate } from 'react-router-dom';
 
 export const Orders = () => {
     const defaultOrder = {
-        clientId: 1,
-        masterId: 1,
-        cityId: 1,
-        watch_size: 1,
+        client_id: null,
+        master_id: null,
+        city_id: null,
+        watch_size: null,
         date: '',
         time: null,
         rating: 0,
-        statusId: 1
+        status_id: null
     };
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
@@ -88,10 +88,10 @@ export const Orders = () => {
             let order = orders.find(o => o.id === +idUpd);
             order = {
                 ...order,
-                cityId: cities.find(c => c.name === order.city).id,
-                masterId: masters.find(m => m.name === order.master).id,
-                clientId: clients.find(c => c.name === order.client).id,
-                statusId: statuses.find(s => s.name === order.status).id
+                city_id: cities.find(c => c.name === order.city).id,
+                master_id: masters.find(m => m.name === order.master).id,
+                client_id: clients.find(c => c.name === order.client).id,
+                status_id: statuses.find(s => s.name === order.status).id
             };
             ['city', 'master', 'client', 'status'].forEach(function (k) {
                 delete order[k];
@@ -185,14 +185,14 @@ export const Orders = () => {
 
 const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients, masters, statuses }) => {
     const [initialValues, setInitialValues] = useState({
-        clientId: 1,
-        masterId: 1,
-        cityId: 1,
-        watch_size: 1,
+        client_id: null,
+        master_id: null,
+        city_id: null,
+        watch_size: null,
         date: '',
         time: null,
         rating: 0,
-        statusId: 1
+        status_id: null
     });
 
     useEffect(() => {
@@ -202,13 +202,13 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
     const validate = (values) => {
         let errors = {};
 
-        if (!values.clientId) {
-            errors.clientId = "Требуется клиент";
+        if (!values.client_id) {
+            errors.client_id = "Требуется клиент";
         }
-        if (!values.masterId) {
-            errors.masterId = "Требуется мастер";
+        if (!values.master_id) {
+            errors.master_id = "Требуется мастер";
         }
-        if (!values.cityId) {
+        if (!values.city_id) {
             errors.city = "Требуется город";
         }
         if (!values.watch_size) {
@@ -230,8 +230,8 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
             errors.rating = "Рейтинг должен быть целым числом";
         }
 
-        if (!values.statusId) {
-            errors.statusId = "Требуется выбрать статус";
+        if (!values.status_id) {
+            errors.status_id = "Требуется выбрать статус";
         }
 
         return errors;
@@ -266,32 +266,32 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                     return (
                         <form onSubmit={handleSubmit} className={classes.form}>
                             <div className={classes.formRow}>
-                                <label htmlFor="clientId">Клиент</label>
+                                <label htmlFor="client_id">Клиент</label>
                                 <MySelect
-                                    name="clientId" id="clientId" value={values.clientId}
-                                    onChange={value => setFieldValue("clientId", parseInt(value))}
+                                    name="client_id" id="client_id" value={values.client_id}
+                                    onChange={value => setFieldValue("client_id", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={clients.map(client => ({ value: client.id, name: `${client.name} (${client.email})` }))}
                                 />
                             </div>
 
                             <div className={classes.formRow}>
-                                <label htmlFor="cityId">Город</label>
+                                <label htmlFor="city_id">Город</label>
                                 <MySelect
-                                    name="cityId" id="cityId" value={values.cityId}
-                                    onChange={value => setFieldValue("cityId", parseInt(value))}
+                                    name="city_id" id="city_id" value={values.city_id}
+                                    onChange={value => setFieldValue("city_id", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={cities.map(city => ({ value: city.id, name: city.name }))}
                                 />
                             </div>
                             
                             <div className={classes.formRow}>
-                                <label htmlFor="masterId">Мастер</label>
+                                <label htmlFor="master_id">Мастер</label>
                                 <MySelect
-                                    name="masterId" id="masterId" value={values.masterId}
-                                    onChange={value => setFieldValue("masterId", parseInt(value))}
+                                    name="master_id" id="master_id" value={values.master_id}
+                                    onChange={value => setFieldValue("master_id", parseInt(value))}
                                     onBlur={handleBlur}
-                                    options={masters.filter(m => m.cities.includes(values.cityId)).map(city => ({ value: city.id, name: city.name }))}
+                                    options={masters.filter(m => m.cities.includes(values.city_id)).map(city => ({ value: city.id, name: city.name }))}
                                 />
                             </div>
                             
@@ -347,10 +347,10 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                             </div>
                             
                             <div className={classes.formRow}>
-                                <label htmlFor="statusId">Статус</label>
+                                <label htmlFor="status_id">Статус</label>
                                 <MySelect
-                                    name="statusId" id="statusId" value={values.statusId}
-                                    onChange={value => setFieldValue("statusId", parseInt(value))}
+                                    name="status_id" id="status_id" value={values.status_id}
+                                    onChange={value => setFieldValue("status_id", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={statuses.map(status => ({ value: status.id, name: status.name }))}
                                 />

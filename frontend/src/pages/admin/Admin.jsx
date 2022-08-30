@@ -28,7 +28,7 @@ export const Admin = () => {
     
     const [initialValues, setInitialValues] = useState({
         rating: 0,
-        statusId: 1
+        status_id: null
     });
 
     const checkZero = (num) => {
@@ -76,7 +76,7 @@ export const Admin = () => {
             let order = orders.find(o => o.id === +idUpd);
             setInitialValues({
                 rating: order.rating,
-                statusId: statuses.find(s => s.name === order.status).id
+                status_id: statuses.find(s => s.name === order.status).id
             })
         }
     }, [idUpd]);
@@ -86,7 +86,7 @@ export const Admin = () => {
     }
 
     const changeStatus = async (values) => {
-        await OrderService.changeStatusById(idUpd, values.statusId, values.rating);
+        await OrderService.changeStatusById(idUpd, values.status_id, values.rating);
         setModal(false);
         fetchOrders();
     };
@@ -103,8 +103,8 @@ export const Admin = () => {
             errors.rating = "Рейтинг должен быть целым числом";
         }
 
-        if (!values.statusId) {
-            errors.statusId = "Требуется выбрать статус";
+        if (!values.status_id) {
+            errors.status_id = "Требуется выбрать статус";
         }
 
         return errors;
@@ -187,10 +187,10 @@ export const Admin = () => {
                                     placeholder="Рейтинг..."
                                 />
                             
-                                <label htmlFor="statusId">Статус</label>
+                                <label htmlFor="status_id">Статус</label>
                                 <MySelect
-                                    name="statusId" id="statusId" value={values.statusId}
-                                    onChange={value => setFieldValue("statusId", parseInt(value))}
+                                    name="status_id" id="status_id" value={values.status_id}
+                                    onChange={value => setFieldValue("status_id", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={statuses.map(status => ({ value: status.id, name: status.name }))}
                                 />

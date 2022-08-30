@@ -1,7 +1,9 @@
-const db = require('./db');
+import { Client } from 'pg';
+import { City, Master, Status } from './types';
+import db from './db';
 
-const validate = async (props, neededProps) => {
-    const missing = neededProps.filter(prop => !props[prop] && (prop !== 'rating' || props.rating != 0));
+export const validate = async (props: any, neededProps: string[]): Promise<string> => {
+    const missing: string[] = neededProps.filter(prop => !props[prop] && (prop !== 'rating' || props.rating != 0));
     
     if (missing.length !== 0) {
         return `Missing propert${missing.length === 1 ? 'y' : 'ies'} '${missing.join(', ')}'`;
@@ -16,15 +18,19 @@ const validate = async (props, neededProps) => {
     }
 
     if (neededProps.indexOf('email') !== -1) {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+        const regex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
         if (!regex.test(props.email)) {
             return "Wrong email format";
         }
     }
 
     if (neededProps.indexOf('cities') !== -1) {
-        const cities = await db.query('SELECT * FROM city');
-        const noCities = props.cities.filter(ca => !(cities.rows.find(c => c.id === ca)));
+        if(!Array.isArray(props.cities)) {
+            return `'cities' must be array of integers`;
+        }
+        
+        const cities: City[] = (await db.query('SELECT * FROM city')).rows;
+        const noCities: number[] = props.cities.filter((ca: number) => !(cities.find(c => c.id === ca)));
         
         if(noCities.length !== 0) {
             return `No cit${noCities.length === 1 ? 'y' : 'ies'} '${noCities.join(', ')}'`;
@@ -50,7 +56,8 @@ const validate = async (props, neededProps) => {
     }
 
     if (neededProps.indexOf('date') !== -1) {
-        const date = props.date.split('-')
+        const date: number[] = props.date.split('-');
+        
         if(date.length !== 3) {
             return "Wrong date format";
         }
@@ -65,42 +72,42 @@ const validate = async (props, neededProps) => {
         }
     }
     
-    if (neededProps.indexOf('cityId') !== -1) {
-        if(isNaN(props.cityId)) {
-            return "'cityId' must be 'integer'";
+    if (neededProps.indexOf('city_id') !== -1) {
+        if(isNaN(props.city_id)) {
+            return "'city_id' must be 'integer'";
         }
-        const city = await db.query('SELECT * FROM city WHERE id=$1', [props.cityId]);
-        if(city.rows.length === 0) {
+        const city: City[] = (await db.query('SELECT * FROM city WHERE id=$1', [props.city_id])).rows;
+        if(city.length === 0) {
             return "No such city";
         }
     }
 
-    if (neededProps.indexOf('masterId') !== -1) {
-        if(isNaN(props.masterId)) {
-            return "'masterId' must be 'integer'";
+    if (neededProps.indexOf('master_id') !== -1) {
+        if(isNaN(props.master_id)) {
+            return "'master_id' must be 'integer'";
         }
-        const master = await db.query('SELECT * FROM master WHERE id=$1', [props.masterId]);
-        if(master.rows.length === 0) {
+        const master: Master[] = (await db.query('SELECT * FROM master WHERE id=$1', [props.master_id])).rows;
+        if(master.length === 0) {
             return "No such master";
         }
     }
 
-    if (neededProps.indexOf('clientId') !== -1) {
-        if(isNaN(props.clientId)) {
-            return "'clientId' must be 'integer'";
+    if (neededProps.indexOf('client_id') !== -1) {
+        if(isNaN(props.client_id)) {
+            return "'client_id' must be 'integer'";
         }
-        const client = await db.query('SELECT * FROM client WHERE id=$1', [props.clientId]);
-        if(client.rows.length === 0) {
+        const client: Client[] = (await db.query('SELECT * FROM client WHERE id=$1', [props.client_id])).rows;
+        if(client.length === 0) {
             return "No such client";
         }
     }
 
-    if (neededProps.indexOf('statusId') !== -1) {
-        if(isNaN(props.statusId)) {
-            return "'statusId' must be 'integer'";
+    if (neededProps.indexOf('status_id') !== -1) {
+        if(isNaN(props.status_id)) {
+            return "'status_id' must be 'integer'";
         }
-        const status = await db.query('SELECT * FROM status WHERE id=$1', [props.statusId]);
-        if(status.rows.length === 0) {
+        const status: Status[] = (await db.query('SELECT * FROM status WHERE id=$1', [props.status_id])).rows;
+        if(status.length === 0) {
             return "No such status";
         }
     }
@@ -116,5 +123,3 @@ const validate = async (props, neededProps) => {
     
     return '';
 };
-
-module.exports = validate;
