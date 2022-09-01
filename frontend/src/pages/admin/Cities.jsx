@@ -28,7 +28,14 @@ export const Cities = () => {
     const [redirect, setRedirect] = useState(false);
 
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
-        const cities = await CityService.getCities();
+        let cities = await CityService.getCities();
+
+        cities = cities.map(c => {
+            ['createdAt', 'updatedAt'].forEach(function (k) {
+                delete c[k];
+            });
+            return c;
+        });
 
         setCities(cities);
     });

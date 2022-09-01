@@ -16,14 +16,14 @@ import { Navigate } from 'react-router-dom';
 
 export const Orders = () => {
     const defaultOrder = {
-        client_id: null,
-        master_id: null,
-        city_id: null,
-        watch_size: null,
+        clientId: null,
+        masterId: null,
+        cityId: null,
+        watchSize: null,
         date: '',
         time: null,
         rating: 0,
-        status_id: null
+        statusId: null
     };
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
@@ -53,9 +53,24 @@ export const Orders = () => {
     }
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        const orders = await OrderService.getOrders();
+        let orders = await OrderService.getOrders();
 
-        setOrders(orders.map(o => ({ ...o, date: toDate(o.date) })));
+        orders = orders.map(o => {
+            let order = {
+                ...o,
+                date: toDate(o.date),
+                city: o.City.name,
+                client: o.Client.name,
+                master: o.Master.name,
+                status: o.Status.name,
+            };
+            ['City', 'Master', 'Client', 'Status', 'cityId', 'masterId', 'clientId', 'statusId', 'createdAt', 'updatedAt'].forEach(function (k) {
+                delete order[k];
+            });
+            return order;
+        });
+
+        setOrders(orders);
     });
 
     useEffect(() => {
@@ -64,12 +79,11 @@ export const Orders = () => {
         async function checkAuth() {
             try {
                 await AuthService.checkAuth();
-
                 const cities = await CityService.getCities();
                 const masters = await MasterService.getMasters();
                 const clients = await ClientService.getClients();
                 const statuses = await StatusService.getStatuses();
-                
+
                 setCities(cities);
                 setMasters(masters);
                 setClients(clients);
@@ -88,10 +102,10 @@ export const Orders = () => {
             let order = orders.find(o => o.id === +idUpd);
             order = {
                 ...order,
-                city_id: cities.find(c => c.name === order.city).id,
-                master_id: masters.find(m => m.name === order.master).id,
-                client_id: clients.find(c => c.name === order.client).id,
-                status_id: statuses.find(s => s.name === order.status).id
+                cityId: cities.find(c => c.name === order.city).id,
+                masterId: masters.find(m => m.name === order.master).id,
+                clientId: clients.find(c => c.name === order.client).id,
+                statusId: statuses.find(s => s.name === order.status).id
             };
             ['city', 'master', 'client', 'status'].forEach(function (k) {
                 delete order[k];
@@ -162,7 +176,7 @@ export const Orders = () => {
                     onClick={updateOrder} btnTitle={'Изменить'} />
 
                 <AdminTable dataArr={orders}
-                    columns={['id', 'Клиент', 'Мастер', 'Город', 'Размер часов', 'Дата', 'Время', 'Рейтинг', 'Статус']}
+                    columns={['id', 'Размер часов', 'Дата', 'Время', 'Рейтинг', 'Город', 'Клиент', 'Мастер', 'Статус']}
                     btnTitles={['Изменение', 'Удаление']}
                     btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteOrder(e)]}
                 />
@@ -185,14 +199,14 @@ export const Orders = () => {
 
 const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients, masters, statuses }) => {
     const [initialValues, setInitialValues] = useState({
-        client_id: null,
-        master_id: null,
-        city_id: null,
-        watch_size: null,
+        clientId: null,
+        masterId: null,
+        cityId: null,
+        watchSize: null,
         date: '',
         time: null,
         rating: 0,
-        status_id: null
+        statusId: null
     });
 
     useEffect(() => {
@@ -202,17 +216,17 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
     const validate = (values) => {
         let errors = {};
 
-        if (!values.client_id) {
-            errors.client_id = "Требуется клиент";
+        if (!values.clientId) {
+            errors.clientId = "Требуется клиент";
         }
-        if (!values.master_id) {
-            errors.master_id = "Требуется мастер";
+        if (!values.masterId) {
+            errors.masterId = "Требуется мастер";
         }
-        if (!values.city_id) {
+        if (!values.cityId) {
             errors.city = "Требуется город";
         }
-        if (!values.watch_size) {
-            errors.watch_size = "Требуется размер часов";
+        if (!values.watchSize) {
+            errors.watchSize = "Требуется размер часов";
         }
         if (!values.date) {
             errors.date = "Требуется выбрать дату";
@@ -230,15 +244,15 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
             errors.rating = "Рейтинг должен быть целым числом";
         }
 
-        if (!values.status_id) {
-            errors.status_id = "Требуется выбрать статус";
+        if (!values.statusId) {
+            errors.statusId = "Требуется выбрать статус";
         }
 
         return errors;
     };
 
     const submitForm = async (values, { resetForm }) => {
-        if(await onClick(values)){
+        if (await onClick(values)) {
             resetForm({});
         }
     }
@@ -266,41 +280,41 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                     return (
                         <form onSubmit={handleSubmit} className={classes.form}>
                             <div className={classes.formRow}>
-                                <label htmlFor="client_id">Клиент</label>
+                                <label htmlFor="clientId">Клиент</label>
                                 <MySelect
-                                    name="client_id" id="client_id" value={values.client_id}
-                                    onChange={value => setFieldValue("client_id", parseInt(value))}
+                                    name="clientId" id="clientId" value={values.clientId}
+                                    onChange={value => setFieldValue("clientId", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={clients.map(client => ({ value: client.id, name: `${client.name} (${client.email})` }))}
                                 />
                             </div>
 
                             <div className={classes.formRow}>
-                                <label htmlFor="city_id">Город</label>
+                                <label htmlFor="cityId">Город</label>
                                 <MySelect
-                                    name="city_id" id="city_id" value={values.city_id}
-                                    onChange={value => setFieldValue("city_id", parseInt(value))}
+                                    name="cityId" id="cityId" value={values.cityId}
+                                    onChange={value => setFieldValue("cityId", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={cities.map(city => ({ value: city.id, name: city.name }))}
                                 />
                             </div>
-                            
+
                             <div className={classes.formRow}>
-                                <label htmlFor="master_id">Мастер</label>
+                                <label htmlFor="masterId">Мастер</label>
                                 <MySelect
-                                    name="master_id" id="master_id" value={values.master_id}
-                                    onChange={value => setFieldValue("master_id", parseInt(value))}
+                                    name="masterId" id="masterId" value={values.masterId}
+                                    onChange={value => setFieldValue("masterId", parseInt(value))}
                                     onBlur={handleBlur}
-                                    options={masters.filter(m => m.cities.includes(values.city_id)).map(city => ({ value: city.id, name: city.name }))}
+                                    options={masters.filter(m => m.cities.includes(values.cityId)).map(city => ({ value: city.id, name: city.name }))}
                                 />
                             </div>
-                            
+
                             <div className={classes.formRow}>
-                                <label htmlFor="watch_size">Размер часов</label>
-                                <NumPicker name="watch_size" id="watch_size"
+                                <label htmlFor="watchSize">Размер часов</label>
+                                <NumPicker name="watchSize" id="watchSize"
                                     from='1' to='3' onBlur={handleBlur}
-                                    value={values.watch_size}
-                                    onClick={e => setFieldValue("watch_size", parseInt(e.target.dataset.num))}
+                                    value={values.watchSize}
+                                    onClick={e => setFieldValue("watchSize", parseInt(e.target.dataset.num))}
                                 />
                             </div>
 
@@ -324,7 +338,7 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                                     )}
                                 </div>
                                 <NumPicker name="time" id="time" onBlur={handleBlur}
-                                    from='10' to='18' count={values.watch_size}
+                                    from='10' to='18' count={values.watchSize}
                                     value={values.time}
                                     onClick={e => setFieldValue("time", parseInt(e.target.dataset.num))}
                                 />
@@ -345,12 +359,12 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                                     placeholder="Рейтинг..."
                                 />
                             </div>
-                            
+
                             <div className={classes.formRow}>
-                                <label htmlFor="status_id">Статус</label>
+                                <label htmlFor="statusId">Статус</label>
                                 <MySelect
-                                    name="status_id" id="status_id" value={values.status_id}
-                                    onChange={value => setFieldValue("status_id", parseInt(value))}
+                                    name="statusId" id="statusId" value={values.statusId}
+                                    onChange={value => setFieldValue("statusId", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={statuses.map(status => ({ value: status.id, name: status.name }))}
                                 />

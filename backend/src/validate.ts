@@ -1,6 +1,7 @@
-import { Client } from 'pg';
-import { City, Master, Status } from './types';
-import db from './db';
+import { Client } from './models/client.model';
+import { Status } from './models/status.model';
+import { City } from './models/city.model';
+import { Master } from './models/master.model';
 
 export const validate = async (props: any, neededProps: string[]): Promise<string> => {
     const missing: string[] = neededProps.filter(prop => !props[prop] && (prop !== 'rating' || props.rating != 0));
@@ -29,20 +30,20 @@ export const validate = async (props: any, neededProps: string[]): Promise<strin
             return `'cities' must be array of integers`;
         }
         
-        const cities: City[] = (await db.query('SELECT * FROM city')).rows;
-        const noCities: number[] = props.cities.filter((ca: number) => !(cities.find(c => c.id === ca)));
+        const cities = await City.findAll();
+        const noCities: number[] = props.cities.filter((ca: number) => !(cities.find(c => c.getDataValue('id') === ca)));
         
         if(noCities.length !== 0) {
             return `No cit${noCities.length === 1 ? 'y' : 'ies'} '${noCities.join(', ')}'`;
         }
     }
 
-    if (neededProps.indexOf('watch_size') !== -1) {
-        if(isNaN(props.watch_size)) {
-            return "'watch_size' must be 'integer'";
+    if (neededProps.indexOf('watchSize') !== -1) {
+        if(isNaN(props.watchSize)) {
+            return "'watchSize' must be 'integer'";
         }
-        if(props.watch_size < 1 || props.watch_size > 3) {
-            return "'watch_size' must be between 1 and 3";
+        if(props.watchSize < 1 || props.watchSize > 3) {
+            return "'watchSize' must be between 1 and 3";
         }
     }
 
@@ -72,42 +73,42 @@ export const validate = async (props: any, neededProps: string[]): Promise<strin
         }
     }
     
-    if (neededProps.indexOf('city_id') !== -1) {
-        if(isNaN(props.city_id)) {
-            return "'city_id' must be 'integer'";
+    if (neededProps.indexOf('cityId') !== -1) {
+        if(isNaN(props.cityId)) {
+            return "'cityId' must be 'integer'";
         }
-        const city: City[] = (await db.query('SELECT * FROM city WHERE id=$1', [props.city_id])).rows;
-        if(city.length === 0) {
+        const city = City.findByPk(props.cityId);
+        if(!city) {
             return "No such city";
         }
     }
 
-    if (neededProps.indexOf('master_id') !== -1) {
-        if(isNaN(props.master_id)) {
-            return "'master_id' must be 'integer'";
+    if (neededProps.indexOf('masterId') !== -1) {
+        if(isNaN(props.masterId)) {
+            return "'masterId' must be 'integer'";
         }
-        const master: Master[] = (await db.query('SELECT * FROM master WHERE id=$1', [props.master_id])).rows;
-        if(master.length === 0) {
+        const master = Master.findByPk(props.masterId);
+        if(!master) {
             return "No such master";
         }
     }
 
-    if (neededProps.indexOf('client_id') !== -1) {
-        if(isNaN(props.client_id)) {
-            return "'client_id' must be 'integer'";
+    if (neededProps.indexOf('clientId') !== -1) {
+        if(isNaN(props.clientId)) {
+            return "'clientId' must be 'integer'";
         }
-        const client: Client[] = (await db.query('SELECT * FROM client WHERE id=$1', [props.client_id])).rows;
-        if(client.length === 0) {
+        const client = Client.findByPk(props.clientId);
+        if(!client) {
             return "No such client";
         }
     }
 
-    if (neededProps.indexOf('status_id') !== -1) {
-        if(isNaN(props.status_id)) {
-            return "'status_id' must be 'integer'";
+    if (neededProps.indexOf('statusId') !== -1) {
+        if(isNaN(props.statusId)) {
+            return "'statusId' must be 'integer'";
         }
-        const status: Status[] = (await db.query('SELECT * FROM status WHERE id=$1', [props.status_id])).rows;
-        if(status.length === 0) {
+        const status = Status.findByPk(props.statusId);
+        if(!status) {
             return "No such status";
         }
     }

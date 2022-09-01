@@ -53,8 +53,8 @@ export class MasterService {
         const { data } = await api.put(`/master`, updMaster);
         return data;
     }
-    static async getAvailableMasters(city_id, date, time, watch_size) {
-        const response = await axios.get(`${API_URL}/api/availmaster?city_id=${city_id}&date=${date}&time=${time}&watch_size=${watch_size}`);
+    static async getAvailableMasters(cityId, date, time, watchSize) {
+        const response = await axios.get(`${API_URL}/api/availmaster?cityId=${cityId}&date=${date}&time=${time}&watchSize=${watchSize}`);
         return response.data;
     }
 }
@@ -95,8 +95,8 @@ export class OrderService {
         const { data } = await api.put(`/order`, updOrder);
         return data;
     }
-    static async changeStatusById(id, status_id, rating) {
-        const { data } = await api.post(`/order/status`, { id, status_id, rating });
+    static async changeStatusById(id, statusId, rating) {
+        const { data } = await api.post(`/order/status`, { id, statusId, rating });
         return data;
     }
 

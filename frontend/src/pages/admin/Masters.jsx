@@ -34,7 +34,14 @@ export const Masters = () => {
     const [redirect, setRedirect] = useState(false);
 
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
-        const masters = await MasterService.getMasters();
+        let masters = await MasterService.getMasters();
+
+        masters = masters.map(m => {
+            ['createdAt', 'updatedAt'].forEach(function (k) {
+                delete m[k];
+            });
+            return m;
+        });
         
         setMasters(masters);
     });

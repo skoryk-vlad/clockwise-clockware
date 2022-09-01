@@ -15,8 +15,8 @@ const transporter: Transporter = nodemailer.createTransport({
     }
 });
 
-const sendConfMail = async (email: string, order_id: number, name: string): Promise<SentMessageInfo> => {
-    const token: string = jwt.sign({ order_id }, process.env.JWT_TOKEN_KEY, { expiresIn: '3h' });
+const sendConfMail = async (email: string, orderId: number, name: string): Promise<SentMessageInfo> => {
+    const token: string = jwt.sign({ orderId }, process.env.JWT_TOKEN_KEY, { expiresIn: '3h' });
 
     const link: string = `${process.env.BASE_LINK}/api/confirmation/${token}`;
 

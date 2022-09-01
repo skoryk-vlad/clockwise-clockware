@@ -1,51 +1,71 @@
-import { Client } from './../types';
+import { ClientAttributes, Client } from './../models/client.model';
 import { Request, Response } from 'express';
-import db from './../db';
 import { validate } from './../validate';
 
 export default class ClientController {
     async addClient(req: Request, res: Response): Promise<Response> {
         const error: string = await validate(req.body, ['name', 'email']);
-
         if (error) return res.status(400).json(error);
-        
-        const { name, email }: Client = req.body;
-        const client: Client[] = (await db.query(`SELECT * FROM addClient($1, $2)`, [name, email])).rows;
-        return res.status(201).json(client[0]);
+
+        const { name, email }: ClientAttributes = req.body;
+        try {
+            const client = await Client.create({ name, email });
+            return res.status(201).json(client);
+        } catch (e) {
+            return res.status(500).json(e);
+        }
     }
     async getClients(req: Request, res: Response): Promise<Response> {
-        const clients: Client[] = (await db.query('SELECT * FROM client ORDER BY id')).rows;
-        return res.status(200).json(clients);
+        try {
+            const clients = await Client.findAll({
+                order: [
+                    ['id', 'ASC']
+                ]
+            });
+            return res.status(200).json(clients);
+        } catch (e) {
+            return res.status(500).json(e);
+        }
     }
     async getClientById(req: Request, res: Response): Promise<Response> {
         const error: string = await validate(req.params, ['id']);
-
         if (error) return res.status(400).json(error);
 
         const id: number = Number(req.params.id);
-        const client: Client[] = (await db.query('SELECT * FROM client WHERE id=$1', [id])).rows;
-        return res.status(200).json(client[0]);
+        try {
+            const client = await Client.findByPk(id);
+            return res.status(200).json(client);
+        } catch (e) {
+            return res.status(500).json(e);
+        }
     }
     async updateClient(req: Request, res: Response): Promise<Response> {
         const error: string = await validate(req.body, ['id', 'name', 'email']);
-
         if (error) return res.status(400).json(error);
 
-        const {id, name, email}: Client = req.body;
-        const client: Client[] = (await db.query('SELECT * FROM updateClient($1, $2, $3);', [id, name, email])).rows;
-        return res.status(200).json(client[0]);
+        const { id, name, email }: ClientAttributes = req.body;
+        try {
+            const [client, created] = await Client.upsert({
+                id,
+                name,
+                email
+            });
+            return res.status(200).json(client);
+        } catch (e) {
+            return res.status(500).json(e);
+        }
     }
     async deleteClient(req: Request, res: Response): Promise<Response> {
         const error: string = await validate(req.params, ['id']);
-
         if (error) return res.status(400).json(error);
 
         const id: number = Number(req.params.id);
-
-        const clientOrders: number[] = (await db.query('SELECT 1 FROM orders WHERE client_id=$1', [id])).rows;
-        if(clientOrders.length !== 0) return res.status(400).json("There are rows in the table 'orders' that depend on this client");
-
-        const client: Client[] = (await db.query('DELETE FROM client WHERE id=$1 RETURNING *', [id])).rows;
-        return res.status(200).json(client[0]);
+        try {
+            const client = await Client.findByPk(id);
+            await client.destroy();
+            return res.status(200).json(client);
+        } catch (e) {
+            return res.status(500).json(e);
+        }
     }
 }

@@ -18,8 +18,8 @@ const app: Express = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/api', cityRouter);
 app.use('/api', authRouter);
+app.use('/api', cityRouter);
 app.use('/api', clientRouter);
 app.use('/api', masterRouter);
 app.use('/api', orderRouter);
