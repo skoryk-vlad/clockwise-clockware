@@ -4,10 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && set NODE_ENV=local",
+    "build": "tsc && set NODE_ENV=prod",
+    "postbuild": "set NODE_ENV=prod && node build/index.js",
     "serve": "set NODE_ENV=local && nodemon src/index.ts",
     "start": "set NODE_ENV=local && node build/index.js"
   },
+  "heroku-run-build-script": true,
   "author": "",
   "license": "ISC",
   "dependencies": {
