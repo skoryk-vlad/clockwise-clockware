@@ -36,8 +36,8 @@ export const OrderForm = () => {
     const [initialValues, setInitialValues] = useState({
         name: "",
         email: "",
-        watch_size: 1,
-        city_id: null,
+        watchSize: 1,
+        cityId: null,
         date: "",
         time: null
     });
@@ -59,8 +59,8 @@ export const OrderForm = () => {
             errors.email = "Неправильный формат";
         }
 
-        if (!values.city_id) {
-            errors.city_id = "Требуется выбрать город";
+        if (!values.cityId) {
+            errors.cityId = "Требуется выбрать город";
         }
 
         if (!values.date) {
@@ -81,11 +81,11 @@ export const OrderForm = () => {
     const chooseMaster = (e) => {
         const masterId = e.target.closest(`.mstr_itm`).id;
         setChosenMaster(+masterId);
-        setOrder({...order, master_id: +masterId});
+        setOrder({...order, masterId: +masterId});
     };
     
     const addOrder = async () => {
-        await OrderService.addOrderAndClient(order);
+        await OrderService.addOrder(order);
         setIsForm(true);
         setSended(true);
         setReturned(false);
@@ -93,8 +93,8 @@ export const OrderForm = () => {
         setInitialValues({
             name: "",
             email: "",
-            watch_size: 1,
-            city_id: 1,
+            watchSize: 1,
+            cityId: 1,
             date: "",
             time: null
         });
@@ -103,8 +103,8 @@ export const OrderForm = () => {
         resetForm({});
         setOrder(values);
         setChosenMaster(null)
-        const availableMasters = await MasterService.getAvailableMasters(values.city_id, values.date, values.time, values.watch_size);
-        setAvailMasters(availableMasters.map(m => m.rating ? m : {...m, rating: '-'}));
+        const availableMasters = await MasterService.getAvailableMasters(values.cityId, values.date, values.time, values.watchSize);
+        setAvailMasters(availableMasters.sort((a,b) => b.rating - a.rating).map(m => m.rating && +m.rating !== 0 ? m : {...m, rating: '-'}));
         setIsForm(false);
     }
 
@@ -171,19 +171,19 @@ export const OrderForm = () => {
                                 </div>
                                 
                                 <div className={classes.formRow}>
-                                    <label htmlFor="watch_size">Размер часов</label>
-                                    <NumPicker name="watch_size" id="watch_size"
+                                    <label htmlFor="watchSize">Размер часов</label>
+                                    <NumPicker name="watchSize" id="watchSize"
                                         from='1' to='3' onBlur={handleBlur}
-                                        value={values.watch_size}
-                                        onClick={e => setFieldValue( "watch_size", parseInt(e.target.dataset.num))}
+                                        value={values.watchSize}
+                                        onClick={e => setFieldValue( "watchSize", parseInt(e.target.dataset.num))}
                                     />
                                 </div>
 
                                 <div className={classes.formRow}>
-                                    <label htmlFor="city_id">Город</label>
+                                    <label htmlFor="cityId">Город</label>
                                     <MySelect onBlur={handleBlur}
-                                        name="city_id" id="city_id" value={values.city_id}
-                                        onChange={value => setFieldValue( "city_id", parseInt(value))}
+                                        name="cityId" id="cityId" value={values.cityId || ''}
+                                        onChange={value => setFieldValue( "cityId", parseInt(value))}
                                         options={cities.map(city => ({ value: city.id, name: city.name }))}
                                     />
                                 </div>
@@ -209,7 +209,7 @@ export const OrderForm = () => {
                                     </div>
                                     <NumPicker name="time" id="time" 
                                         min={!errors.date ? (values.date === minDate ? date.getHours() + 1 : 0) : 19}
-                                        from='10' to='18' count={values.watch_size}
+                                        from='10' to='18' count={values.watchSize}
                                         value={values.time} onBlur={handleBlur}
                                         onClick={e => setFieldValue( "time", parseInt(e.target.dataset.num))}
                                     />

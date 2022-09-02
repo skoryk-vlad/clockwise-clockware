@@ -32,7 +32,14 @@ export const Clients = () => {
     const [redirect, setRedirect] = useState(false);
 
     const [fetchClients, isClientsLoading, Error] = useFetching(async () => {
-        const clients = await ClientService.getClients(localStorage.getItem('token'));
+        let clients = await ClientService.getClients(localStorage.getItem('token'));
+
+        clients = clients.map(c => {
+            ['createdAt', 'updatedAt'].forEach(function (k) {
+                delete c[k];
+            });
+            return c;
+        });
 
         setClients(clients);
     });

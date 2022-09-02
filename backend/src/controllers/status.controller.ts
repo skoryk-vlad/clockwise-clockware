@@ -1,10 +1,13 @@
-import { Status } from './../types';
+import { Status } from './../models/status.model';
 import { Request, Response } from 'express';
-import db from '../db';
 
 export default class StatusController {
     async getStatuses(req: Request, res: Response): Promise<Response> {
-        const statuses: Status[] = (await db.query('SELECT * FROM status')).rows;
-        return res.status(200).json(statuses);
+        try {
+            const statuses = await Status.findAll();
+            return res.status(200).json(statuses);
+        } catch (e) {
+            return res.status(500).json(e);
+        }
     }
 }

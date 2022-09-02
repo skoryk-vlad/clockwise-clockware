@@ -1,8 +1,8 @@
+import { Order } from './../models/order.model';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import db from '../db';
 
-function parseJwt (token: string) : any {
+function parseJwt(token: string): any {
     return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
 }
 
@@ -13,15 +13,19 @@ export default class ConfirmationController {
         if (token) {
             jwt.verify(token, process.env.JWT_TOKEN_KEY, async (err) => {
                 if (err) return res.redirect(`${process.env.CLIENT_LINK}?expired`);
-                
-                const order_id: number = parseJwt(token).order_id;
+                const orderId: number = parseJwt(token).orderId;
 
-                const orderConfimed: number[] = (await db.query('SELECT 1 FROM orders WHERE id=$1 AND status_id=2', [order_id])).rows;
-                if(orderConfimed.length !== 0) res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
-
-                await db.query('UPDATE orders set status_id = 2 where id = $1 RETURNING *', [order_id]);
-
-                res.redirect(`${process.env.CLIENT_LINK}?success`);
+                try {
+                    const orderConfimed = await Order.findByPk(orderId);
+                    if (orderConfimed.getDataValue('statusId') === 2) res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
+    
+                    await Order.upsert({
+                        id: orderId, statusId: 2
+                    });
+                    res.redirect(`${process.env.CLIENT_LINK}?success`);
+                } catch (e) {
+                    res.redirect(`${process.env.CLIENT_LINK}?error`);
+                }
             });
         } else {
             res.redirect(`${process.env.CLIENT_LINK}?error`);

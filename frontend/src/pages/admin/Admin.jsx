@@ -28,7 +28,7 @@ export const Admin = () => {
     
     const [initialValues, setInitialValues] = useState({
         rating: 0,
-        status_id: null
+        statusId: null
     });
 
     const checkZero = (num) => {
@@ -41,13 +41,28 @@ export const Admin = () => {
     }
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        const orders = await OrderService.getOrders();
+        let orders = await OrderService.getOrders();
         const cities = await CityService.getCities();
         const masters = await MasterService.getMasters();
         const clients = await ClientService.getClients();
         const statuses = await StatusService.getStatuses();
 
         setOrdersCount(orders.length);
+
+        orders = orders.map(o => {
+            let order = {
+                ...o,
+                date: toDate(o.date),
+                city: o.City.name,
+                client: o.Client.name,
+                master: o.Master.name,
+                status: o.Status.name,
+            };
+            ['City', 'Master', 'Client', 'Status', 'cityId', 'masterId', 'clientId', 'statusId', 'createdAt', 'updatedAt'].forEach(function (k) {
+                delete order[k];
+            });
+            return order;
+        });
 
         setOrders(orders.filter(o => o.status === statuses.find(s => s.id === 1).name || o.status === statuses.find(s => s.id === 2).name).map(o => ({ ...o, date: toDate(o.date) })));
         setCities(cities);
@@ -76,7 +91,7 @@ export const Admin = () => {
             let order = orders.find(o => o.id === +idUpd);
             setInitialValues({
                 rating: order.rating,
-                status_id: statuses.find(s => s.name === order.status).id
+                statusId: statuses.find(s => s.name === order.status).id
             })
         }
     }, [idUpd]);
@@ -86,7 +101,7 @@ export const Admin = () => {
     }
 
     const changeStatus = async (values) => {
-        await OrderService.changeStatusById(idUpd, values.status_id, values.rating);
+        await OrderService.changeStatusById(idUpd, values.statusId, values.rating);
         setModal(false);
         fetchOrders();
     };
@@ -103,8 +118,8 @@ export const Admin = () => {
             errors.rating = "Рейтинг должен быть целым числом";
         }
 
-        if (!values.status_id) {
-            errors.status_id = "Требуется выбрать статус";
+        if (!values.statusId) {
+            errors.statusId = "Требуется выбрать статус";
         }
 
         return errors;
@@ -145,7 +160,7 @@ export const Admin = () => {
                     </div>
                     <h2 className='admin-main__title'>Активные заказы</h2>
                     <AdminTable dataArr={orders}
-                        columns={['id', 'Клиент', 'Мастер', 'Город', 'Размер часов', 'Дата', 'Время', 'Рейтинг', 'Статус']}
+                        columns={['id', 'Размер часов', 'Дата', 'Время', 'Рейтинг', 'Город', 'Клиент', 'Мастер', 'Статус']}
                         btnTitles={['Изменение']}
                         btnFuncs={[e => { setModal(true); setIdUpd(e.target.closest('tr').id) }]}
                     />
@@ -187,10 +202,10 @@ export const Admin = () => {
                                     placeholder="Рейтинг..."
                                 />
                             
-                                <label htmlFor="status_id">Статус</label>
+                                <label htmlFor="statusId">Статус</label>
                                 <MySelect
-                                    name="status_id" id="status_id" value={values.status_id}
-                                    onChange={value => setFieldValue("status_id", parseInt(value))}
+                                    name="statusId" id="statusId" value={values.statusId || ''}
+                                    onChange={value => setFieldValue("statusId", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={statuses.map(status => ({ value: status.id, name: status.name }))}
                                 />
