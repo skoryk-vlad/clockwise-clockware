@@ -9,9 +9,7 @@ export default class CityController {
 
         const { name }: CityAttributes = req.body;
         try {
-            const city = await City.upsert({ name }, {
-                conflictFields: ['name']
-            });
+            const city = await City.create({ name });
             return res.status(201).json(city);
         } catch (e) {
             return res.status(500).json(e);

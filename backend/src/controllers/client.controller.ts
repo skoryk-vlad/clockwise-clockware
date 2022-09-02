@@ -9,9 +9,7 @@ export default class ClientController {
 
         const { name, email }: ClientAttributes = req.body;
         try {
-            const client = await Client.upsert({ name, email }, {
-                conflictFields: ['email']
-            });
+            const client = await Client.create({ name, email });
             return res.status(201).json(client);
         } catch (e) {
             return res.status(500).json(e);

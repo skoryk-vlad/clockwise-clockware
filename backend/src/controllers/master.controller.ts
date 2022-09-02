@@ -60,17 +60,17 @@ export default class MasterController {
 
         const { cityId, date, time, watchSize } = req.query;
         try {
-            let orders = await Order.findAll({
+            const orders = await Order.findAll({
+                replacements: [+time],
                 where: {
                     date: String(date),
-                    time: { 
+                    time: {
                         [Op.and]:
-                            [{ [Op.gte]: +time - 3 + 1 },
+                            [{ [Op.gte]: sequelize.literal('? - "Order"."watchSize" + 1') },
                             { [Op.lte]: +time + +watchSize - 1 }]
                     }
                 }
             });
-            orders = orders.filter(o => o.getDataValue('time') >= +time - o.getDataValue('watchSize') + 1);
             const masters = await Master.findAll({
                 where: {
                     cities: {
