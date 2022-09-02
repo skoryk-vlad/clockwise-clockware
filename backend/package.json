@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": "16.13.1"
+  },
   "scripts": {
     "build": "tsc && set NODE_ENV=prod",
     "postbuild": "set NODE_ENV=prod && node build/index.js",
