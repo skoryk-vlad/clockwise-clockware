@@ -11,14 +11,13 @@ import { sendConfMail } from '../mailer';
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.body, ['clientId', 'masterId', 'cityId', 'watchSize', 'date', 'time', 'statusId', 'rating']);
+        const error: string = await validate(req.body, ['name', 'email', 'masterId', 'cityId', 'watchSize', 'date', 'time']);
         if (error) return res.status(400).json(error);
 
-        const { clientId, masterId, cityId, watchSize, date, time, statusId, rating }: OrderAttributes = req.body;
+        const { name, email, masterId, cityId, watchSize, date, time }: OrderAttributes & ClientAttributes = req.body;
 
         const overlapsOrders = await Order.findAll({
             where: {
-                cityId,
                 date,
                 masterId,
                 time: { [Op.between]: [time - 3 + 1, time + watchSize - 1] }
@@ -26,10 +25,25 @@ export default class OrderController {
         });
         if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
 
+        const t = await sequelize.transaction();
         try {
-            const order = await Order.create({ watchSize, date, time, rating, cityId, clientId, masterId, statusId });
+            const [client, created] = await Client.upsert({
+                email, name
+            }, {
+                conflictFields: ['email'],
+                transaction: t
+            });
+
+            const order = await Order.create({
+                watchSize, date, time, cityId, clientId: client.getDataValue('id'), masterId
+            }, {
+                transaction: t
+            });
+            await sendConfMail(email, order.getDataValue('id'), name);
+            await t.commit();
             return res.status(201).json(order);
         } catch (e) {
+            await t.rollback();
             return res.status(500).json(e);
         }
     }
@@ -41,19 +55,19 @@ export default class OrderController {
                         {
                             model: City,
                             as: 'City',
-                            attributes: ['name']
+                            attributes: ['id', 'name']
                         },
                         {
                             model: Client,
-                            attributes: ['name']
+                            attributes: ['id', 'name']
                         },
                         {
                             model: Master,
-                            attributes: ['name']
+                            attributes: ['id', 'name']
                         },
                         {
                             model: Status,
-                            attributes: ['name']
+                            attributes: ['id', 'name']
                         },
                     ],
                     order: [
@@ -69,7 +83,7 @@ export default class OrderController {
         const error: string = await validate(req.params, ['id']);
         if (error) return res.status(400).json(error);
 
-        const id: number = Number(req.params.id);
+        const id = +req.params.id;
         try {
             const order = await Order.findByPk(id);
             return res.status(200).json(order);
@@ -85,7 +99,6 @@ export default class OrderController {
 
         const overlapsOrders = await Order.findAll({
             where: {
-                cityId,
                 date,
                 masterId,
                 time: { [Op.between]: [time - 3 + 1, time + watchSize - 1] }
@@ -120,50 +133,12 @@ export default class OrderController {
         const error: string = await validate(req.params, ['id']);
         if (error) return res.status(400).json(error);
 
-        const id: number = Number(req.params.id);
+        const id = +req.params.id;
         try {
             const order = await Order.findByPk(id);
             await order.destroy();
             return res.status(200).json(order);
         } catch (e) {
-            return res.status(500).json(e);
-        }
-    }
-    async addOrderClient(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.body, ['name', 'email', 'masterId', 'cityId', 'watchSize', 'date', 'time']);
-        if (error) return res.status(400).json(error);
-
-        const { name, email, masterId, cityId, watchSize, date, time }: OrderAttributes & ClientAttributes = req.body;
-
-        const overlapsOrders = await Order.findAll({
-            where: {
-                cityId,
-                date,
-                masterId,
-                time: { [Op.between]: [time - 3 + 1, time + watchSize - 1] }
-            }
-        });
-        if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
-
-        const t = await sequelize.transaction();
-        try {
-            const [client, created] = await Client.upsert({
-                email, name
-            }, {
-                conflictFields: ['email'],
-                transaction: t
-            });
-
-            const order = await Order.create({
-                watchSize, date, time, cityId, clientId: client.getDataValue('id'), masterId
-            }, {
-                transaction: t
-            });
-            await t.commit();
-            sendConfMail(email, order.getDataValue('id'), name);
-            return res.status(201).json(order);
-        } catch (e) {
-            await t.rollback();
             return res.status(500).json(e);
         }
     }

@@ -9,7 +9,9 @@ export default class ClientController {
 
         const { name, email }: ClientAttributes = req.body;
         try {
-            const client = await Client.create({ name, email });
+            const client = await Client.upsert({ name, email }, {
+                conflictFields: ['email']
+            });
             return res.status(201).json(client);
         } catch (e) {
             return res.status(500).json(e);
@@ -31,7 +33,7 @@ export default class ClientController {
         const error: string = await validate(req.params, ['id']);
         if (error) return res.status(400).json(error);
 
-        const id: number = Number(req.params.id);
+        const id = +req.params.id;
         try {
             const client = await Client.findByPk(id);
             return res.status(200).json(client);
@@ -59,7 +61,7 @@ export default class ClientController {
         const error: string = await validate(req.params, ['id']);
         if (error) return res.status(400).json(error);
 
-        const id: number = Number(req.params.id);
+        const id = +req.params.id;
         try {
             const client = await Client.findByPk(id);
             await client.destroy();

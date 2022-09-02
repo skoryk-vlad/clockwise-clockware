@@ -9,7 +9,9 @@ export default class CityController {
 
         const { name }: CityAttributes = req.body;
         try {
-            const city = await City.create({ name });
+            const city = await City.upsert({ name }, {
+                conflictFields: ['name']
+            });
             return res.status(201).json(city);
         } catch (e) {
             return res.status(500).json(e);
@@ -31,7 +33,7 @@ export default class CityController {
         const error: string = await validate(req.params, ['id']);
         if (error) return res.status(400).json(error);
 
-        const id: number = Number(req.params.id);
+        const id = +req.params.id;
         try {
             const city = await City.findByPk(id);
             return res.status(200).json(city);
@@ -60,7 +62,7 @@ export default class CityController {
         let error: string = await validate(req.params, ['id']);
         if (error) return res.status(400).json(error);
 
-        const id: number = Number(req.params.id);
+        const id = +req.params.id;
         try {
             const city = await City.findByPk(id);
             await city.destroy();

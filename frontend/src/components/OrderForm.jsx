@@ -85,7 +85,7 @@ export const OrderForm = () => {
     };
     
     const addOrder = async () => {
-        await OrderService.addOrderAndClient(order);
+        await OrderService.addOrder(order);
         setIsForm(true);
         setSended(true);
         setReturned(false);
@@ -182,7 +182,7 @@ export const OrderForm = () => {
                                 <div className={classes.formRow}>
                                     <label htmlFor="cityId">Город</label>
                                     <MySelect onBlur={handleBlur}
-                                        name="cityId" id="cityId" value={values.cityId}
+                                        name="cityId" id="cityId" value={values.cityId || ''}
                                         onChange={value => setFieldValue( "cityId", parseInt(value))}
                                         options={cities.map(city => ({ value: city.id, name: city.name }))}
                                     />

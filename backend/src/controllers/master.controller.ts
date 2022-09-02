@@ -45,7 +45,7 @@ export default class MasterController {
         const error: string = await validate(req.params, ['id']);
         if (error) return res.status(400).json(error);
 
-        const id: number = Number(req.params.id);
+        const id = +req.params.id;
         try {
             const master = await Master.findByPk(id);
             return res.status(200).json(master);
@@ -58,21 +58,25 @@ export default class MasterController {
 
         if (error) return res.status(400).json(error);
 
-        const {cityId, date, time, watchSize} = req.query;
+        const { cityId, date, time, watchSize } = req.query;
         try {
-            const orders = await Order.findAll({
+            let orders = await Order.findAll({
                 where: {
-                    cityId: Number(cityId),
                     date: String(date),
-                    time: {[Op.between]: [Number(time) - 3 + 1, Number(time) + Number(watchSize) - 1]}
+                    time: { 
+                        [Op.and]:
+                            [{ [Op.gte]: +time - 3 + 1 },
+                            { [Op.lte]: +time + +watchSize - 1 }]
+                    }
                 }
             });
+            orders = orders.filter(o => o.getDataValue('time') >= +time - o.getDataValue('watchSize') + 1);
             const masters = await Master.findAll({
                 where: {
                     cities: {
-                        [Op.contains]: [Number(cityId)]
+                        [Op.contains]: [+cityId]
                     },
-                    id: {[Op.notIn]: orders.map(o => o.getDataValue('masterId'))}
+                    id: { [Op.notIn]: orders.map(o => o.getDataValue('masterId')) }
                 },
                 attributes: [
                     'id', 'name',
@@ -110,7 +114,7 @@ export default class MasterController {
         let error: string = await validate(req.params, ['id']);
         if (error) return res.status(400).json(error);
 
-        const id: number = Number(req.params.id);
+        const id = +req.params.id;
         try {
             const master = await Master.findByPk(id);
             await master.destroy();

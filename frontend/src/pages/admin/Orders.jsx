@@ -130,7 +130,8 @@ export const Orders = () => {
     }
     const addOrder = async (order) => {
         try {
-            await OrderService.addOrder(order);
+            const client = clients.find(c => c.id === order.clientId);
+            await OrderService.addOrder({...order, name: client.name, email: client.email});
             setModalAdd(false);
             setNewOrder(defaultOrder);
             fetchOrders();
@@ -282,7 +283,7 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                             <div className={classes.formRow}>
                                 <label htmlFor="clientId">Клиент</label>
                                 <MySelect
-                                    name="clientId" id="clientId" value={values.clientId}
+                                    name="clientId" id="clientId" value={values.clientId || ''}
                                     onChange={value => setFieldValue("clientId", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={clients.map(client => ({ value: client.id, name: `${client.name} (${client.email})` }))}
@@ -292,7 +293,7 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                             <div className={classes.formRow}>
                                 <label htmlFor="cityId">Город</label>
                                 <MySelect
-                                    name="cityId" id="cityId" value={values.cityId}
+                                    name="cityId" id="cityId" value={values.cityId || ''}
                                     onChange={value => setFieldValue("cityId", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={cities.map(city => ({ value: city.id, name: city.name }))}
@@ -302,7 +303,7 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                             <div className={classes.formRow}>
                                 <label htmlFor="masterId">Мастер</label>
                                 <MySelect
-                                    name="masterId" id="masterId" value={values.masterId}
+                                    name="masterId" id="masterId" value={values.masterId || ''}
                                     onChange={value => setFieldValue("masterId", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={masters.filter(m => m.cities.includes(values.cityId)).map(city => ({ value: city.id, name: city.name }))}
@@ -363,7 +364,7 @@ const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities, clients,
                             <div className={classes.formRow}>
                                 <label htmlFor="statusId">Статус</label>
                                 <MySelect
-                                    name="statusId" id="statusId" value={values.statusId}
+                                    name="statusId" id="statusId" value={values.statusId || ''}
                                     onChange={value => setFieldValue("statusId", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={statuses.map(status => ({ value: status.id, name: status.name }))}

@@ -99,11 +99,6 @@ export class OrderService {
         const { data } = await api.post(`/order/status`, { id, statusId, rating });
         return data;
     }
-
-    static async addOrderAndClient(order) {
-        const { data } = await api.post(`/order/client`, order);
-        return data;
-    }
 }
 
 export class AuthService {

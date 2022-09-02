@@ -8,7 +8,7 @@ export const MySelect = ({options, value, onChange, ...props}) => {
         onChange={event => onChange(event.target.value)}
         {...props}
     >
-        {[ <option className={classes.option} key={null} value={null} disabled selected></option>, ...options.map(option => <option className={classes.option} key={option.value} value={option.value}>{option.name}</option>)]}
+        {[ <option className={classes.option} key={''} value={''} disabled></option>, ...options.map(option => <option className={classes.option} key={option.value} value={option.value}>{option.name}</option>)]}
     </select>
   )
 }

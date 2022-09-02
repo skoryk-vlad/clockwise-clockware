@@ -204,7 +204,7 @@ export const Admin = () => {
                             
                                 <label htmlFor="statusId">Статус</label>
                                 <MySelect
-                                    name="statusId" id="statusId" value={values.statusId}
+                                    name="statusId" id="statusId" value={values.statusId || ''}
                                     onChange={value => setFieldValue("statusId", parseInt(value))}
                                     onBlur={handleBlur}
                                     options={statuses.map(status => ({ value: status.id, name: status.name }))}
