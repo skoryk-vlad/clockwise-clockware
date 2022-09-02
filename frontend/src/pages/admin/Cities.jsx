@@ -31,7 +31,7 @@ export const Cities = () => {
         let cities = await CityService.getCities();
 
         cities = cities.map(c => {
-            ['createdAt', 'updatedAt'].forEach(function (k) {
+            ['createdAt', 'updatedAt'].forEach((k) => {
                 delete c[k];
             });
             return c;
@@ -43,7 +43,7 @@ export const Cities = () => {
     useEffect(() => {
         document.title = "Города - Clockwise Clockware";
 
-        async function checkAuth() {
+        const checkAuth = async () => {
             try{
                 await AuthService.checkAuth();
                 fetchCities();

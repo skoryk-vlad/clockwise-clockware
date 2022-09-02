@@ -4,7 +4,7 @@ import { AppRouter } from './components/AppRouter';
 import './styles/App.css';
 import './styles/reset.css';
 
-function App() {
+const App = () => {
 
     return (
         <BrowserRouter>

@@ -37,7 +37,7 @@ export const Masters = () => {
         let masters = await MasterService.getMasters();
 
         masters = masters.map(m => {
-            ['createdAt', 'updatedAt'].forEach(function (k) {
+            ['createdAt', 'updatedAt'].forEach((k) => {
                 delete m[k];
             });
             return m;
@@ -49,7 +49,7 @@ export const Masters = () => {
     useEffect(() => {
         document.title = "Мастера - Clockwise Clockware";
 
-        async function checkAuth() {
+        const checkAuth = async () => {
             try{
                 await AuthService.checkAuth();
 

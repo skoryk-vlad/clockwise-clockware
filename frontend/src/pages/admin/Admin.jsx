@@ -58,7 +58,7 @@ export const Admin = () => {
                 master: o.Master.name,
                 status: o.Status.name,
             };
-            ['City', 'Master', 'Client', 'Status', 'cityId', 'masterId', 'clientId', 'statusId', 'createdAt', 'updatedAt'].forEach(function (k) {
+            ['City', 'Master', 'Client', 'Status', 'cityId', 'masterId', 'clientId', 'statusId', 'createdAt', 'updatedAt'].forEach((k) => {
                 delete order[k];
             });
             return order;
@@ -74,7 +74,7 @@ export const Admin = () => {
     useEffect(() => {
         document.title = "Админ-панель - Clockwise Clockware";
 
-        async function checkAuth() {
+        const checkAuth = async () => {
             try {
                 await AuthService.checkAuth();
             } catch (e) {
