@@ -30,7 +30,7 @@ export class CityService {
         return data;
     }
     static async updateCityById(id, name) {
-        const { data } = await api.put(`/city`, { id, name });
+        const { data } = await api.put(`/city/${id}`, { name });
         return data;
     }
 }
@@ -49,7 +49,7 @@ export class MasterService {
         return data;
     }
     static async updateMasterById(updMaster) {
-        const { data } = await api.put(`/master`, updMaster);
+        const { data } = await api.put(`/master/${updMaster.id}`, updMaster);
         return data;
     }
     static async getAvailableMasters(cityId, date, time, watchSize) {
@@ -72,7 +72,7 @@ export class ClientService {
         return data;
     }
     static async updateClientById(updClient) {
-        const { data } = await api.put(`/client`, updClient);
+        const { data } = await api.put(`/client/${updClient.id}`, updClient);
         return data;
     }
 }
@@ -91,7 +91,7 @@ export class OrderService {
         return data;
     }
     static async updateOrderById(updOrder) {
-        const { data } = await api.put(`/order`, updOrder);
+        const { data } = await api.put(`/order/${updOrder.id}`, updOrder);
         return data;
     }
     static async changeStatusById(id, statusId, rating) {
