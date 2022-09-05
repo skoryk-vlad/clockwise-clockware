@@ -2,14 +2,14 @@ import { z } from 'zod';
 
 export const AddMasterSchema = z.object({
     name: z.string().trim().min(3).max(255),
-    cities: z.array(z.number()).nonempty()
+    cities: z.array(z.number().int().positive()).nonempty()
 });
 export const GetMasterSchema = z.object({
     id: z.number().int().positive()
 });
 export const UpdateMasterSchema = z.object({
     name: z.string().trim().min(3).max(255),
-    cities: z.array(z.number()).nonempty()
+    cities: z.array(z.number().int().positive()).nonempty()
 });
 export const DeleteMasterSchema = z.object({
     id: z.number().int().positive()
