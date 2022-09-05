@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// const API_URL = 'https://clockclock-back.herokuapp.com';
-const API_URL = 'http://localhost:3001';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const api = axios.create({
     baseURL: `${API_URL}/api`
