@@ -1,14 +1,14 @@
-import { ClientAttributes, Client } from './../models/client.model';
+import { ClientSchema } from './../validationSchemas/client.schema';
+import { Client } from './../models/client.model';
 import { Request, Response } from 'express';
-import { validate } from './../validate';
 
 export default class ClientController {
     async addClient(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.body, ['name', 'email']);
-        if (error) return res.status(400).json(error);
-
-        const { name, email }: ClientAttributes = req.body;
+        const optionalId = ClientSchema.partial({
+            id: true,
+        });
         try {
+            const { name, email } = optionalId.parse(req.body);
             const client = await Client.create({ name, email });
             return res.status(201).json(client);
         } catch (e) {
@@ -28,23 +28,22 @@ export default class ClientController {
         }
     }
     async getClientById(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.params, ['id']);
-        if (error) return res.status(400).json(error);
-
-        const id = +req.params.id;
         try {
+            const id = ClientSchema.shape.id.parse(+req.params.id);
             const client = await Client.findByPk(id);
+            if (!client) return res.status(404).json('No such client');
             return res.status(200).json(client);
         } catch (e) {
             return res.status(500).json(e);
         }
     }
     async updateClient(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.body, ['id', 'name', 'email']);
-        if (error) return res.status(400).json(error);
-
-        const { id, name, email }: ClientAttributes = req.body;
         try {
+            const { id, name, email } = ClientSchema.parse(req.body);
+
+            const existClient = await Client.findByPk(id);
+            if (!existClient) return res.status(404).json('No such client');
+
             const [client, created] = await Client.upsert({
                 id,
                 name,
@@ -56,12 +55,10 @@ export default class ClientController {
         }
     }
     async deleteClient(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.params, ['id']);
-        if (error) return res.status(400).json(error);
-
-        const id = +req.params.id;
         try {
+            const id = ClientSchema.shape.id.parse(+req.params.id);
             const client = await Client.findByPk(id);
+            if (!client) return res.status(404).json('No such client');
             await client.destroy();
             return res.status(200).json(client);
         } catch (e) {
