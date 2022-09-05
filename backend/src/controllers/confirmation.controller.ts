@@ -15,8 +15,9 @@ export default class ConfirmationController {
                 const orderId: number = jwtConfirmationPayload(token).orderId;
 
                 try {
-                    const orderConfimed = await Order.findByPk(orderId);
-                    if (orderConfimed.getDataValue('statusId') === 2) res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
+                    const orderСonfirmed = await Order.findByPk(orderId);
+                    if(!orderСonfirmed) res.redirect(`${process.env.CLIENT_LINK}?error`);
+                    if (orderСonfirmed.getDataValue('statusId') === 2) res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
     
                     await Order.upsert({
                         id: orderId, statusId: 2

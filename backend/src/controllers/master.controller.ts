@@ -1,21 +1,27 @@
+import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetAvailMastersSchema } from './../validationSchemas/master.schema';
 import { Order } from './../models/order.model';
 import { sequelize } from './../sequelize';
-import { Master, MasterAttributes } from './../models/master.model';
+import { Master } from './../models/master.model';
 import { Request, Response } from 'express';
-import { validate } from './../validate';
 import { Op } from 'sequelize';
+import { City } from '../models/city.model';
 
 export default class MasterController {
     async addMaster(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.body, ['name', 'cities']);
-        if (error) return res.status(400).json(error);
-
-        const { name, cities }: MasterAttributes = req.body;
-
         try {
+            const { name, cities } = AddMasterSchema.parse(req.body);
+
+            const existCities = await City.findAll({
+                where: {
+                    id: cities
+                }
+            });
+            if(existCities.length !== cities.length) return res.status(404).json('Some of the cities does not exist')
+
             const master = await Master.create({ name, cities });
             return res.status(201).json(master);
         } catch (e) {
+            if(e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
@@ -42,24 +48,19 @@ export default class MasterController {
         }
     }
     async getMasterById(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.params, ['id']);
-        if (error) return res.status(400).json(error);
-
-        const id = +req.params.id;
         try {
+            const { id } = GetMasterSchema.parse({ id: +req.params.id });
             const master = await Master.findByPk(id);
+            if (!master) return res.status(404).json('No such master');
             return res.status(200).json(master);
         } catch (e) {
+            if(e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
     async getAvailableMasters(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.query, ['cityId', 'date', 'time', 'watchSize']);
-
-        if (error) return res.status(400).json(error);
-
-        const { cityId, date, time, watchSize } = req.query;
         try {
+            const { cityId, date, time, watchSize } = GetAvailMastersSchema.parse(req.body);
             const orders = await Order.findAll({
                 replacements: [+time],
                 where: {
@@ -91,15 +92,26 @@ export default class MasterController {
             });
             return res.status(200).json(masters);
         } catch (e) {
+            if(e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
     async updateMaster(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.body, ['id', 'name', 'cities']);
-        if (error) return res.status(400).json(error);
-
-        const { id, name, cities }: MasterAttributes = req.body;
         try {
+            const { id } = GetMasterSchema.parse({ id: +req.params.id });
+
+            const existMaster = await Master.findByPk(id);
+            if (!existMaster) return res.status(404).json('No such master');
+            
+            const { name, cities } = UpdateMasterSchema.parse(req.body);
+
+            const existCities = await City.findAll({
+                where: {
+                    id: cities
+                }
+            });
+            if(existCities.length !== cities.length) return res.status(400).json('Some of the cities does not exist');
+
             const [master, created] = await Master.upsert({
                 id,
                 name,
@@ -107,19 +119,19 @@ export default class MasterController {
             });
             return res.status(200).json(master);
         } catch (e) {
+            if(e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
     async deleteMaster(req: Request, res: Response): Promise<Response> {
-        let error: string = await validate(req.params, ['id']);
-        if (error) return res.status(400).json(error);
-
-        const id = +req.params.id;
         try {
+            const { id } = DeleteMasterSchema.parse({ id: +req.params.id });
             const master = await Master.findByPk(id);
+            if (!master) return res.status(404).json('No such master');
             await master.destroy();
             return res.status(200).json(master);
         } catch (e) {
+            if(e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }

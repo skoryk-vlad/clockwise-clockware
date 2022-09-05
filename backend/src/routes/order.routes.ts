@@ -9,7 +9,7 @@ router.post('/order', orderController.addOrder);
 router.post('/order/status', authJWT, orderController.changeStatus);
 router.get('/order', authJWT, orderController.getOrders);
 router.get('/order/:id', authJWT, orderController.getOrderById);
-router.put('/order', authJWT, orderController.updateOrder);
+router.put('/order/:id', authJWT, orderController.updateOrder);
 router.delete('/order/:id', authJWT, orderController.deleteOrder);
 
 export default router;

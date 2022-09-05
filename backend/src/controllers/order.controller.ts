@@ -1,32 +1,38 @@
+import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema } from './../validationSchemas/order.schema';
 import { sequelize } from './../sequelize';
 import { Op } from 'sequelize';
 import { Master } from './../models/master.model';
-import { Client, ClientAttributes } from './../models/client.model';
+import { Client } from './../models/client.model';
 import { City } from './../models/city.model';
 import { Status } from './../models/status.model';
-import { Order, OrderAttributes } from './../models/order.model';
+import { Order } from './../models/order.model';
 import { Request, Response } from 'express';
-import { validate } from '../validate';
 import { sendConfMail } from '../mailer';
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.body, ['name', 'email', 'masterId', 'cityId', 'watchSize', 'date', 'time']);
-        if (error) return res.status(400).json(error);
-
-        const { name, email, masterId, cityId, watchSize, date, time }: OrderAttributes & ClientAttributes = req.body;
-
-        const overlapsOrders = await Order.findAll({
-            where: {
-                date,
-                masterId,
-                time: { [Op.between]: [time - 3 + 1, time + watchSize - 1] }
-            }
-        });
-        if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
-
         const t = await sequelize.transaction();
         try {
+            const { name, email, masterId, cityId, watchSize, date, time } = AddOrderSchema.parse(req.body);
+
+            const existCity = await City.findByPk(cityId);
+            if (!existCity) return res.status(404).json('No such city');
+            const existMaster = await Master.findByPk(masterId);
+            if (!existMaster) return res.status(404).json('No such master');
+
+            const overlapsOrders = await Order.findAll({
+                where: {
+                    date,
+                    masterId,
+                    time: {
+                        [Op.and]:
+                            [{ [Op.gte]: sequelize.literal('? - "Order"."watchSize" + 1') },
+                            { [Op.lte]: +time + +watchSize - 1 }]
+                    }
+                }
+            });
+            if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
+
             const [client, created] = await Client.upsert({
                 email, name
             }, {
@@ -44,6 +50,7 @@ export default class OrderController {
             return res.status(201).json(order);
         } catch (e) {
             await t.rollback();
+            if(e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
@@ -70,9 +77,9 @@ export default class OrderController {
                             attributes: ['id', 'name']
                         },
                     ],
-                    order: [
-                        ['id', 'ASC']
-                    ]
+                order: [
+                    ['id', 'ASC']
+                ]
             });
             return res.status(200).json(orders);
         } catch (e) {
@@ -80,65 +87,75 @@ export default class OrderController {
         }
     }
     async getOrderById(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.params, ['id']);
-        if (error) return res.status(400).json(error);
-
-        const id = +req.params.id;
         try {
+            const { id } = GetOrderSchema.parse({id: +req.params.id});
             const order = await Order.findByPk(id);
+            if (!order) return res.status(404).json('No such order');
             return res.status(200).json(order);
         } catch (e) {
+            if(e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
     async updateOrder(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.body, ['id', 'clientId', 'masterId', 'cityId', 'watchSize', 'date', 'time', 'statusId', 'rating']);
-        if (error) return res.status(400).json(error);
-
-        const { id, clientId, masterId, cityId, watchSize, date, time, statusId, rating }: OrderAttributes = req.body;
-
-        const overlapsOrders = await Order.findAll({
-            where: {
-                date,
-                masterId,
-                time: { [Op.between]: [time - 3 + 1, time + watchSize - 1] }
-            }
-        });
-        if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
-
         try {
+            const { id } = GetOrderSchema.parse({id: +req.params.id});
+            
+            const existOrder = await Order.findByPk(id);
+            if (!existOrder) return res.status(404).json('No such order');
+
+            const { clientId, masterId, cityId, watchSize, date, time, statusId, rating } = UpdateOrderSchema.parse(req.body);
+
+            const existCity = await City.findByPk(cityId);
+            if (!existCity) return res.status(404).json('No such city');
+            const existMaster = await Master.findByPk(masterId);
+            if (!existMaster) return res.status(404).json('No such master');
+            const existClient = await Client.findByPk(clientId);
+            if (!existClient) return res.status(404).json('No such client');
+
+            const overlapsOrders = await Order.findAll({
+                where: {
+                    date,
+                    masterId,
+                    time: {
+                        [Op.and]:
+                            [{ [Op.gte]: sequelize.literal('? - "Order"."watchSize" + 1') },
+                            { [Op.lte]: +time + +watchSize - 1 }]
+                    }
+                }
+            });
+            if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
+
             const [order, created] = await Order.upsert({
                 id, clientId, masterId, cityId, watchSize, date, time, statusId, rating
             });
             return res.status(200).json(order);
         } catch (e) {
+            if(e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
     async changeStatus(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.body, ['id', 'statusId', 'rating']);
-        if (error) return res.status(400).json(error);
-
-        const { id, statusId, rating }: OrderAttributes = req.body;
         try {
+            const { id, statusId, rating } = ChangeStatusSchema.parse(req.body);
             const [order, created] = await Order.upsert({
                 id, statusId, rating
             });
             return res.status(200).json(order);
         } catch (e) {
+            if(e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
     async deleteOrder(req: Request, res: Response): Promise<Response> {
-        const error: string = await validate(req.params, ['id']);
-        if (error) return res.status(400).json(error);
-
-        const id = +req.params.id;
         try {
+            const { id } = DeleteOrderSchema.parse({id: +req.params.id});
             const order = await Order.findByPk(id);
+            if (!order) return res.status(404).json('No such order');
             await order.destroy();
             return res.status(200).json(order);
         } catch (e) {
+            if(e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }

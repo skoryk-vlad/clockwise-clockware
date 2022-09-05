@@ -9,7 +9,7 @@ router.post('/master', authJWT, masterController.addMaster);
 router.get('/master', masterController.getMasters);
 router.get('/master/:id', masterController.getMasterById);
 router.get('/availmaster', masterController.getAvailableMasters);
-router.put('/master', authJWT, masterController.updateMaster);
+router.put('/master/:id', authJWT, masterController.updateMaster);
 router.delete('/master/:id', authJWT, masterController.deleteMaster);
 
 export default router;
