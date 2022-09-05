@@ -1,10 +1,9 @@
+import { JWTConfirmationPayload } from './../types';
 import { Order } from './../models/order.model';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-function parseJwt(token: string): any {
-    return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-}
+const jwtConfirmationPayload = (token: string): JWTConfirmationPayload => JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
 
 export default class ConfirmationController {
     async confirmOrder(req: Request, res: Response): Promise<void> {
@@ -13,7 +12,7 @@ export default class ConfirmationController {
         if (token) {
             jwt.verify(token, process.env.JWT_TOKEN_KEY, async (err) => {
                 if (err) return res.redirect(`${process.env.CLIENT_LINK}?expired`);
-                const orderId: number = parseJwt(token).orderId;
+                const orderId: number = jwtConfirmationPayload(token).orderId;
 
                 try {
                     const orderConfimed = await Order.findByPk(orderId);

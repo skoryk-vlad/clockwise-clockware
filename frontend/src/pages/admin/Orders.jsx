@@ -64,7 +64,7 @@ export const Orders = () => {
                 master: o.Master.name,
                 status: o.Status.name,
             };
-            ['City', 'Master', 'Client', 'Status', 'cityId', 'masterId', 'clientId', 'statusId', 'createdAt', 'updatedAt'].forEach(function (k) {
+            ['City', 'Master', 'Client', 'Status', 'cityId', 'masterId', 'clientId', 'statusId', 'createdAt', 'updatedAt'].forEach((k) => {
                 delete order[k];
             });
             return order;
@@ -76,7 +76,7 @@ export const Orders = () => {
     useEffect(() => {
         document.title = "Заказы - Clockwise Clockware";
 
-        async function checkAuth() {
+        const checkAuth = async () => {
             try {
                 await AuthService.checkAuth();
                 const cities = await CityService.getCities();
@@ -107,7 +107,7 @@ export const Orders = () => {
                 clientId: clients.find(c => c.name === order.client).id,
                 statusId: statuses.find(s => s.name === order.status).id
             };
-            ['city', 'master', 'client', 'status'].forEach(function (k) {
+            ['city', 'master', 'client', 'status'].forEach((k) => {
                 delete order[k];
             });
             setUpdOrder(order);

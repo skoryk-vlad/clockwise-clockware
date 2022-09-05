@@ -35,7 +35,7 @@ export const Clients = () => {
         let clients = await ClientService.getClients(localStorage.getItem('token'));
 
         clients = clients.map(c => {
-            ['createdAt', 'updatedAt'].forEach(function (k) {
+            ['createdAt', 'updatedAt'].forEach((k) => {
                 delete c[k];
             });
             return c;
@@ -47,7 +47,7 @@ export const Clients = () => {
     useEffect(() => {
         document.title = "Клиенты - Clockwise Clockware";
 
-        async function checkAuth() {
+        const checkAuth = async () => {
             try{
                 await AuthService.checkAuth();
                 fetchClients();
