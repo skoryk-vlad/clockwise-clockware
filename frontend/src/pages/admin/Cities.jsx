@@ -22,7 +22,7 @@ export const Cities = () => {
     const [idUpd, setIdUpd] = useState(null);
     const [updCity, setUpdCity] = useState('');
     
-    const [error, setError] = useState('');
+    const [error, setError] = useState('Произошла ошибка');
     const [errorModal, setErrorModal] = useState(false);
     
     const [redirect, setRedirect] = useState(false);
@@ -69,7 +69,7 @@ export const Cities = () => {
             await CityService.deleteCityById(id);
             fetchCities();
         } catch(e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }
@@ -80,7 +80,7 @@ export const Cities = () => {
             setNewCity('');
             fetchCities();
         } catch(e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }
@@ -90,7 +90,7 @@ export const Cities = () => {
             setModalUpd(false);
             fetchCities();
         } catch(e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }

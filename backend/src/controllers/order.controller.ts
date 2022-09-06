@@ -21,6 +21,7 @@ export default class OrderController {
             if (!existMaster) return res.status(404).json('No such master');
 
             const overlapsOrders = await Order.findAll({
+                replacements: [time],
                 where: {
                     date,
                     masterId,
@@ -114,6 +115,7 @@ export default class OrderController {
             if (!existClient) return res.status(404).json('No such client');
 
             const overlapsOrders = await Order.findAll({
+                replacements: [time],
                 where: {
                     date,
                     masterId,

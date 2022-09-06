@@ -28,7 +28,7 @@ export const Masters = () => {
     const [idUpd, setIdUpd] = useState(null);
     const [updMaster, setUpdMaster] = useState(defaultMaster);
 
-    const [error, setError] = useState('');
+    const [error, setError] = useState('Произошла ошибка');
     const [errorModal, setErrorModal] = useState(false);
     
     const [redirect, setRedirect] = useState(false);
@@ -81,7 +81,7 @@ export const Masters = () => {
             await MasterService.deleteMasterById(id, localStorage.getItem('token'));
             fetchMasters();
         } catch(e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }
@@ -92,7 +92,7 @@ export const Masters = () => {
             setNewMaster(defaultMaster);
             fetchMasters();
         } catch(e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }
@@ -102,7 +102,7 @@ export const Masters = () => {
             setModalUpd(false);
             fetchMasters();
         } catch(e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }
@@ -127,7 +127,7 @@ export const Masters = () => {
                             value={updMaster} cities={cities}
                             onClick={updateMaster} btnTitle={'Изменить'} />
 
-                <AdminTable dataArr={masters.map(m => ({...m, cities: m.cities.map(mc => cities.find(c => c.id === mc).name).join(', ')}))}
+                <AdminTable dataArr={masters.map(m => ({...m, cities: m.cities.map(mc => cities.find(c => c.id === mc)?.name).join(', ')}))}
                             columns={['id', 'Имя', 'Города', 'Рейтинг']}
                             btnTitles={['Изменение', 'Удаление']}
                             btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteMaster(e)]}
