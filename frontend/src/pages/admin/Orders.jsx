@@ -38,7 +38,7 @@ export const Orders = () => {
     const [idUpd, setIdUpd] = useState(null);
     const [updOrder, setUpdOrder] = useState(defaultOrder);
 
-    const [error, setError] = useState('');
+    const [error, setError] = useState('Произошла ошибка');
     const [errorModal, setErrorModal] = useState(false);
 
     const [redirect, setRedirect] = useState(false);
@@ -124,7 +124,7 @@ export const Orders = () => {
             await OrderService.deleteOrderById(id);
             fetchOrders();
         } catch (e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }
@@ -137,7 +137,7 @@ export const Orders = () => {
             fetchOrders();
             return true;
         } catch (e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }
@@ -147,7 +147,7 @@ export const Orders = () => {
             setModalUpd(false);
             fetchOrders();
         } catch (e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }

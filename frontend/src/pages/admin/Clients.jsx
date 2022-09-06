@@ -26,7 +26,7 @@ export const Clients = () => {
     const [idUpd, setIdUpd] = useState(null);
     const [updClient, setUpdClient] = useState(defaultClient);
 
-    const [error, setError] = useState('');
+    const [error, setError] = useState('Произошла ошибка');
     const [errorModal, setErrorModal] = useState(false);
 
     const [redirect, setRedirect] = useState(false);
@@ -73,7 +73,7 @@ export const Clients = () => {
             await ClientService.deleteClientById(id);
             fetchClients();
         } catch(e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }
@@ -84,7 +84,7 @@ export const Clients = () => {
             setNewClient(defaultClient);
             fetchClients();
         } catch(e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }
@@ -94,7 +94,7 @@ export const Clients = () => {
             setModalUpd(false);
             fetchClients();
         } catch(e) {
-            setError(e.response.data);
+            console.log(e.response.data);
             setErrorModal(true);
         }
     }

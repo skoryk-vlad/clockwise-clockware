@@ -162,7 +162,7 @@ export const Admin = () => {
                     <AdminTable dataArr={orders}
                         columns={['id', 'Размер часов', 'Дата', 'Время', 'Рейтинг', 'Город', 'Клиент', 'Мастер', 'Статус']}
                         btnTitles={['Изменение']}
-                        btnFuncs={[e => { setModal(true); setIdUpd(e.target.closest('tr').id) }]}
+                        btnFuncs={[e => { setModal(true); setIdUpd(+e.target.closest('tr').id) }]}
                     />
                 </div>
             </div>
