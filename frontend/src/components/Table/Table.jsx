@@ -6,13 +6,6 @@ const getProperty = (obj, prop) => {
 
     if (Array.isArray(parts)) {
         const last = parts.length > 1 ? parts.pop() : parts;
-        const l = parts.length;
-        let i = 1, current = parts[0];
-
-        while ((obj = obj[current]) && i < l) {
-            current = parts[i];
-            i++;
-        }
         
         if (typeof obj === "object" && obj !== null) {
             return obj[last];

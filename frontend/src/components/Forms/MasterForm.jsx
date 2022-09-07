@@ -18,12 +18,12 @@ const MasterSchema = z.object({
     })
 });
 
-export const MasterForm = ({ values, onClick, btnTitle, cities }) => {
-    const deleteValueFromArray = (array, value) => {
-        array.splice(array.indexOf(parseInt(value)), 1);
-        return array;
-    }
+const deleteValueFromArray = (array, value) => {
+    array.splice(array.indexOf(parseInt(value)), 1);
+    return array;
+}
 
+export const MasterForm = ({ values, onClick, btnTitle, cities }) => {
     const { control, handleSubmit, getValues, setValue, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
         mode: 'onBlur',
         defaultValues: values,
@@ -69,7 +69,7 @@ export const MasterForm = ({ values, onClick, btnTitle, cities }) => {
                     control={control}
                     name="cities"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, onBlur, value, name },
                         fieldState: { error },
                     }) => (
                         <MySelect multiple={true} size="4"

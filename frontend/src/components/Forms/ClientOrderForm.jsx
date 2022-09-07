@@ -17,13 +17,13 @@ const ClientOrderSchema = z.object({
     time: z.number({ invalid_type_error: 'Требуется выбрать время' }).int().min(10).max(18)
 });
 
-export const ClientOrderForm = ({ values, onClick, cities }) => {
-    const checkZero = (num) => {
-        return num > 9 ? num : '0' + num;
-    };
-    const date = new Date();
-    const minDate = `${date.getFullYear()}-${checkZero(date.getMonth() + 1)}-${checkZero(date.getDate())}`;
+const checkZero = (num) => {
+    return num > 9 ? num : '0' + num;
+};
+const date = new Date();
+const minDate = `${date.getFullYear()}-${checkZero(date.getMonth() + 1)}-${checkZero(date.getDate())}`;
 
+export const ClientOrderForm = ({ values, onClick, cities }) => {
     const { control, handleSubmit, getValues, setValue, watch, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
         mode: 'all',
         defaultValues: values,
