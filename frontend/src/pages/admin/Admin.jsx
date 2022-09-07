@@ -1,16 +1,17 @@
-import { Formik } from 'formik';
 import React, { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom';
 import { AuthService, CityService, ClientService, MasterService, OrderService, StatusService } from '../../API/Server';
-import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { AdminTable } from '../../components/AdminTable/AdminTable';
-import { MyInput } from '../../components/input/MyInput';
+import { ChangeStatusForm } from '../../components/Forms/ChangeStatusForm';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar'
-import { MySelect } from '../../components/select/MySelect';
+import { Table } from '../../components/Table/Table';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
-import classes from './AdminForm.module.css';
+
+const defaultOrder = {
+    rating: 0,
+    statusId: null
+};
 
 export const Admin = () => {
     const [orders, setOrders] = useState([]);
@@ -19,26 +20,12 @@ export const Admin = () => {
     const [clients, setClients] = useState([]);
     const [statuses, setStatuses] = useState([]);
 
-    const [modal, setModal] = useState(false);
-    const [idUpd, setIdUpd] = useState(null);
+    const [currentOrder, setCurrentOrder] = useState(defaultOrder);
+    const [isModalOpened, setIsModalOpened] = useState(false);
 
     const [ordersCount, setOrdersCount] = useState(0);
 
     const [redirect, setRedirect] = useState(false);
-    
-    const [initialValues, setInitialValues] = useState({
-        rating: 0,
-        statusId: null
-    });
-
-    const checkZero = (num) => {
-        return num > 9 ? num : '0' + num;
-    };
-
-    const toDate = (strDate) => {
-        const date = new Date(strDate);
-        return `${date.getFullYear()}-${checkZero(date.getMonth() + 1)}-${checkZero(date.getDate())}`;
-    }
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
         let orders = await OrderService.getOrders();
@@ -49,22 +36,7 @@ export const Admin = () => {
 
         setOrdersCount(orders.length);
 
-        orders = orders.map(o => {
-            let order = {
-                ...o,
-                date: toDate(o.date),
-                city: o.City.name,
-                client: o.Client.name,
-                master: o.Master.name,
-                status: o.Status.name,
-            };
-            ['City', 'Master', 'Client', 'Status', 'cityId', 'masterId', 'clientId', 'statusId', 'createdAt', 'updatedAt'].forEach((k) => {
-                delete order[k];
-            });
-            return order;
-        });
-
-        setOrders(orders.filter(o => o.status === statuses.find(s => s.id === 1).name || o.status === statuses.find(s => s.id === 2).name).map(o => ({ ...o, date: toDate(o.date) })));
+        setOrders(orders.filter(o => o.statusId === 1 || o.statusId === 2));
         setCities(cities);
         setMasters(masters);
         setClients(clients);
@@ -87,48 +59,38 @@ export const Admin = () => {
     }, []);
 
     useEffect(() => {
-        if (idUpd) {
-            let order = orders.find(o => o.id === +idUpd);
-            setInitialValues({
-                rating: order.rating,
-                statusId: statuses.find(s => s.name === order.status).id
-            })
-        }
-    }, [idUpd]);
+        if (!isModalOpened)
+            setCurrentOrder(null);
+    }, [isModalOpened]);
 
     if (redirect) {
         return <Navigate push to="/admin/login" />
     }
 
     const changeStatus = async (values) => {
-        await OrderService.changeStatusById(idUpd, values.statusId, values.rating);
-        setModal(false);
+        await OrderService.changeStatusById(values.id, values.statusId, values.rating);
+        setIsModalOpened(false);
         fetchOrders();
     };
 
+    const tableHeaders = ["id", "Размер часов", "Дата", "Время", "Рейтинг", "Город", "Клиент", "Мастер", "Статус", "Изменение"];
 
-    const validate = (values) => {
-        let errors = {};
-
-        if (!values.rating && values.rating !== 0) {
-            errors.rating = "Требуется рейтинг";
-        } else if (values.rating < 0 || values.rating > 5) {
-            errors.rating = "Рейтинг должен находиться в диапазоне 0-5";
-        } else if (parseInt(values.rating) !== values.rating) {
-            errors.rating = "Рейтинг должен быть целым числом";
+    const tableBodies = [
+        `id`,
+        `watchSize`,
+        `date`,
+        `time`,
+        `rating`,
+        `City.name`,
+        `Client.name`,
+        `Master.name`,
+        `Status.name`,
+        {
+            name: `Изменить`,
+            callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(c => c.id === id)); },
+            param: `id`
         }
-
-        if (!values.statusId) {
-            errors.statusId = "Требуется выбрать статус";
-        }
-
-        return errors;
-    };
-
-    const submitForm = async (values, { resetForm }) => {
-        resetForm({});
-        changeStatus(values);
-    }
+    ];
 
     return (
         <div className='admin-container'>
@@ -159,63 +121,16 @@ export const Admin = () => {
                         </div>
                     </div>
                     <h2 className='admin-main__title'>Активные заказы</h2>
-                    <AdminTable dataArr={orders}
-                        columns={['id', 'Размер часов', 'Дата', 'Время', 'Рейтинг', 'Город', 'Клиент', 'Мастер', 'Статус']}
-                        btnTitles={['Изменение']}
-                        btnFuncs={[e => { setModal(true); setIdUpd(+e.target.closest('tr').id) }]}
+                    <Table
+                        data={orders}
+                        tableHeaders={tableHeaders}
+                        tableBodies={tableBodies}
                     />
                 </div>
             </div>
 
-            <MyModal visible={modal} setVisible={setModal}>
-                <Formik
-                enableReinitialize
-                initialValues={initialValues}
-                validate={validate}
-                onSubmit={submitForm}
-            >
-                {(formik) => {
-                    const {
-                        values,
-                        handleChange,
-                        handleSubmit,
-                        errors,
-                        touched,
-                        handleBlur,
-                        isValid,
-                        dirty,
-                        setFieldValue
-                    } = formik;
-                    return (
-                        <form onSubmit={handleSubmit} className={classes.form}>
-                                <div className={classes.rowTop}>
-                                    <label htmlFor="rating">Рейтинг</label>
-                                    {errors.rating && touched.rating && (
-                                        <div className={classes.error}>{errors.rating}</div>
-                                    )}
-                                </div>
-                                <MyInput
-                                    type="number" name="rating" id="rating"
-                                    value={values.rating}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    placeholder="Рейтинг..."
-                                />
-                            
-                                <label htmlFor="statusId">Статус</label>
-                                <MySelect
-                                    name="statusId" id="statusId" value={values.statusId || ''}
-                                    onChange={value => setFieldValue("statusId", parseInt(value))}
-                                    onBlur={handleBlur}
-                                    options={statuses.map(status => ({ value: status.id, name: status.name }))}
-                                />
-
-                            <AdminButton type="submit" className={!(dirty && isValid) ? "disabledBtn" : ""}
-                                disabled={!(dirty && isValid)}>Изменить</AdminButton>
-                        </form>
-                    );
-                }}
-            </Formik>
+            <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
+                {currentOrder && <ChangeStatusForm values={currentOrder} onClick={changeStatus} statuses={statuses}></ChangeStatusForm>}
             </MyModal>
         </div>
     )

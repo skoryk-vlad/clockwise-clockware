@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import classes from './NumPicker.module.css';
 
-export const NumPicker = ({ from, to, count = 1, onClick, min = from, value, id, ...props }) => { 
-
+export const NumPicker = ({ from, to, count = 1, onClick, min = from, value, id, ...props }) => {
     const [numPicked, setNumPicked] = useState(Array(to - from + 1).fill(0));
 
     const numsToShow = [];

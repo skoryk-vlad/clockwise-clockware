@@ -5,32 +5,25 @@ import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
-import { MyInput } from '../../components/input/MyInput';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { AdminTable } from '../../components/AdminTable/AdminTable';
-import { Formik } from 'formik';
-import classes from './AdminForm.module.css';
 import { Navigate } from 'react-router-dom';
-import { MySelect } from '../../components/select/MySelect';
+import { MasterForm } from '../../components/Forms/MasterForm';
+import { Table } from '../../components/Table/Table';
+
+const defaultMaster = {
+    name: '',
+    cities: []
+};
 
 export const Masters = () => {
-    const defaultMaster = {
-        name: '',
-        cities: []
-    };
     const [masters, setMasters] = useState([]);
     const [cities, setCities] = useState([]);
 
-    const [newMaster, setNewMaster] = useState(defaultMaster);
-    const [modalAdd, setModalAdd] = useState(false);
+    const [currentMaster, setCurrentMaster] = useState(defaultMaster);
+    const [isModalOpened, setIsModalOpened] = useState(false);
 
-    const [modalUpd, setModalUpd] = useState(false);
-    const [idUpd, setIdUpd] = useState(null);
-    const [updMaster, setUpdMaster] = useState(defaultMaster);
-
-    const [error, setError] = useState('Произошла ошибка');
     const [errorModal, setErrorModal] = useState(false);
-    
+
     const [redirect, setRedirect] = useState(false);
 
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
@@ -42,7 +35,7 @@ export const Masters = () => {
             });
             return m;
         });
-        
+
         setMasters(masters);
     });
 
@@ -50,15 +43,12 @@ export const Masters = () => {
         document.title = "Мастера - Clockwise Clockware";
 
         const checkAuth = async () => {
-            try{
+            try {
                 await AuthService.checkAuth();
-
                 const cities = await CityService.getCities();
-
                 setCities(cities);
-                
                 fetchMasters();
-            } catch(e) {
+            } catch (e) {
                 setRedirect(true);
             }
         }
@@ -66,47 +56,63 @@ export const Masters = () => {
     }, []);
 
     useEffect(() => {
-        if(masters.find(m => m.id === +idUpd)) {
-            setUpdMaster(masters.find(m => m.id === +idUpd));
-        }
-    }, [idUpd, masters]);
+        if (!isModalOpened)
+            setCurrentMaster(null);
+    }, [isModalOpened]);
 
     if (redirect) {
         return <Navigate push to="/admin/login" />
     }
 
-    const deleteMaster = async (event) => {
+    const deleteMaster = async (id) => {
         try {
-            const id = event.target.closest('tr').id;
-            await MasterService.deleteMasterById(id, localStorage.getItem('token'));
+            await MasterService.deleteMasterById(id);
             fetchMasters();
-        } catch(e) {
+        } catch (e) {
             console.log(e.response.data);
             setErrorModal(true);
         }
     }
     const addMaster = async (master) => {
         try {
-            await MasterService.addMaster(master, localStorage.getItem('token'));
-            setModalAdd(false);
-            setNewMaster(defaultMaster);
+            await MasterService.addMaster(master);
+            setIsModalOpened(false);
             fetchMasters();
-        } catch(e) {
+        } catch (e) {
             console.log(e.response.data);
             setErrorModal(true);
         }
     }
     const updateMaster = async (master) => {
         try {
-            await MasterService.updateMasterById(master, localStorage.getItem('token'));
-            setModalUpd(false);
+            await MasterService.updateMasterById(master);
+            setIsModalOpened(false);
             fetchMasters();
-        } catch(e) {
+        } catch (e) {
             console.log(e.response.data);
             setErrorModal(true);
         }
     }
-    
+
+    const tableHeaders = ["id", "Имя", "Города", "Рейтинг", "Изменение", "Удаление"];
+
+    const tableBodies = [
+        `id`,
+        `name`,
+        `cities`,
+        `rating`,
+        {
+            name: `Изменить`,
+            callback: id => { setIsModalOpened(true); setCurrentMaster(masters.find(c => c.id === id)) },
+            param: `id`
+        },
+        {
+            name: `Удалить`,
+            callback: deleteMaster,
+            param: `id`
+        }
+    ];
+
     return (
         <div className='admin-container'>
             <Navbar />
@@ -114,26 +120,22 @@ export const Masters = () => {
                 <h1 className='admin-body__title'>Мастера</h1>
 
                 <div className="admin-body__btns">
-                    <AdminButton onClick={() => setModalAdd(true)}>
+                    <AdminButton onClick={() => { setIsModalOpened(true); setCurrentMaster(defaultMaster) }}>
                         Добавить
                     </AdminButton>
                 </div>
 
-                <ModalForm modal={modalAdd} setModal={setModalAdd}
-                            value={newMaster} cities={cities}
-                            onClick={addMaster} btnTitle={'Добавить'} />
+                <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
+                    {currentMaster && <MasterForm values={currentMaster} onClick={currentMaster.id ? updateMaster : addMaster} cities={cities} btnTitle={currentMaster.id ? 'Изменить' : 'Добавить'}></MasterForm>}
+                </MyModal>
 
-                <ModalForm modal={modalUpd} setModal={setModalUpd}
-                            value={updMaster} cities={cities}
-                            onClick={updateMaster} btnTitle={'Изменить'} />
-
-                <AdminTable dataArr={masters.map(m => ({...m, cities: m.cities.map(mc => cities.find(c => c.id === mc)?.name).join(', ')}))}
-                            columns={['id', 'Имя', 'Города', 'Рейтинг']}
-                            btnTitles={['Изменение', 'Удаление']}
-                            btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteMaster(e)]}
+                <Table
+                    data={masters.map(m => ({ ...m, cities: m.cities.map(mc => cities.find(c => c.id === mc)?.name).join(', ') }))}
+                    tableHeaders={tableHeaders}
+                    tableBodies={tableBodies}
                 />
 
-                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
+                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{ fontSize: '20px' }}>Произошла ошибка.</p></MyModal>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>
@@ -147,98 +149,5 @@ export const Masters = () => {
 
             </div>
         </div>
-    )
-}
-
-const ModalForm = ({ modal, setModal, value, onClick, btnTitle, cities }) => {
-    const [initialValues, setInitialValues] = useState({
-        name: '',
-        cities: []
-    });
-
-    useEffect(() => {
-        setInitialValues(value)
-    }, [value]);
-    
-    const validate = (values) => {
-        let errors = {};
-
-        if (!values.name) {
-            errors.name = "Требуется имя";
-        } else if (values.name.trim().length < 3) {
-            errors.name = "Имя должно быть не короче 3-х букв";
-        }
-        
-        if (values.cities.length === 0) {
-            errors.cities = "Требуется выбрать хотя бы 1 город";
-        }
-
-        return errors;
-    };
-
-    const submitForm = async (values, {resetForm}) => {
-        resetForm({});
-        onClick(values);
-    }
-    
-    return (
-        <MyModal visible={modal} setVisible={setModal}>
-            <Formik 
-                enableReinitialize
-                initialValues={initialValues}
-                validate={validate}
-                onSubmit={submitForm}
-            >
-                {(formik) => {
-                    const {
-                        values,
-                        handleChange,
-                        handleSubmit,
-                        errors,
-                        touched,
-                        handleBlur,
-                        isValid,
-                        dirty
-                    } = formik;
-                    return (
-                        <form onSubmit={handleSubmit} className={classes.form}>
-                            <div className={classes.formRow}>
-                                <div className={classes.rowTop}>
-                                    <label htmlFor="name">Название</label>
-                                    {errors.name && touched.name && (
-                                        <div className={classes.error}>{errors.name}</div>
-                                    )}
-                                </div>
-                                <MyInput
-                                    type="text" name="name" id="name"
-                                    value={values.name}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    placeholder="Имя мастера..."
-                                />
-                            </div>
-                            <div className={classes.formRow}>
-                                <div className={classes.rowTop}>
-                                    <label htmlFor="cities">Города</label>
-                                    {errors.cities && touched.cities && (
-                                        <div className={classes.error}>{errors.cities}</div>
-                                    )}
-                                </div>
-                                <MySelect multiple={true} size="4"
-                                    name="cities" id="cities" value={values.cities}
-                                    onChange={value => values.cities.includes(parseInt(value)) ? values.cities.splice(values.cities.indexOf(parseInt(value)), 1) : values.cities.push(parseInt(value))}
-                                    onBlur={handleBlur}
-                                    options={cities.map(city => ({ value: city.id, name: city.name }))}
-                                />
-                            </div>
-                            
-                            <AdminButton type="submit" className={!((dirty || touched.cities) && isValid) ? "disabledBtn" : ""}
-                                disabled={!((dirty || touched.cities) && isValid)}>{btnTitle}</AdminButton>
-                        </form>
-                    );
-
-                }}
-            </Formik>
-        </MyModal>
     )
 }

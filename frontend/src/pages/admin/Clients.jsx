@@ -5,28 +5,22 @@ import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
-import { MyInput } from '../../components/input/MyInput';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { AdminTable } from '../../components/AdminTable/AdminTable';
-import classes from './AdminForm.module.css';
-import { Formik } from 'formik';
 import { Navigate } from 'react-router-dom';
+import { ClientForm } from '../../components/Forms/ClientForm';
+import { Table } from '../../components/Table/Table';
+
+const defaultClient = {
+    name: '',
+    email: ''
+};
 
 export const Clients = () => {
-    const defaultClient = {
-        name: '',
-        email: ''
-    };
     const [clients, setClients] = useState([]);
 
-    const [newClient, setNewClient] = useState(defaultClient);
-    const [modalAdd, setModalAdd] = useState(false);
+    const [currentClient, setCurrentClient] = useState(defaultClient);
+    const [isModalOpened, setIsModalOpened] = useState(false);
 
-    const [modalUpd, setModalUpd] = useState(false);
-    const [idUpd, setIdUpd] = useState(null);
-    const [updClient, setUpdClient] = useState(defaultClient);
-
-    const [error, setError] = useState('Произошла ошибка');
     const [errorModal, setErrorModal] = useState(false);
 
     const [redirect, setRedirect] = useState(false);
@@ -48,10 +42,10 @@ export const Clients = () => {
         document.title = "Клиенты - Clockwise Clockware";
 
         const checkAuth = async () => {
-            try{
+            try {
                 await AuthService.checkAuth();
                 fetchClients();
-            } catch(e) {
+            } catch (e) {
                 setRedirect(true);
             }
         }
@@ -59,20 +53,19 @@ export const Clients = () => {
     }, []);
 
     useEffect(() => {
-        if(clients.find(c => c.id === +idUpd))
-            setUpdClient(clients.find(c => c.id === +idUpd));
-    }, [idUpd, clients]);
+        if (!isModalOpened)
+            setCurrentClient(null);
+    }, [isModalOpened]);
 
     if (redirect) {
         return <Navigate push to="/admin/login" />
     }
 
-    const deleteClient = async (event) => {
+    const deleteClient = async (id) => {
         try {
-            const id = event.target.closest('tr').id;
             await ClientService.deleteClientById(id);
             fetchClients();
-        } catch(e) {
+        } catch (e) {
             console.log(e.response.data);
             setErrorModal(true);
         }
@@ -80,10 +73,9 @@ export const Clients = () => {
     const addClient = async (client) => {
         try {
             await ClientService.addClient(client);
-            setModalAdd(false);
-            setNewClient(defaultClient);
+            setIsModalOpened(false);
             fetchClients();
-        } catch(e) {
+        } catch (e) {
             console.log(e.response.data);
             setErrorModal(true);
         }
@@ -91,13 +83,31 @@ export const Clients = () => {
     const updateClient = async (client) => {
         try {
             await ClientService.updateClientById(client);
-            setModalUpd(false);
+            setIsModalOpened(false);
             fetchClients();
-        } catch(e) {
+        } catch (e) {
             console.log(e.response.data);
             setErrorModal(true);
         }
     }
+
+    const tableHeaders = ["id", "Имя", "Почта", "Изменение", "Удаление"];
+
+    const tableBodies = [
+        `id`,
+        `name`,
+        `email`,
+        {
+            name: `Изменить`,
+            callback: id => { setIsModalOpened(true); setCurrentClient(clients.find(c => c.id === id)) },
+            param: `id`
+        },
+        {
+            name: `Удалить`,
+            callback: deleteClient,
+            param: `id`
+        }
+    ];
 
     return (
         <div className='admin-container'>
@@ -106,26 +116,22 @@ export const Clients = () => {
                 <h1 className='admin-body__title'>Клиенты</h1>
 
                 <div className="admin-body__btns">
-                    <AdminButton onClick={() => setModalAdd(true)}>
+                    <AdminButton onClick={() => { setIsModalOpened(true); setCurrentClient(defaultClient) }}>
                         Добавить
                     </AdminButton>
                 </div>
 
-                <ModalForm modal={modalAdd} setModal={setModalAdd}
-                            value={newClient}
-                            onClick={addClient} btnTitle={'Добавить'} />
+                <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
+                    {currentClient && <ClientForm values={currentClient} onClick={currentClient.id ? updateClient : addClient} btnTitle={currentClient.id ? 'Изменить' : 'Добавить'}></ClientForm>}
+                </MyModal>
 
-                <ModalForm modal={modalUpd} setModal={setModalUpd}
-                            value={updClient}
-                            onClick={updateClient} btnTitle={'Изменить'} />
-
-                <AdminTable dataArr={clients}
-                            columns={['id', 'Имя', 'Почта']}
-                            btnTitles={['Изменение', 'Удаление']}
-                            btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteClient(e)]}
+                <Table
+                    data={clients}
+                    tableHeaders={tableHeaders}
+                    tableBodies={tableBodies}
                 />
 
-                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
+                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{ fontSize: '20px' }}>Произошла ошибка.</p></MyModal>
 
                 {isClientsLoading &&
                     <Loader />
@@ -138,102 +144,5 @@ export const Clients = () => {
                 }
             </div>
         </div>
-    )
-}
-
-const ModalForm = ({ modal, setModal, value, onClick, btnTitle }) => {
-    const [initialValues, setInitialValues] = useState({
-        name: '',
-        email: ''
-    });
-
-    useEffect(() => {
-        setInitialValues(value)
-    }, [value]);
-    
-    const validate = (values) => {
-        let errors = {};
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-
-        if (!values.name) {
-            errors.name = "Требуется имя";
-        } else if (values.name.trim().length < 3) {
-            errors.name = "Имя должно быть не короче 3-х букв";
-        }
-
-        if (!values.email) {
-            errors.email = "Требуется почта";
-        } else if (!regex.test(values.email)) {
-            errors.email = "Неправильный формат";
-        }
-
-        return errors;
-    };
-
-    const submitForm = async (values, {resetForm}) => {
-        resetForm({});
-        onClick(values);
-    }
-    
-    return (
-        <MyModal visible={modal} setVisible={setModal}>
-            <Formik
-                enableReinitialize
-                initialValues={initialValues}
-                validate={validate}
-                onSubmit={submitForm}
-            >
-                {(formik) => {
-                    const {
-                        values,
-                        handleChange,
-                        handleSubmit,
-                        errors,
-                        touched,
-                        handleBlur,
-                        isValid,
-                        dirty
-                    } = formik;
-                    return (
-                        <form onSubmit={handleSubmit} className={classes.form}>
-                            <div className={classes.formRow}>
-                                <div className={classes.rowTop}>
-                                    <label htmlFor="name">Название</label>
-                                    {errors.name && touched.name && (
-                                        <div className={classes.error}>{errors.name}</div>
-                                    )}
-                                </div>
-                                <MyInput
-                                    type="text" name="name" id="name"
-                                    value={values.name}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    placeholder="Имя клиента..."
-                                />
-                            </div>
-
-                            <div className={classes.formRow}>
-                                <div className={classes.rowTop}>
-                                    <label htmlFor="email">Почта</label>
-                                    {errors.email && touched.email && (
-                                        <div className={classes.error}>{errors.email}</div>
-                                    )}
-                                </div>
-                                <MyInput
-                                    type="email" name="email" id="email"
-                                    value={values.email}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    placeholder="Почта клиента..."
-                                />
-                            </div>
-                            
-                            <AdminButton type="submit" className={!(dirty && isValid) ? "disabledBtn" : ""}
-                                disabled={!(dirty && isValid)}>{btnTitle}</AdminButton>
-                        </form>
-                    );
-                }}
-            </Formik>
-        </MyModal>
     )
 }

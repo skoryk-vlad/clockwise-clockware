@@ -60,7 +60,8 @@ export default class MasterController {
     }
     async getAvailableMasters(req: Request, res: Response): Promise<Response> {
         try {
-            const { cityId, date, time, watchSize } = GetAvailMastersSchema.parse(req.body);
+            const { cityId, date, time, watchSize } = GetAvailMastersSchema.parse(req.query);
+            
             const orders = await Order.findAll({
                 replacements: [+time],
                 where: {
