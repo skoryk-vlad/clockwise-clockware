@@ -1,12 +1,25 @@
 import React from 'react';
 import classes from './Table.module.css';
 
+const getDeepObject = (obj, parts) => {
+    let current = parts[0];
+    if(!obj[current] || parts.length < 1) {
+        return obj;
+    }
+    obj = obj[current];
+    current = parts[0];
+    parts.shift();
+    return getDeepObject(obj, parts);
+};
+
 const getProperty = (obj, prop) => {
     const parts = prop.split(".");
 
     if (Array.isArray(parts)) {
         const last = parts.length > 1 ? parts.pop() : parts;
         
+        obj = getDeepObject(obj, parts);
+
         if (typeof obj === "object" && obj !== null) {
             return obj[last];
         }
