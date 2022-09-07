@@ -12,10 +12,10 @@ const ChangeStatusSchema = z.object({
     statusId: z.number({invalid_type_error: 'Требуется выбрать статус'}).int().min(1).max(4)
 });
 
-export const ChangeStatusForm = ({ values, onClick, statuses }) => {
+export const ChangeStatusForm = ({ order, onClick, statuses }) => {
     const { control, handleSubmit, getValues, setValue, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
         mode: 'onChange',
-        defaultValues: values,
+        defaultValues: order,
         resolver: zodResolver(ChangeStatusSchema)
     });
     const onSubmit = () => onClick(getValues());
@@ -39,7 +39,7 @@ export const ChangeStatusForm = ({ values, onClick, statuses }) => {
                         <MyInput
                             name={name} type="number"
                             onBlur={onBlur}
-                            onChange={e => setValue('rating', +e.target.value)}
+                            onChange={event => setValue('rating', +event.target.value)}
                             value={value}
                             error={error}
                             placeholder="Рейтинг..."

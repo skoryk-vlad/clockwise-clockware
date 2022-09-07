@@ -38,7 +38,7 @@ export const NumPicker = ({ from, to, count = 1, onClick, min = from, value, id,
         <div className={classes.numPicker + ' timeP'} onClick={onClick}>
             {
             numsToShow.map((num, index) => 
-                    <button onClick={e => numClicked(e)} {...props}
+                    <button onClick={event => numClicked(event)} {...props}
                     className={classes.numItem + (numPicked[index] === 1 ? ' ' + classes.active : '') + (num < min ? ' ' + classes.disabled : '') }
                     key={num} data-num={+num + +count - 1 > to ? num - count + 1 + +to - +num : num} disabled={num < min}>{num}</button>)
             }

@@ -36,7 +36,7 @@ export const Admin = () => {
 
         setOrdersCount(orders.length);
 
-        setOrders(orders.filter(o => o.statusId === 1 || o.statusId === 2));
+        setOrders(orders.filter(order => order.statusId === 1 || order.statusId === 2));
         setCities(cities);
         setMasters(masters);
         setClients(clients);
@@ -49,7 +49,7 @@ export const Admin = () => {
         const checkAuth = async () => {
             try {
                 await AuthService.checkAuth();
-            } catch (e) {
+            } catch (error) {
                 setRedirect(true);
             }
         }
@@ -87,7 +87,7 @@ export const Admin = () => {
         `Status.name`,
         {
             name: `Изменить`,
-            callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(c => c.id === id)); },
+            callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(order => order.id === id)); },
             param: `id`
         }
     ];
@@ -130,7 +130,7 @@ export const Admin = () => {
             </div>
 
             <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                {currentOrder && <ChangeStatusForm values={currentOrder} onClick={changeStatus} statuses={statuses}></ChangeStatusForm>}
+                {currentOrder && <ChangeStatusForm order={currentOrder} onClick={changeStatus} statuses={statuses}></ChangeStatusForm>}
             </MyModal>
         </div>
     )

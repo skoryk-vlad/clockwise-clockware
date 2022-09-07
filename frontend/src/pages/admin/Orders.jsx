@@ -58,7 +58,7 @@ export const Orders = () => {
                 setStatuses(statuses);
 
                 fetchOrders();
-            } catch (e) {
+            } catch (error) {
                 setRedirect(true);
             }
         }
@@ -78,20 +78,20 @@ export const Orders = () => {
         try {
             await OrderService.deleteOrderById(id);
             fetchOrders();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
     const addOrder = async (order) => {
         try {
-            const client = clients.find(c => c.id === order.clientId);
+            const client = clients.find(client => client.id === order.clientId);
             await OrderService.addOrder({ ...order, name: client.name, email: client.email });
             setIsModalOpened(false);
             fetchOrders();
             return true;
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -100,8 +100,8 @@ export const Orders = () => {
             await OrderService.updateOrderById(order);
             setIsModalOpened(false);
             fetchOrders();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -120,7 +120,7 @@ export const Orders = () => {
         `Status.name`,
         {
             name: `Изменить`,
-            callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(c => c.id === id)); },
+            callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(order => order.id === id)); },
             param: `id`
         },
         {
@@ -143,7 +143,7 @@ export const Orders = () => {
                 </div>
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                    {currentOrder && <OrderForm values={currentOrder} onClick={currentOrder?.id ? updateOrder : addOrder}
+                    {currentOrder && <OrderForm order={currentOrder} onClick={currentOrder?.id ? updateOrder : addOrder}
                         masters={masters} clients={clients} statuses={statuses}
                         cities={cities} btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
                 </MyModal>

@@ -14,7 +14,7 @@ export const UpdateMasterSchema = z.object({
 export const DeleteMasterSchema = z.object({
     id: z.number().int().positive()
 });
-export const GetAvailMastersSchema = z.object({
+export const GetFreeMastersSchema = z.object({
     cityId: z.preprocess(
         (a) => parseInt(z.string().parse(a), 10),
         z.number().positive()

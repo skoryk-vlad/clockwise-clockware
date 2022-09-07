@@ -6,8 +6,8 @@ export default class StatusController {
         try {
             const statuses = await Status.findAll();
             return res.status(200).json(statuses);
-        } catch (e) {
-            return res.status(500).json(e);
+        } catch (error) {
+            return res.status(500).json(error);
         }
     }
 }

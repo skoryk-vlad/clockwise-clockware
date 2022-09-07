@@ -29,13 +29,6 @@ export const Masters = () => {
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
         let masters = await MasterService.getMasters();
 
-        masters = masters.map(m => {
-            ['createdAt', 'updatedAt'].forEach((k) => {
-                delete m[k];
-            });
-            return m;
-        });
-
         setMasters(masters);
     });
 
@@ -48,7 +41,7 @@ export const Masters = () => {
                 const cities = await CityService.getCities();
                 setCities(cities);
                 fetchMasters();
-            } catch (e) {
+            } catch (error) {
                 setRedirect(true);
             }
         }
@@ -68,8 +61,8 @@ export const Masters = () => {
         try {
             await MasterService.deleteMasterById(id);
             fetchMasters();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -78,8 +71,8 @@ export const Masters = () => {
             await MasterService.addMaster(master);
             setIsModalOpened(false);
             fetchMasters();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -88,8 +81,8 @@ export const Masters = () => {
             await MasterService.updateMasterById(master);
             setIsModalOpened(false);
             fetchMasters();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -103,7 +96,7 @@ export const Masters = () => {
         `rating`,
         {
             name: `Изменить`,
-            callback: id => { setIsModalOpened(true); setCurrentMaster(masters.find(c => c.id === id)) },
+            callback: id => { setIsModalOpened(true); setCurrentMaster(masters.find(master => master.id === id)) },
             param: `id`
         },
         {
@@ -126,11 +119,11 @@ export const Masters = () => {
                 </div>
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                    {currentMaster && <MasterForm values={currentMaster} onClick={currentMaster.id ? updateMaster : addMaster} cities={cities} btnTitle={currentMaster.id ? 'Изменить' : 'Добавить'}></MasterForm>}
+                    {currentMaster && <MasterForm master={currentMaster} onClick={currentMaster.id ? updateMaster : addMaster} cities={cities} btnTitle={currentMaster.id ? 'Изменить' : 'Добавить'}></MasterForm>}
                 </MyModal>
 
                 <Table
-                    data={masters.map(m => ({ ...m, cities: m.cities.map(mc => cities.find(c => c.id === mc)?.name).join(', ') }))}
+                    data={masters.map(master => ({ ...master, cities: master.cities.map(masterCity => cities.find(city => city.id === masterCity)?.name).join(', ') }))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />

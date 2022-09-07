@@ -18,8 +18,8 @@ api.interceptors.request.use(config => {
 
 export class CityService {
     static async getCities() {
-        const response = await axios.get(`${API_URL}/api/city`);
-        return response.data;
+        const { data } = await axios.get(`${API_URL}/api/city`);
+        return data;
     }
     static async addCity(newCity) {
         const { data } = await api.post(`/city`, newCity);
@@ -37,8 +37,8 @@ export class CityService {
 
 export class MasterService {
     static async getMasters() {
-        const response = await axios.get(`${API_URL}/api/master`);
-        return response.data;
+        const { data } = await axios.get(`${API_URL}/api/master`);
+        return data;
     }
     static async addMaster(newMaster) {
         const { data } = await api.post(`/master`, newMaster);
@@ -52,9 +52,9 @@ export class MasterService {
         const { data } = await api.put(`/master/${updMaster.id}`, updMaster);
         return data;
     }
-    static async getAvailableMasters(cityId, date, time, watchSize) {
-        const response = await axios.get(`${API_URL}/api/availmaster?cityId=${cityId}&date=${date}&time=${time}&watchSize=${watchSize}`);
-        return response.data;
+    static async getFreeMasters(cityId, date, time, watchSize) {
+        const { data } = await axios.get(`${API_URL}/api/freemasters?cityId=${cityId}&date=${date}&time=${time}&watchSize=${watchSize}`);
+        return data;
     }
 }
 
@@ -103,10 +103,10 @@ export class OrderService {
 export class AuthService {
     static async auth(authInfo) {
         try {
-            const response = await axios.post(`${API_URL}/api/auth`, authInfo);
-            return response.data;
-        } catch (e) {
-            return e;
+            const { data } = await axios.post(`${API_URL}/api/auth`, authInfo);
+            return data;
+        } catch (error) {
+            return error;
         }
     }
 

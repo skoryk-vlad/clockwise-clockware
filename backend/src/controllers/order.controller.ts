@@ -7,11 +7,11 @@ import { City } from './../models/city.model';
 import { Status } from './../models/status.model';
 import { Order } from './../models/order.model';
 import { Request, Response } from 'express';
-import { sendConfMail } from '../mailer';
+import { sendConfirmationMail } from '../mailer';
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
-        const t = await sequelize.transaction();
+        const addOrderTransaction = await sequelize.transaction();
         try {
             const { name, email, masterId, cityId, watchSize, date, time } = AddOrderSchema.parse(req.body);
 
@@ -38,21 +38,21 @@ export default class OrderController {
                 email, name
             }, {
                 conflictFields: ['email'],
-                transaction: t
+                transaction: addOrderTransaction
             });
 
             const order = await Order.create({
                 watchSize, date, time, cityId, clientId: client.getDataValue('id'), masterId
             }, {
-                transaction: t
+                transaction: addOrderTransaction
             });
-            await sendConfMail(email, order.getDataValue('id'), name);
-            await t.commit();
+            await sendConfirmationMail(email, order.getDataValue('id'), name);
+            await addOrderTransaction.commit();
             return res.status(201).json(order);
-        } catch (e) {
-            await t.rollback();
-            if (e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            await addOrderTransaction.rollback();
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
     async getOrders(req: Request, res: Response): Promise<Response> {
@@ -83,8 +83,8 @@ export default class OrderController {
                 ]
             });
             return res.status(200).json(orders);
-        } catch (e) {
-            return res.status(500).json(e);
+        } catch (error) {
+            return res.status(500).json(error);
         }
     }
     async getOrderById(req: Request, res: Response): Promise<Response> {
@@ -93,9 +93,9 @@ export default class OrderController {
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');
             return res.status(200).json(order);
-        } catch (e) {
-            if (e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
     async updateOrder(req: Request, res: Response): Promise<Response> {
@@ -133,9 +133,9 @@ export default class OrderController {
                 id, clientId, masterId, cityId, watchSize, date, time, statusId, rating
             });
             return res.status(200).json(order);
-        } catch (e) {
-            if (e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
     async changeStatus(req: Request, res: Response): Promise<Response> {
@@ -145,9 +145,9 @@ export default class OrderController {
                 id, statusId, rating
             });
             return res.status(200).json(order);
-        } catch (e) {
-            if (e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
     async deleteOrder(req: Request, res: Response): Promise<Response> {
@@ -157,9 +157,9 @@ export default class OrderController {
             if (!order) return res.status(404).json('No such order');
             await order.destroy();
             return res.status(200).json(order);
-        } catch (e) {
-            if (e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
 }

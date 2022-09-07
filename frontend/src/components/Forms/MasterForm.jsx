@@ -23,10 +23,10 @@ const deleteValueFromArray = (array, value) => {
     return array;
 }
 
-export const MasterForm = ({ values, onClick, btnTitle, cities }) => {
+export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
     const { control, handleSubmit, getValues, setValue, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
         mode: 'onBlur',
-        defaultValues: values,
+        defaultValues: master,
         resolver: zodResolver(MasterSchema)
     });
     const onSubmit = () => onClick(getValues());
@@ -69,7 +69,7 @@ export const MasterForm = ({ values, onClick, btnTitle, cities }) => {
                     control={control}
                     name="cities"
                     render={({
-                        field: { onChange, onBlur, value, name },
+                        field: { onBlur, value, name },
                         fieldState: { error },
                     }) => (
                         <MySelect multiple={true} size="4"

@@ -23,10 +23,10 @@ const checkZero = (num) => {
 const date = new Date();
 const minDate = `${date.getFullYear()}-${checkZero(date.getMonth() + 1)}-${checkZero(date.getDate())}`;
 
-export const ClientOrderForm = ({ values, onClick, cities }) => {
-    const { control, handleSubmit, getValues, setValue, watch, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
+export const ClientOrderForm = ({ order, onClick, cities }) => {
+    const { control, handleSubmit, getValues, setValue, watch, formState: { errors, isValid, touchedFields } } = useForm({
         mode: 'all',
-        defaultValues: values,
+        defaultValues: order,
         resolver: zodResolver(ClientOrderSchema)
     });
     const onSubmit = () => onClick(getValues());
@@ -101,7 +101,7 @@ export const ClientOrderForm = ({ values, onClick, cities }) => {
                             name={name}
                             onBlur={onBlur}
                             from='1' to='3'
-                            onClick={e => setValue('watchSize', +e.target.dataset.num)}
+                            onClick={event => setValue('watchSize', +event.target.dataset.num)}
                             value={value}
                             error={error}
                         />
@@ -176,7 +176,7 @@ export const ClientOrderForm = ({ values, onClick, cities }) => {
                             onBlur={onBlur}
                             from='10' to='18' count={watch("watchSize")}
                             min={!errors.date ? (watch('date') === minDate ? date.getHours() + 1 : 0) : 19}
-                            onClick={e => setValue('time', +e.target.dataset.num)}
+                            onClick={event => setValue('time', +event.target.dataset.num)}
                             value={value}
                             error={error}
                         />
@@ -184,8 +184,8 @@ export const ClientOrderForm = ({ values, onClick, cities }) => {
                 />
             </div>
 
-            <AdminButton type="submit" className={!(values.time || isValid) ? "disabledBtn" : ""}
-                disabled={!(values.time || isValid)}>Оформить заказ</AdminButton>
+            <AdminButton type="submit" className={!(order.time || isValid) ? "disabledBtn" : ""}
+                disabled={!(order.time || isValid)}>Оформить заказ</AdminButton>
         </form>
     )
 }

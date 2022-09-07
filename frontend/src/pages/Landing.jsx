@@ -8,9 +8,9 @@ import { TopButton } from '../components/Landing/TopButton/TopButton';
 import { OrderModal } from '../components/OrderModal';
 
 export const Landing = () => {
-    const [modal, setModal] = useState(false);
-    const [modalConf, setModalConf] = useState(false);
-    const [confText, setConfconfText] = useState(false);
+    const [isOrderModalOpened, setIsOrderModalOpened] = useState(false);
+    const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false);
+    const [confirmModalText, setConfirmModalText] = useState(false);
 
     useEffect(() => {
         document.title = "Ремонт напольных часов - Clockwise Clockware";
@@ -18,34 +18,34 @@ export const Landing = () => {
         if(document.location.search) {
             const state = document.location.search.slice(1, document.location.search.length);
             if(state === 'success') {
-                setConfconfText('Заказ успешно подтвержден!');
-                setModalConf(true);
+                setConfirmModalText('Заказ успешно подтвержден!');
+                setIsConfirmModalOpened(true);
             } else if(state === 'error') {
-                setConfconfText('Произошла ошибка!');
-                setModalConf(true);
+                setConfirmModalText('Произошла ошибка!');
+                setIsConfirmModalOpened(true);
             } else if(state === 'expired') {
-                setConfconfText('Истек срок подтверждения заказа!');
-                setModalConf(true);
+                setConfirmModalText('Истек срок подтверждения заказа!');
+                setIsConfirmModalOpened(true);
             } else if(state === 'confirmed') {
-                setConfconfText('Заказ уже был подтвержден!');
-                setModalConf(true);
+                setConfirmModalText('Заказ уже был подтвержден!');
+                setIsConfirmModalOpened(true);
             }
         }
     }, []);
 
     return (
         <div className="wrapper">
-            <Header onClick={() => setModal(true)} />
-            <Main onClick={() => setModal(true)} />
+            <Header onClick={() => setIsOrderModalOpened(true)} />
+            <Main onClick={() => setIsOrderModalOpened(true)} />
             <Footer />
             <TopButton />
             
-            <MyModal visible={modal} setVisible={setModal}>
+            <MyModal visible={isOrderModalOpened} setVisible={setIsOrderModalOpened}>
                 <OrderModal/>
             </MyModal>
 
-            <MyModal visible={modalConf} setVisible={setModalConf}>
-                <div className='modalMessage'>{confText}</div>
+            <MyModal visible={isConfirmModalOpened} setVisible={setIsConfirmModalOpened}>
+                <div className='modalMessage'>{confirmModalText}</div>
             </MyModal>
         </div>
     );

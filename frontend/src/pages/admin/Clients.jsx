@@ -28,13 +28,6 @@ export const Clients = () => {
     const [fetchClients, isClientsLoading, Error] = useFetching(async () => {
         let clients = await ClientService.getClients(localStorage.getItem('token'));
 
-        clients = clients.map(c => {
-            ['createdAt', 'updatedAt'].forEach((k) => {
-                delete c[k];
-            });
-            return c;
-        });
-
         setClients(clients);
     });
 
@@ -45,7 +38,7 @@ export const Clients = () => {
             try {
                 await AuthService.checkAuth();
                 fetchClients();
-            } catch (e) {
+            } catch (error) {
                 setRedirect(true);
             }
         }
@@ -65,8 +58,8 @@ export const Clients = () => {
         try {
             await ClientService.deleteClientById(id);
             fetchClients();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -75,8 +68,8 @@ export const Clients = () => {
             await ClientService.addClient(client);
             setIsModalOpened(false);
             fetchClients();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -85,8 +78,8 @@ export const Clients = () => {
             await ClientService.updateClientById(client);
             setIsModalOpened(false);
             fetchClients();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -99,7 +92,7 @@ export const Clients = () => {
         `email`,
         {
             name: `Изменить`,
-            callback: id => { setIsModalOpened(true); setCurrentClient(clients.find(c => c.id === id)) },
+            callback: id => { setIsModalOpened(true); setCurrentClient(clients.find(client => client.id === id)) },
             param: `id`
         },
         {
@@ -122,7 +115,7 @@ export const Clients = () => {
                 </div>
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                    {currentClient && <ClientForm values={currentClient} onClick={currentClient.id ? updateClient : addClient} btnTitle={currentClient.id ? 'Изменить' : 'Добавить'}></ClientForm>}
+                    {currentClient && <ClientForm client={currentClient} onClick={currentClient.id ? updateClient : addClient} btnTitle={currentClient.id ? 'Изменить' : 'Добавить'}></ClientForm>}
                 </MyModal>
 
                 <Table

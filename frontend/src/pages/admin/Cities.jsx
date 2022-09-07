@@ -27,13 +27,6 @@ export const Cities = () => {
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         let cities = await CityService.getCities();
 
-        cities = cities.map(c => {
-            ['createdAt', 'updatedAt'].forEach((k) => {
-                delete c[k];
-            });
-            return c;
-        });
-
         setCities(cities);
     });
 
@@ -44,7 +37,7 @@ export const Cities = () => {
             try {
                 await AuthService.checkAuth();
                 fetchCities();
-            } catch (e) {
+            } catch (error) {
                 setRedirect(true);
             }
         }
@@ -64,8 +57,8 @@ export const Cities = () => {
         try {
             await CityService.deleteCityById(id);
             fetchCities();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -74,8 +67,8 @@ export const Cities = () => {
             await CityService.addCity(city);
             setIsModalOpened(false);
             fetchCities();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -84,8 +77,8 @@ export const Cities = () => {
             await CityService.updateCityById(city);
             setIsModalOpened(false);
             fetchCities();
-        } catch (e) {
-            console.log(e.response.data);
+        } catch (error) {
+            console.log(error.response.data);
             setErrorModal(true);
         }
     }
@@ -97,7 +90,7 @@ export const Cities = () => {
         `name`,
         {
             name: `Изменить`,
-            callback: id => { setIsModalOpened(true); setCurrentCity(cities.find(c => c.id === id)) },
+            callback: id => { setIsModalOpened(true); setCurrentCity(cities.find(city => city.id === id)) },
             param: `id`
         },
         {
@@ -120,7 +113,7 @@ export const Cities = () => {
                 </div>
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                    {currentCity && <CityForm values={currentCity} onClick={currentCity.id ? updateCity : addCity} btnTitle={currentCity.id ? 'Изменить' : 'Добавить'}></CityForm>}
+                    {currentCity && <CityForm city={currentCity} onClick={currentCity.id ? updateCity : addCity} btnTitle={currentCity.id ? 'Изменить' : 'Добавить'}></CityForm>}
                 </MyModal>
 
                 <Table
