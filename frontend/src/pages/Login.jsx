@@ -25,13 +25,13 @@ export const Login = () => {
 
     const login = async event => {
         event.preventDefault();
-        const data = await AuthService.auth(authInfo);
-        if(data.token) {
-            localStorage.setItem('token', data.token);
+        const loginInfo = await AuthService.auth(authInfo);
+        if(loginInfo.token) {
+            localStorage.setItem('token', loginInfo.token);
             setRedirect(true);
         } else {
             localStorage.removeItem('token');
-            setError(data.response.data.message);
+            setError(loginInfo.response.data.message);
             setModal(true);
         }
     }
@@ -44,8 +44,8 @@ export const Login = () => {
         <div className='login'>
             <h1>Страница входа</h1>
             <form onSubmit={login}>
-                <MyInput value={authInfo.login} onChange={e => setAuthInfo({...authInfo, login: e.target.value})} type="text" placeholder="Введите логин" />
-                <MyInput value={authInfo.password} onChange={e => setAuthInfo({...authInfo, password: e.target.value})} type="password" placeholder="Введите пароль" />
+                <MyInput value={authInfo.login} onChange={event => setAuthInfo({...authInfo, login: event.target.value})} type="text" placeholder="Введите логин" />
+                <MyInput value={authInfo.password} onChange={event => setAuthInfo({...authInfo, password: event.target.value})} type="password" placeholder="Введите пароль" />
                 <OrderButton>Войти</OrderButton>
             </form>
             <MyModal visible={modal} setVisible={setModal}><p style={{fontSize: '20px'}}>{error}. Попробуйте еще раз</p></MyModal>

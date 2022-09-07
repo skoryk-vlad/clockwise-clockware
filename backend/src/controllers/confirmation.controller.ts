@@ -7,23 +7,23 @@ const jwtConfirmationPayload = (token: string): JWTConfirmationPayload => JSON.p
 
 export default class ConfirmationController {
     async confirmOrder(req: Request, res: Response): Promise<void> {
-        const token: string = req.params.conftoken;
+        const confirmationToken: string = req.params.confirmationtoken;
 
-        if (token) {
-            jwt.verify(token, process.env.JWT_TOKEN_KEY, async (err) => {
-                if (err) return res.redirect(`${process.env.CLIENT_LINK}?expired`);
-                const orderId: number = jwtConfirmationPayload(token).orderId;
+        if (confirmationToken) {
+            jwt.verify(confirmationToken, process.env.JWT_TOKEN_KEY, async (error) => {
+                if (error) return res.redirect(`${process.env.CLIENT_LINK}?expired`);
+                const orderId: number = jwtConfirmationPayload(confirmationToken).orderId;
 
                 try {
-                    const orderСonfirmed = await Order.findByPk(orderId);
-                    if(!orderСonfirmed) res.redirect(`${process.env.CLIENT_LINK}?error`);
-                    if (orderСonfirmed.getDataValue('statusId') === 2) res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
+                    const order = await Order.findByPk(orderId);
+                    if(!order) res.redirect(`${process.env.CLIENT_LINK}?error`);
+                    if (order.getDataValue('statusId') === 2) res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
     
                     await Order.upsert({
                         id: orderId, statusId: 2
                     });
                     res.redirect(`${process.env.CLIENT_LINK}?success`);
-                } catch (e) {
+                } catch (error) {
                     res.redirect(`${process.env.CLIENT_LINK}?error`);
                 }
             });

@@ -8,9 +8,9 @@ export default class ClientController {
             const { name, email } = AddClientSchema.parse(req.body);
             const client = await Client.create({ name, email });
             return res.status(201).json(client);
-        } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
     async getClients(req: Request, res: Response): Promise<Response> {
@@ -21,8 +21,8 @@ export default class ClientController {
                 ]
             });
             return res.status(200).json(clients);
-        } catch (e) {
-            return res.status(500).json(e);
+        } catch (error) {
+            return res.status(500).json(error);
         }
     }
     async getClientById(req: Request, res: Response): Promise<Response> {
@@ -31,9 +31,9 @@ export default class ClientController {
             const client = await Client.findByPk(id);
             if (!client) return res.status(404).json('No such client');
             return res.status(200).json(client);
-        } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
     async updateClient(req: Request, res: Response): Promise<Response> {
@@ -51,9 +51,9 @@ export default class ClientController {
                 email
             });
             return res.status(200).json(client);
-        } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
     async deleteClient(req: Request, res: Response): Promise<Response> {
@@ -63,9 +63,9 @@ export default class ClientController {
             if (!client) return res.status(404).json('No such client');
             await client.destroy();
             return res.status(200).json(client);
-        } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
 }

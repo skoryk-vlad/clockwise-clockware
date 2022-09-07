@@ -14,10 +14,10 @@ const CitySchema = z.object({
     }).max(255)
 });
 
-export const CityForm = ({ values, onClick, btnTitle }) => {
+export const CityForm = ({ city, onClick, btnTitle }) => {
     const { control, handleSubmit, getValues, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
         mode: 'onChange',
-        defaultValues: values,
+        defaultValues: city,
         resolver: zodResolver(CitySchema)
     });
     const onSubmit = () => onClick(getValues());

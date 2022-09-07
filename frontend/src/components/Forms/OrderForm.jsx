@@ -19,10 +19,10 @@ const OrderSchema = z.object({
     statusId: z.number({ invalid_type_error: 'Требуется выбрать статус' }).int().min(1).max(4)
 });
 
-export const OrderForm = ({ values, onClick, btnTitle, cities, masters, clients, statuses }) => {
+export const OrderForm = ({ order, onClick, btnTitle, cities, masters, clients, statuses }) => {
     const { control, handleSubmit, getValues, setValue, watch, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
         mode: 'all',
-        defaultValues: values,
+        defaultValues: order,
         resolver: zodResolver(OrderSchema)
     });
     const onSubmit = () => onClick(getValues());
@@ -99,7 +99,7 @@ export const OrderForm = ({ values, onClick, btnTitle, cities, masters, clients,
                             onChange={val => setValue('masterId', +val)}
                             value={value || ''}
                             error={error}
-                            options={masters.filter(m => m.cities.includes(watch("cityId"))).map(city => ({ value: city.id, name: city.name }))}
+                            options={masters.filter(master => master.cities.includes(watch("cityId"))).map(master => ({ value: master.id, name: master.name }))}
                         />
                     )}
                 />
@@ -122,7 +122,7 @@ export const OrderForm = ({ values, onClick, btnTitle, cities, masters, clients,
                             name={name}
                             onBlur={onBlur}
                             from='1' to='3'
-                            onClick={e => setValue('watchSize', +e.target.dataset.num)}
+                            onClick={event => setValue('watchSize', +event.target.dataset.num)}
                             value={value}
                             error={error}
                         />
@@ -171,7 +171,7 @@ export const OrderForm = ({ values, onClick, btnTitle, cities, masters, clients,
                             name={name}
                             onBlur={onBlur}
                             from='10' to='18' count={watch("watchSize")}
-                            onClick={e => setValue('time', +e.target.dataset.num)}
+                            onClick={event => setValue('time', +event.target.dataset.num)}
                             value={value}
                             error={error}
                         />
@@ -195,7 +195,7 @@ export const OrderForm = ({ values, onClick, btnTitle, cities, masters, clients,
                         <MyInput
                             name={name} type="number"
                             onBlur={onBlur}
-                            onChange={e => setValue('rating', +e.target.value)}
+                            onChange={event => setValue('rating', +event.target.value)}
                             value={value}
                             error={error}
                             placeholder="Рейтинг..."

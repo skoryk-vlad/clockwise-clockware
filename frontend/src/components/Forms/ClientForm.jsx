@@ -19,10 +19,10 @@ const ClientSchema = z.object({
     }).max(255)
 });
 
-export const ClientForm = ({ values, onClick, btnTitle }) => {
+export const ClientForm = ({ client, onClick, btnTitle }) => {
     const { control, handleSubmit, getValues, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
         mode: 'onChange',
-        defaultValues: values,
+        defaultValues: client,
         resolver: zodResolver(ClientSchema)
     });
     const onSubmit = () => onClick(getValues());

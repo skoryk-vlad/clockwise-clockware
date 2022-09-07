@@ -8,9 +8,9 @@ export default class CityController {
             const { name } = AddCitySchema.parse(req.body);
             const city = await City.create({ name });
             return res.status(201).json(city);
-        } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e)
+        } catch (error) {
+            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
     async getCities(req: Request, res: Response): Promise<Response> {
@@ -21,8 +21,8 @@ export default class CityController {
                 ]
             });
             return res.status(200).json(cities);
-        } catch (e) {
-            return res.status(500).json(e);
+        } catch (error) {
+            return res.status(500).json(error);
         }
     }
     async getCityById(req: Request, res: Response): Promise<Response> {
@@ -31,9 +31,9 @@ export default class CityController {
             const city = await City.findByPk(id);
             if (!city) return res.status(404).json('No such city');
             return res.status(200).json(city);
-        } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
 
@@ -51,9 +51,9 @@ export default class CityController {
                 name
             });
             return res.status(200).json(city);
-        } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
 
@@ -64,9 +64,9 @@ export default class CityController {
             if (!city) return res.status(404).json('No such city');
             await city.destroy();
             return res.status(200).json(city);
-        } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
-            return res.status(500).json(e);
+        } catch (error) {
+            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
         }
     }
 }
