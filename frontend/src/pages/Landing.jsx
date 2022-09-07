@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { MyModal } from '../components/modal/MyModal'
-import { OrderForm } from '../components/OrderForm'
 import '../styles/App.css';
 import { Header } from '../components/Landing/Header/Header';
 import { Main } from '../components/Landing/Main/Main';
 import { Footer } from '../components/Landing/Footer/Footer';
 import { TopButton } from '../components/Landing/TopButton/TopButton';
+import { OrderModal } from '../components/OrderModal';
 
 export const Landing = () => {
     const [modal, setModal] = useState(false);
@@ -41,7 +41,7 @@ export const Landing = () => {
             <TopButton />
             
             <MyModal visible={modal} setVisible={setModal}>
-                <OrderForm />
+                <OrderModal/>
             </MyModal>
 
             <MyModal visible={modalConf} setVisible={setModalConf}>

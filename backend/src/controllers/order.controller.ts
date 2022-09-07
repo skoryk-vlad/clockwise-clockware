@@ -51,7 +51,7 @@ export default class OrderController {
             return res.status(201).json(order);
         } catch (e) {
             await t.rollback();
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
+            if (e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
@@ -67,7 +67,7 @@ export default class OrderController {
                         },
                         {
                             model: Client,
-                            attributes: ['id', 'name']
+                            attributes: ['id', 'name', 'email']
                         },
                         {
                             model: Master,
@@ -89,19 +89,19 @@ export default class OrderController {
     }
     async getOrderById(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetOrderSchema.parse({id: +req.params.id});
+            const { id } = GetOrderSchema.parse({ id: +req.params.id });
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');
             return res.status(200).json(order);
         } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
+            if (e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
     async updateOrder(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetOrderSchema.parse({id: +req.params.id});
-            
+            const { id } = GetOrderSchema.parse({ id: +req.params.id });
+
             const existOrder = await Order.findByPk(id);
             if (!existOrder) return res.status(404).json('No such order');
 
@@ -117,6 +117,7 @@ export default class OrderController {
             const overlapsOrders = await Order.findAll({
                 replacements: [time],
                 where: {
+                    id: { [Op.ne]: id },
                     date,
                     masterId,
                     time: {
@@ -133,7 +134,7 @@ export default class OrderController {
             });
             return res.status(200).json(order);
         } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
+            if (e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
@@ -145,19 +146,19 @@ export default class OrderController {
             });
             return res.status(200).json(order);
         } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
+            if (e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }
     async deleteOrder(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = DeleteOrderSchema.parse({id: +req.params.id});
+            const { id } = DeleteOrderSchema.parse({ id: +req.params.id });
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');
             await order.destroy();
             return res.status(200).json(order);
         } catch (e) {
-            if(e?.name === "ZodError") return res.status(400).json(e.issues);
+            if (e?.name === "ZodError") return res.status(400).json(e.issues);
             return res.status(500).json(e);
         }
     }

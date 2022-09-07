@@ -5,26 +5,23 @@ import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
-import { MyInput } from '../../components/input/MyInput';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { AdminTable } from '../../components/AdminTable/AdminTable';
-import { Formik } from 'formik';
-import classes from './AdminForm.module.css';
 import { Navigate } from 'react-router-dom';
+import { CityForm } from '../../components/Forms/CityForm';
+import { Table } from '../../components/Table/Table';
+
+const defaultCity = {
+    name: ''
+};
 
 export const Cities = () => {
     const [cities, setCities] = useState([]);
 
-    const [newCity, setNewCity] = useState('');
-    const [modalAdd, setModalAdd] = useState(false);
+    const [currentCity, setCurrentCity] = useState(defaultCity);
+    const [isModalOpened, setIsModalOpened] = useState(false);
 
-    const [modalUpd, setModalUpd] = useState(false);
-    const [idUpd, setIdUpd] = useState(null);
-    const [updCity, setUpdCity] = useState('');
-    
-    const [error, setError] = useState('Произошла ошибка');
     const [errorModal, setErrorModal] = useState(false);
-    
+
     const [redirect, setRedirect] = useState(false);
 
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
@@ -44,10 +41,10 @@ export const Cities = () => {
         document.title = "Города - Clockwise Clockware";
 
         const checkAuth = async () => {
-            try{
+            try {
                 await AuthService.checkAuth();
                 fetchCities();
-            } catch(e) {
+            } catch (e) {
                 setRedirect(true);
             }
         }
@@ -55,45 +52,60 @@ export const Cities = () => {
     }, []);
 
     useEffect(() => {
-        if (cities.find(c => c.id === +idUpd))
-            setUpdCity(cities.find(c => c.id === +idUpd).name);
-    }, [idUpd, cities]);
-    
+        if (!isModalOpened)
+            setCurrentCity(null);
+    }, [isModalOpened]);
+
     if (redirect) {
         return <Navigate push to="/admin/login" />
     }
 
-    const deleteCity = async (event) => {
+    const deleteCity = async (id) => {
         try {
-            const id = event.target.closest('tr').id;
             await CityService.deleteCityById(id);
             fetchCities();
-        } catch(e) {
+        } catch (e) {
             console.log(e.response.data);
             setErrorModal(true);
         }
     }
-    const addCity = async (name) => {
+    const addCity = async (city) => {
         try {
-            await CityService.addCity(name);
-            setModalAdd(false);
-            setNewCity('');
+            await CityService.addCity(city);
+            setIsModalOpened(false);
             fetchCities();
-        } catch(e) {
+        } catch (e) {
             console.log(e.response.data);
             setErrorModal(true);
         }
     }
-    const updateCity = async (name) => {
+    const updateCity = async (city) => {
         try {
-            await CityService.updateCityById(idUpd, name);
-            setModalUpd(false);
+            await CityService.updateCityById(city);
+            setIsModalOpened(false);
             fetchCities();
-        } catch(e) {
+        } catch (e) {
             console.log(e.response.data);
             setErrorModal(true);
         }
     }
+
+    const tableHeaders = ["id", "Имя", "Изменение", "Удаление"];
+
+    const tableBodies = [
+        `id`,
+        `name`,
+        {
+            name: `Изменить`,
+            callback: id => { setIsModalOpened(true); setCurrentCity(cities.find(c => c.id === id)) },
+            param: `id`
+        },
+        {
+            name: `Удалить`,
+            callback: deleteCity,
+            param: `id`
+        }
+    ];
 
     return (
         <div className='admin-container'>
@@ -102,26 +114,22 @@ export const Cities = () => {
                 <h1 className='admin-body__title'>Города</h1>
 
                 <div className="admin-body__btns">
-                    <AdminButton onClick={() => setModalAdd(true)}>
+                    <AdminButton onClick={() => { setIsModalOpened(true); setCurrentCity(defaultCity) }}>
                         Добавить
                     </AdminButton>
                 </div>
 
-                <ModalForm modal={modalAdd} setModal={setModalAdd}
-                            value={newCity}
-                            onClick={addCity} btnTitle={'Добавить'} />
-                
-                <ModalForm modal={modalUpd} setModal={setModalUpd}
-                            value={updCity}
-                            onClick={updateCity} btnTitle={'Изменить'} />
+                <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
+                    {currentCity && <CityForm values={currentCity} onClick={currentCity.id ? updateCity : addCity} btnTitle={currentCity.id ? 'Изменить' : 'Добавить'}></CityForm>}
+                </MyModal>
 
-                <AdminTable dataArr={cities}
-                            columns={['id', 'Имя']}
-                            btnTitles={['Изменение', 'Удаление']}
-                            btnFuncs={[e => { setModalUpd(true); setIdUpd(e.target.closest('tr').id) }, e => deleteCity(e)]}
+                <Table
+                    data={cities}
+                    tableHeaders={tableHeaders}
+                    tableBodies={tableBodies}
                 />
 
-                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{fontSize: '20px'}}>{error}.</p></MyModal>
+                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{ fontSize: '20px' }}>Произошла ошибка.</p></MyModal>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>
@@ -134,81 +142,5 @@ export const Cities = () => {
                 }
             </div>
         </div>
-    )
-}
-
-
-const ModalForm = ({ modal, setModal, value, onClick, btnTitle }) => {
-    const [initialValues, setInitialValues] = useState({
-        name: ''
-    });
-
-    useEffect(() => {
-        setInitialValues({
-            name: value
-        })
-    }, [value]);
-    
-    const validate = (values) => {
-        let errors = {};
-
-        if (!values.name) {
-            errors.name = "Требуется название";
-        } else if (values.name.trim().length < 3) {
-            errors.name = "Название должно быть не короче 3-х букв";
-        }
-
-        return errors;
-    };
-
-    const submitForm = async (values, {resetForm}) => {
-        resetForm({});
-        onClick(values.name);
-    }
-    
-    return (
-        <MyModal visible={modal} setVisible={setModal}>
-            <Formik 
-                enableReinitialize
-                initialValues={initialValues}
-                validate={validate}
-                onSubmit={submitForm}
-            >
-                {(formik) => {
-                    const {
-                        values,
-                        handleChange,
-                        handleSubmit,
-                        errors,
-                        touched,
-                        handleBlur,
-                        isValid,
-                        dirty
-                    } = formik;
-                    return (
-                        <form onSubmit={handleSubmit} className={classes.form}>
-                            <div className={classes.formRow}>
-                                <div className={classes.rowTop}>
-                                    <label htmlFor="name">Название</label>
-                                    {errors.name && touched.name && (
-                                        <div className={classes.error}>{errors.name}</div>
-                                    )}
-                                </div>
-                                <MyInput
-                                    type="text" name="name" id="name"
-                                    value={values.name}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                    placeholder="Название города..."
-                                />
-                            </div>
-                            
-                            <AdminButton type="submit" className={!(dirty && isValid) ? "disabledBtn" : ""}
-                                disabled={!(dirty && isValid)}>{btnTitle}</AdminButton>
-                        </form>
-                    );
-                }}
-            </Formik>
-        </MyModal>
     )
 }

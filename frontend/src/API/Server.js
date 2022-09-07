@@ -21,16 +21,16 @@ export class CityService {
         const response = await axios.get(`${API_URL}/api/city`);
         return response.data;
     }
-    static async addCity(name) {
-        const { data } = await api.post(`/city`, { name });
+    static async addCity(newCity) {
+        const { data } = await api.post(`/city`, newCity);
         return data;
     }
     static async deleteCityById(id) {
         const { data } = await api.delete(`/city/${id}`);
         return data;
     }
-    static async updateCityById(id, name) {
-        const { data } = await api.put(`/city/${id}`, { name });
+    static async updateCityById(updCity) {
+        const { data } = await api.put(`/city/${updCity.id}`, updCity);
         return data;
     }
 }

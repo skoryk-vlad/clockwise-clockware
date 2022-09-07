@@ -15,7 +15,7 @@ label {
     font-size: 20px;
 }
 
-.error {
+.errorMessage {
     color: red;
     font-size: 14px;
     margin: 0px 0px 1px 10px;
