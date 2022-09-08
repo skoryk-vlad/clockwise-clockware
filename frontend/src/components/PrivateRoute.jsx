@@ -1,6 +1,7 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom';
 import { Buffer } from 'buffer';
+import { isAfter } from 'date-fns';
 
 const IsJsonString = (str) => {
     try {
@@ -22,7 +23,7 @@ const jwtPayload = (token) => {
 
 const isJWTExpired = (token) => {
     const payload = jwtPayload(token);
-    if (!payload || new Date().getTime() > payload.exp * 1000) {
+    if (!payload || isAfter(new Date(), new Date(payload.exp * 1000))) {
         localStorage.removeItem('token');
         return true
     };
