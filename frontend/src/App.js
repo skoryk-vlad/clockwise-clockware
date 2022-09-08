@@ -5,10 +5,9 @@ import './styles/App.css';
 import './styles/reset.css';
 
 const App = () => {
-
     return (
         <BrowserRouter>
-            <AppRouter/>
+            <AppRouter />
         </BrowserRouter>
     )
 }

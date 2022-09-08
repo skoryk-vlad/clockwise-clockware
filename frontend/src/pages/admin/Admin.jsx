@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom';
-import { AuthService, CityService, ClientService, MasterService, OrderService, StatusService } from '../../API/Server';
+import { CityService, ClientService, MasterService, OrderService, StatusService } from '../../API/Server';
 import { ChangeStatusForm } from '../../components/Forms/ChangeStatusForm';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar'
@@ -28,15 +28,18 @@ export const Admin = () => {
     const [redirect, setRedirect] = useState(false);
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        let orders = await OrderService.getOrders();
+        const orders = await OrderService.getOrders();
+
+        setOrdersCount(orders.length);
+
+        setOrders(orders.filter(order => order.statusId === 1 || order.statusId === 2));
+    });
+    const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
         const masters = await MasterService.getMasters();
         const clients = await ClientService.getClients();
         const statuses = await StatusService.getStatuses();
 
-        setOrdersCount(orders.length);
-
-        setOrders(orders.filter(order => order.statusId === 1 || order.statusId === 2));
         setCities(cities);
         setMasters(masters);
         setClients(clients);
@@ -45,16 +48,7 @@ export const Admin = () => {
 
     useEffect(() => {
         document.title = "Админ-панель - Clockwise Clockware";
-
-        const checkAuth = async () => {
-            try {
-                await AuthService.checkAuth();
-            } catch (error) {
-                setRedirect(true);
-            }
-        }
-        checkAuth();
-
+        fetchAdditionalData();
         fetchOrders();
     }, []);
 

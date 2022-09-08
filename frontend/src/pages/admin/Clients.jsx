@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { AuthService, ClientService } from '../../API/Server';
+import { ClientService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { Navigate } from 'react-router-dom';
 import { ClientForm } from '../../components/Forms/ClientForm';
 import { Table } from '../../components/Table/Table';
 
@@ -23,36 +22,21 @@ export const Clients = () => {
 
     const [errorModal, setErrorModal] = useState(false);
 
-    const [redirect, setRedirect] = useState(false);
-
     const [fetchClients, isClientsLoading, Error] = useFetching(async () => {
-        let clients = await ClientService.getClients(localStorage.getItem('token'));
+        const clients = await ClientService.getClients();
 
         setClients(clients);
     });
 
     useEffect(() => {
         document.title = "Клиенты - Clockwise Clockware";
-
-        const checkAuth = async () => {
-            try {
-                await AuthService.checkAuth();
-                fetchClients();
-            } catch (error) {
-                setRedirect(true);
-            }
-        }
-        checkAuth();
+        fetchClients();
     }, []);
 
     useEffect(() => {
         if (!isModalOpened)
             setCurrentClient(null);
     }, [isModalOpened]);
-
-    if (redirect) {
-        return <Navigate push to="/admin/login" />
-    }
 
     const deleteClient = async (id) => {
         try {

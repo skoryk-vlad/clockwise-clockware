@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { CityService, MasterService, ClientService, OrderService, AuthService, StatusService } from '../../API/Server';
+import { CityService, MasterService, ClientService, OrderService, StatusService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { Navigate } from 'react-router-dom';
 import { OrderForm } from '../../components/Forms/OrderForm';
 import { Table } from '../../components/Table/Table';
 
@@ -33,46 +32,32 @@ export const Orders = () => {
 
     const [errorModal, setErrorModal] = useState(false);
 
-    const [redirect, setRedirect] = useState(false);
-
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
         let orders = await OrderService.getOrders();
-
         setOrders(orders);
+    });
+    const [fetchAdditionalData] = useFetching(async () => {
+        const cities = await CityService.getCities();
+        const masters = await MasterService.getMasters();
+        const clients = await ClientService.getClients();
+        const statuses = await StatusService.getStatuses();
+
+        setCities(cities);
+        setMasters(masters);
+        setClients(clients);
+        setStatuses(statuses);
     });
 
     useEffect(() => {
         document.title = "Заказы - Clockwise Clockware";
-
-        const checkAuth = async () => {
-            try {
-                await AuthService.checkAuth();
-                const cities = await CityService.getCities();
-                const masters = await MasterService.getMasters();
-                const clients = await ClientService.getClients();
-                const statuses = await StatusService.getStatuses();
-
-                setCities(cities);
-                setMasters(masters);
-                setClients(clients);
-                setStatuses(statuses);
-
-                fetchOrders();
-            } catch (error) {
-                setRedirect(true);
-            }
-        }
-        checkAuth();
+        fetchAdditionalData();
+        fetchOrders();
     }, []);
 
     useEffect(() => {
         if (!isModalOpened)
             setCurrentOrder(null);
     }, [isModalOpened]);
-
-    if (redirect) {
-        return <Navigate push to="/admin/login" />
-    }
 
     const deleteOrder = async (id) => {
         try {
