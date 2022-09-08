@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { AuthService, CityService, MasterService } from '../../API/Server';
+import { CityService, MasterService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { Navigate } from 'react-router-dom';
 import { MasterForm } from '../../components/Forms/MasterForm';
 import { Table } from '../../components/Table/Table';
 
@@ -24,38 +23,25 @@ export const Masters = () => {
 
     const [errorModal, setErrorModal] = useState(false);
 
-    const [redirect, setRedirect] = useState(false);
-
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
-        let masters = await MasterService.getMasters();
-
+        const masters = await MasterService.getMasters();
         setMasters(masters);
+    });
+    const [fetchAdditionalData] = useFetching(async () => {
+        const cities = await CityService.getCities();
+        setCities(cities);
     });
 
     useEffect(() => {
         document.title = "Мастера - Clockwise Clockware";
-
-        const checkAuth = async () => {
-            try {
-                await AuthService.checkAuth();
-                const cities = await CityService.getCities();
-                setCities(cities);
-                fetchMasters();
-            } catch (error) {
-                setRedirect(true);
-            }
-        }
-        checkAuth();
+        fetchAdditionalData();
+        fetchMasters();
     }, []);
 
     useEffect(() => {
         if (!isModalOpened)
             setCurrentMaster(null);
     }, [isModalOpened]);
-
-    if (redirect) {
-        return <Navigate push to="/admin/login" />
-    }
 
     const deleteMaster = async (id) => {
         try {

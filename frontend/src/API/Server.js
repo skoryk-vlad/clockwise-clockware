@@ -7,13 +7,23 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(config => {
-    if(localStorage.getItem('token')){
-        config.headers['Authorization'] = 'Bearer '+ localStorage.getItem('token');
+    if (localStorage.getItem('token')) {
+        config.headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
     }
-    
+
     return config;
 }, error => {
     return Promise.reject(error);
+});
+
+api.interceptors.response.use((response) => {
+    return response;
+}, (error) => {
+    if (error.response.status === 401) {
+        localStorage.removeItem('token');
+        document.location.assign(`${document.location.origin}/admin/login`);
+    }
+    return Promise.reject(error.message);
 });
 
 export class CityService {

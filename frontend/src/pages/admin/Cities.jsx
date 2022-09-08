@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { AuthService, CityService } from '../../API/Server';
+import { CityService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { Navigate } from 'react-router-dom';
 import { CityForm } from '../../components/Forms/CityForm';
 import { Table } from '../../components/Table/Table';
+import { Navigate } from 'react-router-dom';
 
 const defaultCity = {
     name: ''
@@ -22,8 +22,6 @@ export const Cities = () => {
 
     const [errorModal, setErrorModal] = useState(false);
 
-    const [redirect, setRedirect] = useState(false);
-
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         let cities = await CityService.getCities();
 
@@ -32,26 +30,13 @@ export const Cities = () => {
 
     useEffect(() => {
         document.title = "Города - Clockwise Clockware";
-
-        const checkAuth = async () => {
-            try {
-                await AuthService.checkAuth();
-                fetchCities();
-            } catch (error) {
-                setRedirect(true);
-            }
-        }
-        checkAuth();
+        fetchCities();
     }, []);
 
     useEffect(() => {
         if (!isModalOpened)
             setCurrentCity(null);
     }, [isModalOpened]);
-
-    if (redirect) {
-        return <Navigate push to="/admin/login" />
-    }
 
     const deleteCity = async (id) => {
         try {
