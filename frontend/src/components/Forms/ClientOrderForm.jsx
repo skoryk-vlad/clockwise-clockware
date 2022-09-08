@@ -7,6 +7,7 @@ import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
+import { formatISO } from 'date-fns'
 
 const ClientOrderSchema = z.object({
     name: z.string().trim().min(1, { message: 'Требуется имя' }).min(3, { message: 'Имя должно быть не короче 3-х букв' }).max(255),
@@ -17,11 +18,8 @@ const ClientOrderSchema = z.object({
     time: z.number({ invalid_type_error: 'Требуется выбрать время' }).int().min(10).max(18)
 });
 
-const checkZero = (num) => {
-    return num > 9 ? num : '0' + num;
-};
 const date = new Date();
-const minDate = `${date.getFullYear()}-${checkZero(date.getMonth() + 1)}-${checkZero(date.getDate())}`;
+const minDate = formatISO(date, { representation: 'date' });
 
 export const ClientOrderForm = ({ order, onClick, cities }) => {
     const { control, handleSubmit, getValues, setValue, watch, formState: { errors, isValid, touchedFields } } = useForm({
