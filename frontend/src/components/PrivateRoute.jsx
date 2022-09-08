@@ -29,7 +29,7 @@ const isJWTExpired = (token) => {
     return false;
 };
 
-export const RouterWrapper = ({ children }) => {
+export const PrivateRoute = ({ children }) => {
     return (
             localStorage.getItem('token') && !isJWTExpired(localStorage.getItem('token'))
             ?
