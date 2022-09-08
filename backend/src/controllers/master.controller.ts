@@ -65,7 +65,7 @@ export default class MasterController {
             const overlapsOrders = await Order.findAll({
                 replacements: [+time],
                 where: {
-                    date: String(date),
+                    date,
                     time: {
                         [Op.and]:
                             [{ [Op.gte]: sequelize.literal('? - "Order"."watchSize" + 1') },
