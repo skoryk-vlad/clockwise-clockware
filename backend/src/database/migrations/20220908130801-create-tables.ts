@@ -1,0 +1,158 @@
+import { QueryInterface, Sequelize, DataTypes } from 'sequelize';
+'use strict';
+
+module.exports = {
+  up(queryInterface: QueryInterface, Sequelize: any): Promise<void[]> {
+    return Promise.all([
+      queryInterface.createTable('City', {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: Sequelize.INTEGER
+        },
+        name: {
+          type: Sequelize.STRING,
+          allowNull: false,
+          unique: true
+        },
+        createdAt: {
+          allowNull: false,
+          type: Sequelize.DATE
+        },
+        updatedAt: {
+          allowNull: false,
+          type: Sequelize.DATE
+        }
+      }),
+      queryInterface.createTable('Client', {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: Sequelize.INTEGER
+        },
+        name: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        email: {
+          type: Sequelize.STRING,
+          allowNull: false,
+          unique: true
+        },
+        createdAt: {
+          allowNull: false,
+          type: Sequelize.DATE
+        },
+        updatedAt: {
+          allowNull: false,
+          type: Sequelize.DATE
+        }
+      }),
+      queryInterface.createTable('Master', {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: Sequelize.INTEGER
+        },
+        name: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        cities: {
+          type: Sequelize.ARRAY(Sequelize.INTEGER),
+          allowNull: false
+        },
+        createdAt: {
+          allowNull: false,
+          type: Sequelize.DATE
+        },
+        updatedAt: {
+          allowNull: false,
+          type: Sequelize.DATE
+        }
+      }),
+      queryInterface.createTable('Order', {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: Sequelize.INTEGER
+        },
+        watchSize: {
+          type: Sequelize.INTEGER,
+          allowNull: false
+        },
+        date: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        time: {
+          type: Sequelize.INTEGER,
+          allowNull: false
+        },
+        rating: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          defaultValue: 0
+        },
+        cityId: {
+          type: Sequelize.INTEGER,
+          allowNull: false
+        },
+        clientId: {
+          type: Sequelize.INTEGER,
+          allowNull: false
+        },
+        masterId: {
+          type: Sequelize.INTEGER,
+          allowNull: false
+        },
+        statusId: {
+          type: Sequelize.INTEGER,
+          allowNull: false,
+          defaultValue: 1
+        },
+        createdAt: {
+          allowNull: false,
+          type: Sequelize.DATE
+        },
+        updatedAt: {
+          allowNull: false,
+          type: Sequelize.DATE
+        }
+      }),
+      queryInterface.createTable('Status', {
+        id: {
+          allowNull: false,
+          autoIncrement: true,
+          primaryKey: true,
+          type: Sequelize.INTEGER
+        },
+        name: {
+          type: Sequelize.STRING,
+          allowNull: false
+        },
+        createdAt: {
+          allowNull: false,
+          type: Sequelize.DATE
+        },
+        updatedAt: {
+          allowNull: false,
+          type: Sequelize.DATE
+        }
+      })
+    ]);
+  },
+  down(queryInterface: QueryInterface): Promise<void[]> {
+    return Promise.all([
+      queryInterface.dropTable('Order'),
+      queryInterface.dropTable('Master'),
+      queryInterface.dropTable('Client'),
+      queryInterface.dropTable('Status'),
+      queryInterface.dropTable('City'),
+    ]);
+  }
+};

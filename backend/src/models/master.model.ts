@@ -13,6 +13,7 @@ export const Master: ModelDefined<MasterAttributes, MasterCreationAttributes> = 
     'Master',
     {
         id: {
+            allowNull: false,
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true

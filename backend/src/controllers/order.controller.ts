@@ -141,9 +141,10 @@ export default class OrderController {
     async changeStatus(req: Request, res: Response): Promise<Response> {
         try {
             const { id, statusId, rating } = ChangeStatusSchema.parse(req.body);
-            const [order, created] = await Order.upsert({
-                id, statusId, rating
-            });
+
+            const order = await Order.findByPk(id);
+            if (!order) return res.status(404).json('No such order');
+            await order.update({ statusId, rating });
             return res.status(200).json(order);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);

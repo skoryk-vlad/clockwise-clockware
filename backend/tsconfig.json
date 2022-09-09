@@ -9,5 +9,6 @@
     "useDefineForClassFields": true,
     "outDir": "build"
   },
+  "include": ["src/**/*"],
   "lib": ["es2015"],
 }

@@ -13,6 +13,7 @@ export const Client: ModelDefined<ClientAttributes, ClientCreationAttributes> = 
     'Client',
     {
         id: {
+            allowNull: false,
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true

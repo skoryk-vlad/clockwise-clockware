@@ -23,6 +23,7 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
     'Order',
     {
         id: {
+            allowNull: false,
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true
