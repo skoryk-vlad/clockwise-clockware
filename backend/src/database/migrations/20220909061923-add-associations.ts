@@ -4,7 +4,7 @@ import { QueryInterface } from 'sequelize';
 module.exports = {
   async up(queryInterface: QueryInterface, Sequelize: any): Promise<void[]> {
     return Promise.all([
-      queryInterface.changeColumn(
+      await queryInterface.changeColumn(
         'Order',
         'cityId',
         {
@@ -17,7 +17,7 @@ module.exports = {
           onDelete: 'RESTRICT',
         }
       ),
-      queryInterface.changeColumn(
+      await queryInterface.changeColumn(
         'Order',
         'clientId',
         {
@@ -30,7 +30,7 @@ module.exports = {
           onDelete: 'RESTRICT',
         }
       ),
-      queryInterface.changeColumn(
+      await queryInterface.changeColumn(
         'Order',
         'masterId',
         {
@@ -43,7 +43,7 @@ module.exports = {
           onDelete: 'RESTRICT',
         }
       ),
-      queryInterface.changeColumn(
+      await queryInterface.changeColumn(
         'Order',
         'statusId',
         {
@@ -61,10 +61,10 @@ module.exports = {
 
   async down(queryInterface: QueryInterface): Promise<void[]> {
     return Promise.all([
-      queryInterface.removeConstraint('Order', 'Order_cityId_fkey'),
-      queryInterface.removeConstraint('Order', 'Order_clientId_fkey'),
-      queryInterface.removeConstraint('Order', 'Order_masterId_fkey'),
-      queryInterface.removeConstraint('Order', 'Order_statusId_fkey')
+      await queryInterface.removeConstraint('Order', 'Order_cityId_fkey'),
+      await queryInterface.removeConstraint('Order', 'Order_clientId_fkey'),
+      await queryInterface.removeConstraint('Order', 'Order_masterId_fkey'),
+      await queryInterface.removeConstraint('Order', 'Order_statusId_fkey')
     ]);
   }
 };

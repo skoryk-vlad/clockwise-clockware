@@ -104,8 +104,8 @@ export class OrderService {
         const { data } = await api.put(`/order/${updOrder.id}`, updOrder);
         return data;
     }
-    static async changeStatusById(id, statusId, rating) {
-        const { data } = await api.post(`/order/status`, { id, statusId, rating });
+    static async changeStatusById(id, status, rating) {
+        const { data } = await api.post(`/order/status`, { id, status, rating });
         return data;
     }
 }
@@ -126,9 +126,21 @@ export class AuthService {
     }
 }
 
-export class StatusService {
-    static async getStatuses() {
-        const { data } = await api.get(`/status`);
+export class CityMasterService {
+    static async getCityMasters() {
+        const { data } = await axios.get(`${API_URL}/api/citymaster`);
+        return data;
+    }
+    static async addCityMaster(newCityMaster) {
+        const { data } = await api.post(`/citymaster`, newCityMaster);
+        return data;
+    }
+    static async deleteCityMasterById(id) {
+        const { data } = await api.delete(`/citymaster/${id}`);
+        return data;
+    }
+    static async updateCityMasterById(updCityMaster) {
+        const { data } = await api.put(`/citymaster/${updCityMaster.id}`, updCityMaster);
         return data;
     }
 }

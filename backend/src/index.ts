@@ -8,8 +8,8 @@ import cityRouter from './routes/city.routes';
 import clientRouter from './routes/client.routes';
 import masterRouter from './routes/master.routes';
 import orderRouter from './routes/order.routes';
-import statusRouter from './routes/status.routes';
 import confirmationRouter from './routes/confirmation.routes';
+import cityMasterRouter from './routes/cityMaster.routes';
 
 const PORT: number = Number(process.env.PORT) || 3001;
 const app: Express = express();
@@ -23,7 +23,7 @@ app.use('/api', cityRouter);
 app.use('/api', clientRouter);
 app.use('/api', masterRouter);
 app.use('/api', orderRouter);
-app.use('/api', statusRouter);
 app.use('/api', confirmationRouter);
+app.use('/api', cityMasterRouter);
 
 app.listen(PORT, () => { console.log(`Server started on port ${PORT} in ${process.env.NODE_ENV}mode`); });

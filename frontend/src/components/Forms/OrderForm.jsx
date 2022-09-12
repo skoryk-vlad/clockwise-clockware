@@ -9,17 +9,25 @@ import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
 
 const OrderSchema = z.object({
-    watchSize: z.number({ invalid_type_error: 'Требуется выбрать размер часов' }).int().min(1).max(3),
+    watchSize: z.string({ invalid_type_error: 'Требуется выбрать размер часов' }),
     date: z.string().regex(/([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))/, 'Требуется выбрать дату'),
     time: z.number({ invalid_type_error: 'Требуется выбрать время' }).int().min(10).max(18),
     rating: z.number({ invalid_type_error: 'Рейтинг должен быть числом' }).int().min(0, 'Рейтинг должен находиться в диапазоне 0-5').max(5, 'Рейтинг должен находиться в диапазоне 0-5'),
     clientId: z.number({ invalid_type_error: 'Требуется выбрать клиента' }).int().positive(),
     masterId: z.number({ invalid_type_error: 'Требуется выбрать мастера' }).int().positive(),
     cityId: z.number({ invalid_type_error: 'Требуется выбрать город' }).int().positive(),
-    statusId: z.number({ invalid_type_error: 'Требуется выбрать статус' }).int().min(1).max(4)
+    status: z.string({ invalid_type_error: 'Требуется выбрать статус' })
 });
 
-export const OrderForm = ({ order, onClick, btnTitle, cities, masters, clients, statuses }) => {
+const statuses = [
+    {value: 'awaiting confirmation', name: 'Ожидает подтверждения'},
+    {value: 'confirmed', name: 'Подтвержден'},
+    {value: 'completed', name: 'Выполнен'},
+    {value: 'canceled', name: 'Отменен'}
+];
+const watchSizes = ['small', 'medium', 'big'];
+
+export const OrderForm = ({ order, onClick, btnTitle, cities, masters, clients, cityMasters }) => {
     const { control, handleSubmit, getValues, setValue, watch, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
         mode: 'all',
         defaultValues: order,
@@ -99,7 +107,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, masters, clients, 
                             onChange={val => setValue('masterId', +val)}
                             value={value || ''}
                             error={error}
-                            options={masters.filter(master => master.cities.includes(watch("cityId"))).map(master => ({ value: master.id, name: master.name }))}
+                            options={masters.filter(master => cityMasters.filter(cityMaster => cityMaster.cityId === watch('cityId')).map(cityMaster => cityMaster.masterId).includes(master.id)).map(master => ({ value: master.id, name: master.name }))}
                         />
                     )}
                 />
@@ -122,8 +130,8 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, masters, clients, 
                             name={name}
                             onBlur={onBlur}
                             from='1' to='3'
-                            onClick={event => setValue('watchSize', +event.target.dataset.num)}
-                            value={value}
+                            onClick={event => setValue('watchSize', watchSizes[+event.target.dataset.num - 1])}
+                            value={watchSizes.indexOf(value) + 1}
                             error={error}
                         />
                     )}
@@ -170,7 +178,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, masters, clients, 
                         <NumPicker
                             name={name}
                             onBlur={onBlur}
-                            from='10' to='18' count={watch("watchSize")}
+                            from='10' to='18' count={watchSizes.indexOf(watch("watchSize")) + 1}
                             onClick={event => setValue('time', +event.target.dataset.num)}
                             value={value}
                             error={error}
@@ -180,7 +188,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, masters, clients, 
             </div>
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
-                    <label htmlFor="time">Рейтинг</label>
+                    <label htmlFor="rating">Рейтинг</label>
                     {errors.rating && touchedFields.rating && (
                         <div className={classes.errorMessage}>{errors.rating.message}</div>
                     )}
@@ -205,25 +213,25 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, masters, clients, 
             </div>
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
-                    <label htmlFor="statusId">Статус</label>
-                    {errors.statusId && touchedFields.statusId && (
-                        <div className={classes.errorMessage}>{errors.statusId.message}</div>
+                    <label htmlFor="status">Статус</label>
+                    {errors.status && touchedFields.status && (
+                        <div className={classes.errorMessage}>{errors.status.message}</div>
                     )}
                 </div>
                 <Controller
                     control={control}
-                    name="statusId"
+                    name="status"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, onBlur, value, name },
                         fieldState: { error }
                     }) => (
                         <MySelect
                             name={name}
                             onBlur={onBlur}
-                            onChange={val => setValue('statusId', +val)}
+                            onChange={onChange}
                             value={value || ''}
                             error={error}
-                            options={statuses.map(status => ({ value: status.id, name: status.name }))}
+                            options={statuses.map(status => ({ value: status.value, name: status.name }))}
                         />
                     )}
                 />

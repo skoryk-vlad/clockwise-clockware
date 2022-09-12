@@ -8,7 +8,6 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { CityForm } from '../../components/Forms/CityForm';
 import { Table } from '../../components/Table/Table';
-import { Navigate } from 'react-router-dom';
 
 const defaultCity = {
     name: ''
@@ -23,7 +22,7 @@ export const Cities = () => {
     const [errorModal, setErrorModal] = useState(false);
 
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
-        let cities = await CityService.getCities();
+        const cities = await CityService.getCities();
 
         setCities(cities);
     });

@@ -2,9 +2,9 @@ import { QueryInterface, Sequelize, DataTypes } from 'sequelize';
 'use strict';
 
 module.exports = {
-  up(queryInterface: QueryInterface, Sequelize: any): Promise<void[]> {
+  async up(queryInterface: QueryInterface, Sequelize: any): Promise<void[]> {
     return Promise.all([
-      queryInterface.createTable('City', {
+      await queryInterface.createTable('City', {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -25,7 +25,7 @@ module.exports = {
           type: Sequelize.DATE
         }
       }),
-      queryInterface.createTable('Client', {
+      await queryInterface.createTable('Client', {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -50,7 +50,7 @@ module.exports = {
           type: Sequelize.DATE
         }
       }),
-      queryInterface.createTable('Master', {
+      await queryInterface.createTable('Master', {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -74,7 +74,7 @@ module.exports = {
           type: Sequelize.DATE
         }
       }),
-      queryInterface.createTable('Order', {
+      await queryInterface.createTable('Order', {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -124,7 +124,7 @@ module.exports = {
           type: Sequelize.DATE
         }
       }),
-      queryInterface.createTable('Status', {
+      await queryInterface.createTable('Status', {
         id: {
           allowNull: false,
           autoIncrement: true,
@@ -146,13 +146,13 @@ module.exports = {
       })
     ]);
   },
-  down(queryInterface: QueryInterface): Promise<void[]> {
+  async down(queryInterface: QueryInterface): Promise<void[]> {
     return Promise.all([
-      queryInterface.dropTable('Order'),
-      queryInterface.dropTable('Master'),
-      queryInterface.dropTable('Client'),
-      queryInterface.dropTable('Status'),
-      queryInterface.dropTable('City'),
+      await queryInterface.dropTable('Order'),
+      await queryInterface.dropTable('Master'),
+      await queryInterface.dropTable('Client'),
+      await queryInterface.dropTable('Status'),
+      await queryInterface.dropTable('City'),
     ]);
   }
 };

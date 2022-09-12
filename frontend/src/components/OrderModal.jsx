@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { CityService, MasterService, OrderService } from '../API/Server';
+import { CityMasterService, CityService, MasterService, OrderService } from '../API/Server';
 import { useFetching } from '../hooks/useFetching';
 import { OrderButton } from './OrderButton/OrderButton';
 import classes from './OrderModal.module.css';
@@ -8,7 +8,7 @@ import { ClientOrderForm } from './Forms/ClientOrderForm';
 const defaultOrder = {
     name: "",
     email: "",
-    watchSize: null,
+    watchSize: "",
     cityId: null,
     date: "",
     time: null
@@ -24,9 +24,9 @@ export const OrderModal = () => {
     const [cities, setCities] = useState([]);
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         const cities = await CityService.getCities();
-        const masters = await MasterService.getMasters();
+        const cityMasters = await CityMasterService.getCityMasters();
 
-        setCities(cities.filter(city => masters.find(master => master.cities.includes(city.id))));
+        setCities(cities.filter(city => cityMasters.find(cityMaster => cityMaster.cityId === city.id)));
     });
     useEffect(() => {
         fetchCities();

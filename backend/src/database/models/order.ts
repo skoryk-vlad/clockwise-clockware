@@ -13,20 +13,17 @@ module.exports = (sequelize: Sequelize, DataTypes: any) => {
       Order.belongsTo(models.Master, {
         foreignKey: 'masterId'
       });
-      Order.belongsTo(models.Status, {
-        foreignKey: 'statusId'
-      });
     }
   }
   Order.init({
-    watchSize: DataTypes.INTEGER,
+    watchSize: DataTypes.ENUM('small', 'medium', 'big'),
     date: DataTypes.STRING,
     time: DataTypes.INTEGER,
+    endTime: DataTypes.INTEGER,
     rating: DataTypes.INTEGER,
-    cityId: DataTypes.INTEGER,
+    cityMasterId: DataTypes.INTEGER,
     clientId: DataTypes.INTEGER,
-    masterId: DataTypes.INTEGER,
-    statusId: DataTypes.INTEGER,
+    status: DataTypes.ENUM('awaiting confirmation', 'confirmed', 'completed', 'canceled'),
   }, {
     sequelize,
     modelName: 'Order',

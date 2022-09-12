@@ -4,7 +4,7 @@ import { Model, Sequelize } from "sequelize";
 module.exports = (sequelize: Sequelize, DataTypes: any) => {
   class City extends Model {
     static associate(models: any) {
-      City.hasMany(models.Order, {
+      City.hasMany(models.CityMaster, {
         foreignKey: 'cityId',
         as: 'Order'
       });

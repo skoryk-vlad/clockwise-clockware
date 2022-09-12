@@ -22,10 +22,6 @@ export const Master: ModelDefined<MasterAttributes, MasterCreationAttributes> = 
             type: DataTypes.STRING,
             allowNull: false
         },
-        cities: {
-            type: DataTypes.ARRAY(DataTypes.INTEGER),
-            allowNull: false
-        },
         createdAt: DataTypes.DATE,
         updatedAt: DataTypes.DATE,
     },

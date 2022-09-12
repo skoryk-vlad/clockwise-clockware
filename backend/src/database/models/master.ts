@@ -4,15 +4,14 @@ import { Model, Sequelize } from "sequelize";
 module.exports = (sequelize: Sequelize, DataTypes: any) => {
   class Master extends Model {
     static associate(models: any) {
-      Master.hasMany(models.Order, {
+      Master.hasMany(models.CityMaster, {
         foreignKey: 'masterId',
         as: 'Order'
       });
     }
   }
   Master.init({
-    name: DataTypes.STRING,
-    cities: DataTypes.ARRAY(DataTypes.INTEGER)
+    name: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Master',

@@ -18,8 +18,8 @@ export default class ConfirmationController {
                 try {
                     const order = await Order.findByPk(orderId);
                     if (!order) return res.redirect(`${process.env.CLIENT_LINK}?error`);
-                    if (order.getDataValue('statusId') === 2) return res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
-                    await order.update({ statusId: 2 });
+                    if (order.getDataValue('status') === 'confirmed') return res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
+                    await order.update({ status: 'confirmed' });
                     return res.redirect(`${process.env.CLIENT_LINK}?success`);
                 } catch (error) {
                     return res.redirect(`${process.env.CLIENT_LINK}?error`);

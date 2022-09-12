@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom';
-import { CityService, ClientService, MasterService, OrderService, StatusService } from '../../API/Server';
+import React, { useEffect, useState } from 'react';
+import { CityService, ClientService, MasterService, OrderService } from '../../API/Server';
 import { ChangeStatusForm } from '../../components/Forms/ChangeStatusForm';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar'
@@ -10,7 +9,19 @@ import '../../styles/App.css';
 
 const defaultOrder = {
     rating: 0,
-    statusId: null
+    status: ''
+};
+
+const statuses = {
+    'awaiting confirmation': 'Ожидает подтверждения',
+    'confirmed': 'Подтвержден',
+    'completed': 'Выполнен',
+    'canceled': 'Отменен'
+};
+const watchSizes = {
+    'small': 'Маленькие',
+    'medium': 'Средние',
+    'big': 'Большие'
 };
 
 export const Admin = () => {
@@ -18,32 +29,27 @@ export const Admin = () => {
     const [cities, setCities] = useState([]);
     const [masters, setMasters] = useState([]);
     const [clients, setClients] = useState([]);
-    const [statuses, setStatuses] = useState([]);
 
     const [currentOrder, setCurrentOrder] = useState(defaultOrder);
     const [isModalOpened, setIsModalOpened] = useState(false);
 
     const [ordersCount, setOrdersCount] = useState(0);
 
-    const [redirect, setRedirect] = useState(false);
-
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
         const orders = await OrderService.getOrders();
 
         setOrdersCount(orders.length);
 
-        setOrders(orders.filter(order => order.statusId === 1 || order.statusId === 2));
+        setOrders(orders.filter(order => order.status === 'awaiting confirmation' || order.status === 'confirmed'));
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
         const masters = await MasterService.getMasters();
         const clients = await ClientService.getClients();
-        const statuses = await StatusService.getStatuses();
 
         setCities(cities);
         setMasters(masters);
         setClients(clients);
-        setStatuses(statuses);
     });
 
     useEffect(() => {
@@ -57,12 +63,8 @@ export const Admin = () => {
             setCurrentOrder(null);
     }, [isModalOpened]);
 
-    if (redirect) {
-        return <Navigate push to="/admin/login" />
-    }
-
     const changeStatus = async (values) => {
-        await OrderService.changeStatusById(values.id, values.statusId, values.rating);
+        await OrderService.changeStatusById(values.id, values.status, values.rating);
         setIsModalOpened(false);
         fetchOrders();
     };
@@ -75,10 +77,10 @@ export const Admin = () => {
         `date`,
         `time`,
         `rating`,
-        `City.name`,
+        `CityMaster.City.name`,
         `Client.name`,
-        `Master.name`,
-        `Status.name`,
+        `CityMaster.Master.name`,
+        `status`,
         {
             name: `Изменить`,
             callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(order => order.id === id)); },
@@ -116,7 +118,7 @@ export const Admin = () => {
                     </div>
                     <h2 className='admin-main__title'>Активные заказы</h2>
                     <Table
-                        data={orders}
+                        data={orders.map(order => ({...order, status: statuses[order.status], watchSize: watchSizes[order.watchSize]}))}
                         tableHeaders={tableHeaders}
                         tableBodies={tableBodies}
                     />
@@ -124,7 +126,7 @@ export const Admin = () => {
             </div>
 
             <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                {currentOrder && <ChangeStatusForm order={currentOrder} onClick={changeStatus} statuses={statuses}></ChangeStatusForm>}
+                {currentOrder && <ChangeStatusForm order={currentOrder} onClick={changeStatus}></ChangeStatusForm>}
             </MyModal>
         </div>
     )

@@ -1,84 +1,97 @@
 import React, { useEffect, useState } from 'react';
-import { CityService, MasterService } from '../../API/Server';
+import { CityMasterService, CityService, MasterService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { MasterForm } from '../../components/Forms/MasterForm';
 import { Table } from '../../components/Table/Table';
+import { CityMasterForm } from '../../components/Forms/CityMasterForm';
 
-const defaultMaster = {
-    name: ''
+const defaultCityMaster = {
+    cityId: null,
+    masterId: null
 };
 
-export const Masters = () => {
+export const CityMasters = () => {
+    const [cities, setCities] = useState([]);
     const [masters, setMasters] = useState([]);
+    const [cityMasters, setCityMasters] = useState([]);
 
-    const [currentMaster, setCurrentMaster] = useState(defaultMaster);
+    const [currentCityMaster, setCurrentCityMaster] = useState(defaultCityMaster);
     const [isModalOpened, setIsModalOpened] = useState(false);
 
     const [errorModal, setErrorModal] = useState(false);
 
-    const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
+    const [fetchCityMasters, isCitiesLoading, Error] = useFetching(async () => {
+        const cityMasters = await CityMasterService.getCityMasters();
+
+        setCityMasters(cityMasters);
+    });
+    const [fetchAdditionalData] = useFetching(async () => {
+        const cities = await CityService.getCities();
         const masters = await MasterService.getMasters();
+
+        setCities(cities);
         setMasters(masters);
     });
 
     useEffect(() => {
-        document.title = "Мастера - Clockwise Clockware";
-        fetchMasters();
+        document.title = "Города и мастера - Clockwise Clockware";
+        fetchAdditionalData();
+        fetchCityMasters();
     }, []);
 
     useEffect(() => {
         if (!isModalOpened)
-            setCurrentMaster(null);
+        setCurrentCityMaster(null);
     }, [isModalOpened]);
 
-    const deleteMaster = async (id) => {
+    const deleteCityMaster = async (id) => {
         try {
-            await MasterService.deleteMasterById(id);
-            fetchMasters();
+            await CityMasterService.deleteCityMasterById(id);
+            fetchCityMasters();
         } catch (error) {
             console.log(error.response.data);
             setErrorModal(true);
         }
     }
-    const addMaster = async (master) => {
+    const addCityMaster = async (city) => {
         try {
-            await MasterService.addMaster(master);
+            await CityMasterService.addCityMaster(city);
             setIsModalOpened(false);
-            fetchMasters();
+            fetchCityMasters();
         } catch (error) {
             console.log(error.response.data);
             setErrorModal(true);
         }
     }
-    const updateMaster = async (master) => {
+    const updateCityMaster = async (city) => {
         try {
-            await MasterService.updateMasterById(master);
+            await CityMasterService.updateCityMasterById(city);
             setIsModalOpened(false);
-            fetchMasters();
+            fetchCityMasters();
         } catch (error) {
             console.log(error.response.data);
             setErrorModal(true);
         }
     }
 
-    const tableHeaders = ["id", "Имя", "Изменение", "Удаление"];
+    const tableHeaders = ["id", "Город", "Мастер", "Изменение", "Удаление"];
 
     const tableBodies = [
         `id`,
-        `name`,
+        `City.name`,
+        `Master.name`,
         {
             name: `Изменить`,
-            callback: id => { setIsModalOpened(true); setCurrentMaster(masters.find(master => master.id === id)) },
+            callback: id => { setIsModalOpened(true); setCurrentCityMaster(cityMasters.find(cityMaster => cityMaster.id === id)) },
             param: `id`
         },
         {
             name: `Удалить`,
-            callback: deleteMaster,
+            callback: deleteCityMaster,
             param: `id`
         }
     ];
@@ -87,20 +100,23 @@ export const Masters = () => {
         <div className='admin-container'>
             <Navbar />
             <div className='admin-body'>
-                <h1 className='admin-body__title'>Мастера</h1>
+                <h1 className='admin-body__title'>Города</h1>
 
                 <div className="admin-body__btns">
-                    <AdminButton onClick={() => { setIsModalOpened(true); setCurrentMaster(defaultMaster) }}>
+                    <AdminButton onClick={() => { setIsModalOpened(true); setCurrentCityMaster(defaultCityMaster) }}>
                         Добавить
                     </AdminButton>
                 </div>
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                    {currentMaster && <MasterForm master={currentMaster} onClick={currentMaster.id ? updateMaster : addMaster} btnTitle={currentMaster.id ? 'Изменить' : 'Добавить'}></MasterForm>}
+                    {currentCityMaster && <CityMasterForm cityMaster={currentCityMaster}
+                    cities={cities} masters={masters}
+                    onClick={currentCityMaster.id ? updateCityMaster : addCityMaster}
+                    btnTitle={currentCityMaster.id ? 'Изменить' : 'Добавить'}></CityMasterForm>}
                 </MyModal>
 
                 <Table
-                    data={masters}
+                    data={cityMasters}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />
@@ -110,13 +126,12 @@ export const Masters = () => {
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>
                 }
-                {masters.length === 0 && !isMastersLoading && !Error &&
+                {cityMasters.length === 0 && !isCitiesLoading && !Error &&
                     <h2 className='adminError'>Отсутствуют записи</h2>
                 }
-                {isMastersLoading &&
+                {isCitiesLoading &&
                     <Loader />
                 }
-
             </div>
         </div>
     )

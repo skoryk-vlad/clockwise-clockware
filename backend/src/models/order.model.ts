@@ -1,20 +1,18 @@
-import { Status } from './status.model';
-import { Master } from './master.model';
+import { CityMaster } from './cityMaster.model';
 import { Client } from './client.model';
-import { City } from './city.model';
 import { sequelize } from '../sequelize';
 import { DataTypes, Optional, ModelDefined } from 'sequelize';
 
 export interface OrderAttributes {
     id: number;
-    watchSize: number;
+    watchSize: string;
     date: string;
     time: number;
+    endTime: number;
     rating: number;
     clientId: number;
-    masterId: number;
-    cityId: number;
-    statusId: number;
+    cityMasterId: number;
+    status: string;
 }
 
 type OrderCreationAttributes = Optional<OrderAttributes, 'id'>;
@@ -29,7 +27,11 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
             primaryKey: true
         },
         watchSize: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.ENUM('small', 'medium', 'big'),
+            allowNull: false
+        },
+        status: {
+            type: DataTypes.ENUM('awaiting confirmation', 'confirmed', 'completed', 'canceled'),
             allowNull: false
         },
         date: {
@@ -37,6 +39,10 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
             allowNull: false
         },
         time: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        endTime: {
             type: DataTypes.INTEGER,
             allowNull: false
         },
@@ -53,14 +59,8 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
     }
 );
 
-City.hasMany(Order, {foreignKey: 'cityId', as: 'Order'});
-Order.belongsTo(City, {foreignKey: 'cityId'});
+Order.belongsTo(CityMaster, {foreignKey: 'cityMasterId'});
+CityMaster.hasMany(Order, { foreignKey: 'cityMasterId', as: 'Order' });
 
-Client.hasMany(Order, {foreignKey: 'clientId', as: 'Order'});
 Order.belongsTo(Client, {foreignKey: 'clientId'});
-
-Master.hasMany(Order, {foreignKey: 'masterId', as: 'Order'});
-Order.belongsTo(Master, {foreignKey: 'masterId'});
-
-Status.hasMany(Order, {foreignKey: 'statusId', as: 'Order'});
-Order.belongsTo(Status, {foreignKey: 'statusId'});
+Client.hasMany(Order, {foreignKey: 'clientId', as: 'Order'});

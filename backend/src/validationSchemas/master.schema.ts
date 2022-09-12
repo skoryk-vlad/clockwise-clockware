@@ -1,15 +1,13 @@
 import { z } from 'zod';
 
 export const AddMasterSchema = z.object({
-    name: z.string().trim().min(3).max(255),
-    cities: z.array(z.number().int().positive()).nonempty()
+    name: z.string().trim().min(3).max(255)
 });
 export const GetMasterSchema = z.object({
     id: z.number().int().positive()
 });
 export const UpdateMasterSchema = z.object({
-    name: z.string().trim().min(3).max(255),
-    cities: z.array(z.number().int().positive()).nonempty()
+    name: z.string().trim().min(3).max(255)
 });
 export const DeleteMasterSchema = z.object({
     id: z.number().int().positive()
@@ -19,10 +17,7 @@ export const GetFreeMastersSchema = z.object({
         (a) => parseInt(z.string().parse(a), 10),
         z.number().positive()
     ),
-    watchSize: z.preprocess(
-        (a) => parseInt(z.string().parse(a), 10),
-        z.number().min(1).max(3)
-    ),
+    watchSize: z.string(),
     time: z.preprocess(
         (a) => parseInt(z.string().parse(a), 10),
         z.number().min(10).max(18)

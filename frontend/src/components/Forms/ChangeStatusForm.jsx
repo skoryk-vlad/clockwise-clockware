@@ -9,10 +9,17 @@ import { MySelect } from '../select/MySelect';
 
 const ChangeStatusSchema = z.object({
     rating: z.number({invalid_type_error: 'Рейтинг должен быть числом'}).int().min(0, 'Рейтинг должен находиться в диапазоне 0-5').max(5, 'Рейтинг должен находиться в диапазоне 0-5'),
-    statusId: z.number({invalid_type_error: 'Требуется выбрать статус'}).int().min(1).max(4)
+    status: z.string({invalid_type_error: 'Требуется выбрать статус'})
 });
 
-export const ChangeStatusForm = ({ order, onClick, statuses }) => {
+const statuses = [
+    {value: 'awaiting confirmation', name: 'Ожидает подтверждения'},
+    {value: 'confirmed', name: 'Подтвержден'},
+    {value: 'completed', name: 'Выполнен'},
+    {value: 'canceled', name: 'Отменен'}
+];
+
+export const ChangeStatusForm = ({ order, onClick }) => {
     const { control, handleSubmit, getValues, setValue, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
         mode: 'onChange',
         defaultValues: order,
@@ -49,25 +56,25 @@ export const ChangeStatusForm = ({ order, onClick, statuses }) => {
             </div>
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
-                    <label htmlFor="statusId">Статус</label>
-                    {errors.statusId && touchedFields.statusId && (
-                        <div className={classes.errorMessage}>{errors.statusId.message}</div>
+                    <label htmlFor="status">Статус</label>
+                    {errors.status && touchedFields.status && (
+                        <div className={classes.errorMessage}>{errors.status.message}</div>
                     )}
                 </div>
                 <Controller
                     control={control}
-                    name="statusId"
+                    name="status"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, onBlur, value, name },
                         fieldState: { error }
                     }) => (
                         <MySelect
                             name={name}
                             onBlur={onBlur}
-                            onChange={val => setValue('statusId', +val)}
+                            onChange={onChange}
                             value={value || ''}
                             error={error}
-                            options={statuses.map(status => ({ value: status.id, name: status.name }))}
+                            options={statuses.map(status => ({ value: status.value, name: status.name }))}
                         />
                     )}
                 />
