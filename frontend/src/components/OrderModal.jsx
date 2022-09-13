@@ -4,7 +4,7 @@ import { useFetching } from '../hooks/useFetching';
 import { OrderButton } from './OrderButton/OrderButton';
 import classes from './OrderModal.module.css';
 import { ClientOrderForm } from './Forms/ClientOrderForm';
-import {WATCH_SIZES} from '../constants.ts';
+import { WATCH_SIZES, STATUSES } from '../constants.ts';
 
 const defaultOrder = {
     name: "",
@@ -12,7 +12,8 @@ const defaultOrder = {
     watchSize: Object.keys(WATCH_SIZES)[0],
     cityId: null,
     date: "",
-    time: null
+    time: null,
+    status: Object.keys(STATUSES)[0]
 };
 
 export const OrderModal = () => {

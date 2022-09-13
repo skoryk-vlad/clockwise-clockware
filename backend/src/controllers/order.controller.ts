@@ -50,7 +50,7 @@ export default class OrderController {
             });
 
             const order = await Order.create({
-                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status: status || STATUSES.AWAITING_CONFIRMATION, endTime
+                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime
             }, {
                 transaction: addOrderTransaction
             });

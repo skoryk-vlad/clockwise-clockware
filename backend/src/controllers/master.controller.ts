@@ -145,7 +145,7 @@ export default class MasterController {
             const { id } = DeleteMasterSchema.parse({ id: +req.params.id });
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
-            await master.destroy({});
+            await master.destroy();
             return res.status(200).json(master);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
