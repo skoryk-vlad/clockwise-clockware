@@ -5,7 +5,6 @@ import { Landing } from "../pages/Landing";
 import { Login } from "../pages/Login";
 import { Masters } from "../pages/admin/Masters";
 import { Orders } from "../pages/admin/Orders";
-import { CityMasters } from "../pages/admin/CityMasters";
 
 export const privateRoutes = [
     {path: '/admin/main', element: <Admin/>},
@@ -13,7 +12,6 @@ export const privateRoutes = [
     {path: '/admin/masters', element: <Masters/>},
     {path: '/admin/clients', element: <Clients/>},
     {path: '/admin/orders', element: <Orders/>},
-    {path: '/admin/citymasters', element: <CityMasters/>}
 ]
 
 export const publicRoutes = [

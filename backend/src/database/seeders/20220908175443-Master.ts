@@ -6,14 +6,14 @@ module.exports = {
     'Master',
     [
       {
+        id: 1,
         name: 'Владислав',
-        cities: '{1,2}',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
+        id: 2,
         name: 'Арсений',
-        cities: '{2}',
         createdAt: new Date(),
         updatedAt: new Date(),
       },

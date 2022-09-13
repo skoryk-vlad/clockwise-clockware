@@ -1,18 +1,32 @@
-import { CityMaster } from './cityMaster.model';
+import { City } from './city.model';
+import { Master } from './master.model';
 import { Client } from './client.model';
 import { sequelize } from '../sequelize';
 import { DataTypes, Optional, ModelDefined } from 'sequelize';
 
+export enum STATUSES {
+    AWAITING_CONFIRMATION = 'awaiting confirmation',
+    CONFIRMED = 'confirmed',
+    COMPLETED = 'completed',
+    CANCELED = 'canceled'
+}
+export enum WATCH_SIZES {
+    SMALL = 'small',
+    MEDIUM = 'medium',
+    BIG = 'big'
+}
+
 export interface OrderAttributes {
     id: number;
-    watchSize: string;
+    watchSize: WATCH_SIZES;
     date: string;
     time: number;
     endTime: number;
     rating: number;
     clientId: number;
-    cityMasterId: number;
-    status: string;
+    cityId: number;
+    masterId: number;
+    status: STATUSES;
 }
 
 type OrderCreationAttributes = Optional<OrderAttributes, 'id'>;
@@ -27,11 +41,11 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
             primaryKey: true
         },
         watchSize: {
-            type: DataTypes.ENUM('small', 'medium', 'big'),
+            type: DataTypes.ENUM(...Object.values(WATCH_SIZES)),
             allowNull: false
         },
         status: {
-            type: DataTypes.ENUM('awaiting confirmation', 'confirmed', 'completed', 'canceled'),
+            type: DataTypes.ENUM(...Object.values(STATUSES)),
             allowNull: false
         },
         date: {
@@ -59,8 +73,11 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
     }
 );
 
-Order.belongsTo(CityMaster, {foreignKey: 'cityMasterId'});
-CityMaster.hasMany(Order, { foreignKey: 'cityMasterId', as: 'Order' });
+Order.belongsTo(City, {foreignKey: 'cityId'});
+City.hasMany(Order, { foreignKey: 'cityId', as: 'Order' });
+
+Order.belongsTo(Master, {foreignKey: 'masterId'});
+Master.hasMany(Order, { foreignKey: 'masterId', as: 'Order' });
 
 Order.belongsTo(Client, {foreignKey: 'clientId'});
 Client.hasMany(Order, {foreignKey: 'clientId', as: 'Order'});

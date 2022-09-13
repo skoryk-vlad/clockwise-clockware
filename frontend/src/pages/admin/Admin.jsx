@@ -4,24 +4,13 @@ import { ChangeStatusForm } from '../../components/Forms/ChangeStatusForm';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar'
 import { Table } from '../../components/Table/Table';
+import { STATUSES, WATCH_SIZES } from '../../constants.ts';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 
 const defaultOrder = {
     rating: 0,
     status: ''
-};
-
-const statuses = {
-    'awaiting confirmation': 'Ожидает подтверждения',
-    'confirmed': 'Подтвержден',
-    'completed': 'Выполнен',
-    'canceled': 'Отменен'
-};
-const watchSizes = {
-    'small': 'Маленькие',
-    'medium': 'Средние',
-    'big': 'Большие'
 };
 
 export const Admin = () => {
@@ -40,7 +29,7 @@ export const Admin = () => {
 
         setOrdersCount(orders.length);
 
-        setOrders(orders.filter(order => order.status === 'awaiting confirmation' || order.status === 'confirmed'));
+        setOrders(orders.filter(order => order.status === Object.keys(STATUSES)[0] || order.status === Object.keys(STATUSES)[1]));
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -63,8 +52,8 @@ export const Admin = () => {
             setCurrentOrder(null);
     }, [isModalOpened]);
 
-    const changeStatus = async (values) => {
-        await OrderService.changeStatusById(values.id, values.status, values.rating);
+    const changeStatus = async (order) => {
+        await OrderService.changeStatusById(order.id, order.status, order.rating);
         setIsModalOpened(false);
         fetchOrders();
     };
@@ -77,9 +66,9 @@ export const Admin = () => {
         `date`,
         `time`,
         `rating`,
-        `CityMaster.City.name`,
+        `City.name`,
         `Client.name`,
-        `CityMaster.Master.name`,
+        `Master.name`,
         `status`,
         {
             name: `Изменить`,
@@ -118,7 +107,7 @@ export const Admin = () => {
                     </div>
                     <h2 className='admin-main__title'>Активные заказы</h2>
                     <Table
-                        data={orders.map(order => ({...order, status: statuses[order.status], watchSize: watchSizes[order.watchSize]}))}
+                        data={orders.map(order => ({...order, status: STATUSES[order.status], watchSize: WATCH_SIZES[order.watchSize]}))}
                         tableHeaders={tableHeaders}
                         tableBodies={tableBodies}
                     />

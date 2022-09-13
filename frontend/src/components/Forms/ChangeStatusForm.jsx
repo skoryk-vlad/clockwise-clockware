@@ -6,18 +6,12 @@ import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
+import { STATUSES } from '../../constants.ts';
 
 const ChangeStatusSchema = z.object({
-    rating: z.number({invalid_type_error: 'Рейтинг должен быть числом'}).int().min(0, 'Рейтинг должен находиться в диапазоне 0-5').max(5, 'Рейтинг должен находиться в диапазоне 0-5'),
-    status: z.string({invalid_type_error: 'Требуется выбрать статус'})
+    rating: z.number({ invalid_type_error: 'Рейтинг должен быть числом' }).int().min(0, 'Рейтинг должен находиться в диапазоне 0-5').max(5, 'Рейтинг должен находиться в диапазоне 0-5'),
+    status: z.nativeEnum(Object.keys(STATUSES))
 });
-
-const statuses = [
-    {value: 'awaiting confirmation', name: 'Ожидает подтверждения'},
-    {value: 'confirmed', name: 'Подтвержден'},
-    {value: 'completed', name: 'Выполнен'},
-    {value: 'canceled', name: 'Отменен'}
-];
 
 export const ChangeStatusForm = ({ order, onClick }) => {
     const { control, handleSubmit, getValues, setValue, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
@@ -74,7 +68,7 @@ export const ChangeStatusForm = ({ order, onClick }) => {
                             onChange={onChange}
                             value={value || ''}
                             error={error}
-                            options={statuses.map(status => ({ value: status.value, name: status.name }))}
+                            options={Object.keys(STATUSES).map(statusKey => ({ value: statusKey, name: STATUSES[statusKey] }))}
                         />
                     )}
                 />

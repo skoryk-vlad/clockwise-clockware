@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CityService, MasterService, ClientService, OrderService, CityMasterService } from '../../API/Server';
+import { CityService, ClientService, OrderService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -8,35 +8,22 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { OrderForm } from '../../components/Forms/OrderForm';
 import { Table } from '../../components/Table/Table';
+import { STATUSES, WATCH_SIZES } from '../../constants.ts';
 
 const defaultOrder = {
     clientId: null,
     masterId: null,
     cityId: null,
-    watchSize: '',
+    watchSize: Object.keys(WATCH_SIZES)[0],
     date: '',
     time: null,
     rating: 0,
-    status: 'awaiting confirmation'
-};
-
-const statuses = {
-    'awaiting confirmation': 'Ожидает подтверждения',
-    'confirmed': 'Подтвержден',
-    'completed': 'Выполнен',
-    'canceled': 'Отменен'
-};
-const watchSizes = {
-    'small': 'Маленькие',
-    'medium': 'Средние',
-    'big': 'Большие'
+    status: Object.keys(STATUSES)[0]
 };
 
 export const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
-    const [masters, setMasters] = useState([]);
-    const [cityMasters, setCityMasters] = useState([]);
     const [clients, setClients] = useState([]);
 
     const [currentOrder, setCurrentOrder] = useState(defaultOrder);
@@ -50,13 +37,9 @@ export const Orders = () => {
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
-        const masters = await MasterService.getMasters();
-        const cityMasters = await CityMasterService.getCityMasters();
         const clients = await ClientService.getClients();
 
         setCities(cities);
-        setMasters(masters);
-        setCityMasters(cityMasters);
         setClients(clients);
     });
 
@@ -111,17 +94,13 @@ export const Orders = () => {
         `date`,
         `time`,
         `rating`,
-        `CityMaster.City.name`,
+        `City.name`,
         `Client.name`,
-        `CityMaster.Master.name`,
+        `Master.name`,
         `status`,
         {
             name: `Изменить`,
-            callback: id => { 
-                setIsModalOpened(true);
-                const order = orders.find(order => order.id === id);
-                setCurrentOrder({...order, cityId: order.CityMaster.City.id, masterId: order.CityMaster.Master.id});
-            },
+            callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(order => order.id === id)); },
             param: `id`
         },
         {
@@ -145,12 +124,11 @@ export const Orders = () => {
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
                     {currentOrder && <OrderForm order={currentOrder} onClick={currentOrder?.id ? updateOrder : addOrder}
-                        masters={masters} clients={clients} cityMasters={cityMasters}
-                        cities={cities} btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
+                        clients={clients} cities={cities} btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
                 </MyModal>
 
                 <Table
-                    data={orders.map(order => ({...order, status: statuses[order.status], watchSize: watchSizes[order.watchSize]}))}
+                    data={orders.map(order => ({...order, status: STATUSES[order.status], watchSize: WATCH_SIZES[order.watchSize]}))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />

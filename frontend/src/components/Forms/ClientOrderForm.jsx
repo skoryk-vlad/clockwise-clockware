@@ -8,11 +8,12 @@ import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
 import { formatISO } from 'date-fns'
+import { WATCH_SIZES } from '../../constants.ts';
 
 const ClientOrderSchema = z.object({
     name: z.string().trim().min(1, { message: 'Требуется имя' }).min(3, { message: 'Имя должно быть не короче 3-х букв' }).max(255),
     email: z.string().trim().min(1, { message: 'Требуется почта' }).email({ message: 'Неверный формат почты' }).max(255),
-    watchSize: z.string({ invalid_type_error: 'Требуется выбрать размер часов' }),
+    watchSize: z.nativeEnum(Object.keys(WATCH_SIZES)),
     cityId: z.number({ invalid_type_error: 'Требуется выбрать город' }).int().positive(),
     date: z.string().regex(/([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))/, 'Требуется выбрать дату'),
     time: z.number({ invalid_type_error: 'Требуется выбрать время' }).int().min(10).max(18)
@@ -21,8 +22,6 @@ const ClientOrderSchema = z.object({
 const date = new Date();
 const minDate = formatISO(date, { representation: 'date' });
 
-const watchSizes = ['small', 'medium', 'big'];
-
 export const ClientOrderForm = ({ order, onClick, cities }) => {
     const { control, handleSubmit, getValues, setValue, watch, formState: { errors, isValid, touchedFields } } = useForm({
         mode: 'all',
@@ -30,7 +29,7 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
         resolver: zodResolver(ClientOrderSchema)
     });
     const onSubmit = () => onClick(getValues());
-
+    
     return (
         <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
             <div className={classes.formRow}>
@@ -101,8 +100,8 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
                             name={name}
                             onBlur={onBlur}
                             from='1' to='3'
-                            onClick={event => setValue('watchSize', watchSizes[+event.target.dataset.num - 1])}
-                            value={watchSizes.indexOf(value) + 1}
+                            onClick={event => setValue('watchSize', Object.keys(WATCH_SIZES)[+event.target.dataset.num - 1])}
+                            value={Object.keys(WATCH_SIZES).indexOf(value) + 1}
                             error={error}
                         />
                     )}
@@ -174,7 +173,7 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
                         <NumPicker
                             name={name}
                             onBlur={onBlur}
-                            from='10' to='18' count={watchSizes.indexOf(watch("watchSize")) + 1}
+                            from='10' to='18' count={Object.keys(WATCH_SIZES).indexOf(watch("watchSize")) + 1}
                             min={!errors.date ? (watch('date') === minDate ? date.getHours() + 1 : 0) : 19}
                             onClick={event => setValue('time', +event.target.dataset.num)}
                             value={value}

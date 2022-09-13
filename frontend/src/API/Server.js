@@ -125,22 +125,3 @@ export class AuthService {
         return data;
     }
 }
-
-export class CityMasterService {
-    static async getCityMasters() {
-        const { data } = await axios.get(`${API_URL}/api/citymaster`);
-        return data;
-    }
-    static async addCityMaster(newCityMaster) {
-        const { data } = await api.post(`/citymaster`, newCityMaster);
-        return data;
-    }
-    static async deleteCityMasterById(id) {
-        const { data } = await api.delete(`/citymaster/${id}`);
-        return data;
-    }
-    static async updateCityMasterById(updCityMaster) {
-        const { data } = await api.put(`/citymaster/${updCityMaster.id}`, updCityMaster);
-        return data;
-    }
-}

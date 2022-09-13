@@ -6,12 +6,14 @@ module.exports = {
     'Client',
     [
       {
+        id: 1,
         name: 'Владислав',
         email: 'vladyslav123@gmail.com',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
+        id: 2,
         name: 'Арсений',
         email: 'arseniy456@gmail.com',
         createdAt: new Date(),

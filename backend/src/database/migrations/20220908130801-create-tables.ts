@@ -1,5 +1,4 @@
-import { QueryInterface, Sequelize, DataTypes } from 'sequelize';
-'use strict';
+import { QueryInterface } from 'sequelize';
 
 module.exports = {
   async up(queryInterface: QueryInterface, Sequelize: any): Promise<void[]> {

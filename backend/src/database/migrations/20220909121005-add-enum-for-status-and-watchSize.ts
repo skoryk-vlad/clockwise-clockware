@@ -1,5 +1,16 @@
 import { QueryInterface } from 'sequelize';
-'use strict';
+
+enum STATUSES {
+  AWAITING_CONFIRMATION = 'awaiting confirmation',
+  CONFIRMED = 'confirmed',
+  COMPLETED = 'completed',
+  CANCELED = 'canceled'
+}
+enum WATCH_SIZES {
+  SMALL = 'small',
+  MEDIUM = 'medium',
+  BIG = 'big'
+}
 
 module.exports = {
   async up(queryInterface: QueryInterface, Sequelize: any): Promise<void[]> {
@@ -17,7 +28,7 @@ module.exports = {
         'Order',
         'watchSize',
         {
-          type: Sequelize.ENUM('small', 'medium', 'big'),
+          type: Sequelize.ENUM(...Object.values(WATCH_SIZES)),
           allowNull: false
         }
       ),
@@ -27,7 +38,7 @@ module.exports = {
         'Order',
         'status',
         {
-          type: Sequelize.ENUM('awaiting confirmation', 'confirmed', 'completed', 'canceled'),
+          type: Sequelize.ENUM(...Object.values(STATUSES)),
           allowNull: false
         }
       ),

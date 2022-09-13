@@ -4,7 +4,6 @@ import { DataTypes, Optional, ModelDefined } from 'sequelize';
 export interface MasterAttributes {
     id: number;
     name: string;
-    cities: number[];
 }
 
 type MasterCreationAttributes = Optional<MasterAttributes, 'id'>;

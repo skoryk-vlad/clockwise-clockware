@@ -10,11 +10,13 @@ import { MasterForm } from '../../components/Forms/MasterForm';
 import { Table } from '../../components/Table/Table';
 
 const defaultMaster = {
-    name: ''
+    name: '',
+    cities: []
 };
 
 export const Masters = () => {
     const [masters, setMasters] = useState([]);
+    const [cities, setCities] = useState([]);
 
     const [currentMaster, setCurrentMaster] = useState(defaultMaster);
     const [isModalOpened, setIsModalOpened] = useState(false);
@@ -23,11 +25,16 @@ export const Masters = () => {
 
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
         const masters = await MasterService.getMasters();
-        setMasters(masters);
+        setMasters(masters.map(master => ({...master, cities: master.CityMaster.map(cityMaster => cityMaster.cityId)})));
+    });
+    const [fetchAdditionalData] = useFetching(async () => {
+        const cities = await CityService.getCities();
+        setCities(cities);
     });
 
     useEffect(() => {
         document.title = "Мастера - Clockwise Clockware";
+        fetchAdditionalData();
         fetchMasters();
     }, []);
 
@@ -66,11 +73,13 @@ export const Masters = () => {
         }
     }
 
-    const tableHeaders = ["id", "Имя", "Изменение", "Удаление"];
+    const tableHeaders = ["id", "Имя", "Города", "Рейтинг", "Изменение", "Удаление"];
 
     const tableBodies = [
         `id`,
         `name`,
+        `cities`,
+        `rating`,
         {
             name: `Изменить`,
             callback: id => { setIsModalOpened(true); setCurrentMaster(masters.find(master => master.id === id)) },
@@ -96,11 +105,11 @@ export const Masters = () => {
                 </div>
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                    {currentMaster && <MasterForm master={currentMaster} onClick={currentMaster.id ? updateMaster : addMaster} btnTitle={currentMaster.id ? 'Изменить' : 'Добавить'}></MasterForm>}
+                    {currentMaster && <MasterForm master={currentMaster} onClick={currentMaster.id ? updateMaster : addMaster} cities={cities} btnTitle={currentMaster.id ? 'Изменить' : 'Добавить'}></MasterForm>}
                 </MyModal>
 
                 <Table
-                    data={masters}
+                    data={masters.map(master => ({ ...master, cities: master.cities.map(masterCity => cities.find(city => city.id === masterCity)?.name).join(', ') }))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />

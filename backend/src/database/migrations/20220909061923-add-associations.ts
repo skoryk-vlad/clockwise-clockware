@@ -1,5 +1,4 @@
 import { QueryInterface } from 'sequelize';
-'use strict';
 
 module.exports = {
   async up(queryInterface: QueryInterface, Sequelize: any): Promise<void[]> {

@@ -5,11 +5,9 @@ import { Op } from 'sequelize';
 import { Master } from './../models/master.model';
 import { Client } from './../models/client.model';
 import { City } from './../models/city.model';
-import { Order } from './../models/order.model';
+import { Order, STATUSES, WATCH_SIZES } from './../models/order.model';
 import { Request, Response } from 'express';
 import { sendConfirmationMail } from '../mailer';
-
-const watchSizes = ['small', 'medium', 'big'];
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
@@ -24,23 +22,23 @@ export default class OrderController {
             const existCityMaster = await CityMaster.findOne({ where: { cityId, masterId } });
             if (!existCityMaster) return res.status(404).json('No such city and master relation');
 
-            const endTime = time + watchSizes.indexOf(watchSize);
+            const endTime = time + Object.values(WATCH_SIZES).indexOf(watchSize);
 
             const overlapsOrders = await Order.findAll({
                 where: {
                     date,
+                    masterId,
                     [Op.or]: [
                         { time: { [Op.between]: [time, endTime] } },
-                        { endTime: { [Op.between]: [time, endTime] } }
+                        { endTime: { [Op.between]: [time, endTime] } },
+                        {
+                            [Op.and]: [
+                                { time: { [Op.lt]: time } },
+                                { endTime: { [Op.gt]: endTime } },
+                            ]
+                        }
                     ]
-                },
-                include: [{
-                    model: CityMaster,
-                    as: 'CityMaster',
-                    where: {
-                        masterId
-                    }
-                }]
+                }
             });
             if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
 
@@ -52,7 +50,7 @@ export default class OrderController {
             });
 
             const order = await Order.create({
-                watchSize, date, time, clientId: client.getDataValue('id'), cityMasterId: existCityMaster.getDataValue('id'), status: status || 'awaiting confirmation', endTime
+                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status: status || STATUSES.AWAITING_CONFIRMATION, endTime
             }, {
                 transaction: addOrderTransaction
             });
@@ -72,22 +70,16 @@ export default class OrderController {
                 include:
                     [
                         {
-                            model: CityMaster,
-                            as: 'CityMaster',
-                            include: [
-                                {
-                                    model: City,
-                                    as: 'City'
-                                },
-                                {
-                                    model: Master,
-                                    as: 'Master'
-                                },
-                            ]
+                            model: City,
+                            as: 'City'
+                        },
+                        {
+                            model: Master,
+                            as: 'Master'
                         },
                         {
                             model: Client,
-                            attributes: ['id', 'name', 'email']
+                            as: 'Client'
                         }
                     ],
                 order: [
@@ -128,29 +120,29 @@ export default class OrderController {
             const existCityMaster = await CityMaster.findOne({ where: { cityId, masterId } });
             if (!existCityMaster) return res.status(404).json('No such city and master relation');
 
-            const endTime = time + watchSizes.indexOf(watchSize);
+            const endTime = time + Object.values(WATCH_SIZES).indexOf(watchSize);
 
             const overlapsOrders = await Order.findAll({
                 where: {
                     id: { [Op.ne]: id },
                     date,
+                    masterId,
                     [Op.or]: [
                         { time: { [Op.between]: [time, endTime] } },
-                        { endTime: { [Op.between]: [time, endTime] } }
+                        { endTime: { [Op.between]: [time, endTime] } },
+                        {
+                            [Op.and]: [
+                                { time: { [Op.lt]: time } },
+                                { endTime: { [Op.gt]: endTime } },
+                            ]
+                        }
                     ]
-                },
-                include: [{
-                    model: CityMaster,
-                    as: 'CityMaster',
-                    where: {
-                        masterId
-                    }
-                }]
+                }
             });
             if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
 
             const [order, created] = await Order.upsert({
-                id, clientId, cityMasterId: existCityMaster.getDataValue('id'), watchSize, date, time, status, rating, endTime
+                id, clientId, masterId, cityId, watchSize, date, time, status, rating, endTime
             });
             return res.status(200).json(order);
         } catch (error) {

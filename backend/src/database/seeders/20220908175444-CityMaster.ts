@@ -3,17 +3,19 @@ import { QueryInterface } from 'sequelize';
 
 module.exports = {
   up: (queryInterface: QueryInterface): Promise<number | object> => queryInterface.bulkInsert(
-    'Order',
+    'CityMaster',
     [
       {
-        watchSize: 2,
-        date: "2022-08-08",
-        time: 12,
-        rating: 0,
-        clientId: 1,
+        id: 1,
         masterId: 1,
         cityId: 1,
-        statusId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 2,
+        masterId: 2,
+        cityId: 2,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -21,5 +23,5 @@ module.exports = {
     {},
   ),
 
-  down: (queryInterface: QueryInterface): Promise<number | object> => queryInterface.bulkDelete('Order', null, {})
+  down: (queryInterface: QueryInterface): Promise<number | object> => queryInterface.bulkDelete('CityMaster', null, {})
 };
