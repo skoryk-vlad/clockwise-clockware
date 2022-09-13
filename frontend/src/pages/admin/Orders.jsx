@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CityService, MasterService, ClientService, OrderService, StatusService } from '../../API/Server';
+import { CityService, ClientService, OrderService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -8,24 +8,23 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { OrderForm } from '../../components/Forms/OrderForm';
 import { Table } from '../../components/Table/Table';
+import { STATUSES, WATCH_SIZES } from '../../constants.ts';
 
 const defaultOrder = {
     clientId: null,
     masterId: null,
     cityId: null,
-    watchSize: null,
+    watchSize: Object.keys(WATCH_SIZES)[0],
     date: '',
     time: null,
     rating: 0,
-    statusId: 1
+    status: Object.keys(STATUSES)[0]
 };
 
 export const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
-    const [masters, setMasters] = useState([]);
     const [clients, setClients] = useState([]);
-    const [statuses, setStatuses] = useState([]);
 
     const [currentOrder, setCurrentOrder] = useState(defaultOrder);
     const [isModalOpened, setIsModalOpened] = useState(false);
@@ -38,14 +37,10 @@ export const Orders = () => {
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
-        const masters = await MasterService.getMasters();
         const clients = await ClientService.getClients();
-        const statuses = await StatusService.getStatuses();
 
         setCities(cities);
-        setMasters(masters);
         setClients(clients);
-        setStatuses(statuses);
     });
 
     useEffect(() => {
@@ -102,7 +97,7 @@ export const Orders = () => {
         `City.name`,
         `Client.name`,
         `Master.name`,
-        `Status.name`,
+        `status`,
         {
             name: `Изменить`,
             callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(order => order.id === id)); },
@@ -129,12 +124,11 @@ export const Orders = () => {
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
                     {currentOrder && <OrderForm order={currentOrder} onClick={currentOrder?.id ? updateOrder : addOrder}
-                        masters={masters} clients={clients} statuses={statuses}
-                        cities={cities} btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
+                        clients={clients} cities={cities} btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
                 </MyModal>
 
                 <Table
-                    data={orders}
+                    data={orders.map(order => ({...order, status: STATUSES[order.status], watchSize: WATCH_SIZES[order.watchSize]}))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />

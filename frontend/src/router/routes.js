@@ -11,7 +11,7 @@ export const privateRoutes = [
     {path: '/admin/cities', element: <Cities/>},
     {path: '/admin/masters', element: <Masters/>},
     {path: '/admin/clients', element: <Clients/>},
-    {path: '/admin/orders', element: <Orders/>}
+    {path: '/admin/orders', element: <Orders/>},
 ]
 
 export const publicRoutes = [

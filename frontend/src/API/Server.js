@@ -104,8 +104,8 @@ export class OrderService {
         const { data } = await api.put(`/order/${updOrder.id}`, updOrder);
         return data;
     }
-    static async changeStatusById(id, statusId, rating) {
-        const { data } = await api.post(`/order/status`, { id, statusId, rating });
+    static async changeStatusById(id, status, rating) {
+        const { data } = await api.post(`/order/status`, { id, status, rating });
         return data;
     }
 }
@@ -122,13 +122,6 @@ export class AuthService {
 
     static async checkAuth() {
         const { data } = await api.get(`/admin`);
-        return data;
-    }
-}
-
-export class StatusService {
-    static async getStatuses() {
-        const { data } = await api.get(`/status`);
         return data;
     }
 }

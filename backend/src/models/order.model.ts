@@ -1,20 +1,38 @@
-import { Status } from './status.model';
+import { City } from './city.model';
 import { Master } from './master.model';
 import { Client } from './client.model';
-import { City } from './city.model';
 import { sequelize } from '../sequelize';
 import { DataTypes, Optional, ModelDefined } from 'sequelize';
 
+export enum STATUSES {
+    AWAITING_CONFIRMATION = 'awaiting confirmation',
+    CONFIRMED = 'confirmed',
+    COMPLETED = 'completed',
+    CANCELED = 'canceled'
+}
+export enum WATCH_SIZES {
+    SMALL = 'small',
+    MEDIUM = 'medium',
+    BIG = 'big'
+}
+type WatchSizesType = Partial<Record<WATCH_SIZES, number>>;
+export const WatchSizes: WatchSizesType = {
+    [WATCH_SIZES.SMALL]: 1,
+    [WATCH_SIZES.MEDIUM]: 2,
+    [WATCH_SIZES.BIG]: 3,
+}
+
 export interface OrderAttributes {
     id: number;
-    watchSize: number;
+    watchSize: WATCH_SIZES;
     date: string;
     time: number;
+    endTime: number;
     rating: number;
     clientId: number;
-    masterId: number;
     cityId: number;
-    statusId: number;
+    masterId: number;
+    status: STATUSES;
 }
 
 type OrderCreationAttributes = Optional<OrderAttributes, 'id'>;
@@ -23,12 +41,17 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
     'Order',
     {
         id: {
+            allowNull: false,
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true
         },
         watchSize: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.ENUM(...Object.values(WATCH_SIZES)),
+            allowNull: false
+        },
+        status: {
+            type: DataTypes.ENUM(...Object.values(STATUSES)),
             allowNull: false
         },
         date: {
@@ -36,6 +59,10 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
             allowNull: false
         },
         time: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        endTime: {
             type: DataTypes.INTEGER,
             allowNull: false
         },
@@ -52,14 +79,11 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
     }
 );
 
-City.hasMany(Order, {foreignKey: 'cityId', as: 'Order'});
-Order.belongsTo(City, {foreignKey: 'cityId'});
+Order.belongsTo(City, { foreignKey: 'cityId' });
+City.hasMany(Order, { foreignKey: 'cityId', as: 'Order' });
 
-Client.hasMany(Order, {foreignKey: 'clientId', as: 'Order'});
-Order.belongsTo(Client, {foreignKey: 'clientId'});
+Order.belongsTo(Master, { foreignKey: 'masterId' });
+Master.hasMany(Order, { foreignKey: 'masterId', as: 'Order' });
 
-Master.hasMany(Order, {foreignKey: 'masterId', as: 'Order'});
-Order.belongsTo(Master, {foreignKey: 'masterId'});
-
-Status.hasMany(Order, {foreignKey: 'statusId', as: 'Order'});
-Order.belongsTo(Status, {foreignKey: 'statusId'});
+Order.belongsTo(Client, { foreignKey: 'clientId' });
+Client.hasMany(Order, { foreignKey: 'clientId', as: 'Order' });

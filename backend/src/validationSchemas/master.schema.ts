@@ -1,3 +1,4 @@
+import { WATCH_SIZES } from './../models/order.model';
 import { z } from 'zod';
 
 export const AddMasterSchema = z.object({
@@ -19,10 +20,7 @@ export const GetFreeMastersSchema = z.object({
         (a) => parseInt(z.string().parse(a), 10),
         z.number().positive()
     ),
-    watchSize: z.preprocess(
-        (a) => parseInt(z.string().parse(a), 10),
-        z.number().min(1).max(3)
-    ),
+    watchSize: z.nativeEnum(WATCH_SIZES),
     time: z.preprocess(
         (a) => parseInt(z.string().parse(a), 10),
         z.number().min(10).max(18)

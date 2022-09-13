@@ -12,6 +12,7 @@ export const City: ModelDefined<CityAttributes,CityCreationAttributes> = sequeli
     'City',
     {
         id: {
+            allowNull: false,
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true

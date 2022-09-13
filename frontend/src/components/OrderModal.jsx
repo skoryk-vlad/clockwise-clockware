@@ -4,14 +4,16 @@ import { useFetching } from '../hooks/useFetching';
 import { OrderButton } from './OrderButton/OrderButton';
 import classes from './OrderModal.module.css';
 import { ClientOrderForm } from './Forms/ClientOrderForm';
+import { WATCH_SIZES, STATUSES } from '../constants.ts';
 
 const defaultOrder = {
     name: "",
     email: "",
-    watchSize: null,
+    watchSize: Object.keys(WATCH_SIZES)[0],
     cityId: null,
     date: "",
-    time: null
+    time: null,
+    status: Object.keys(STATUSES)[0]
 };
 
 export const OrderModal = () => {
@@ -24,9 +26,7 @@ export const OrderModal = () => {
     const [cities, setCities] = useState([]);
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         const cities = await CityService.getCities();
-        const masters = await MasterService.getMasters();
-
-        setCities(cities.filter(city => masters.find(master => master.cities.includes(city.id))));
+        setCities(cities);
     });
     useEffect(() => {
         fetchCities();
