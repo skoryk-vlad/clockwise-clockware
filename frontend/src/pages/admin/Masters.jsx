@@ -25,7 +25,7 @@ export const Masters = () => {
 
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
         const masters = await MasterService.getMasters();
-        setMasters(masters.map(master => ({...master, cities: master.CityMaster.map(cityMaster => cityMaster.cityId)})));
+        setMasters(masters.map(master => ({...master, cities: master.Cities.map(city => city.id)})));
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -109,7 +109,7 @@ export const Masters = () => {
                 </MyModal>
 
                 <Table
-                    data={masters.map(master => ({ ...master, cities: master.cities.map(masterCity => cities.find(city => city.id === masterCity)?.name).join(', ') }))}
+                    data={masters.map(master => ({ ...master, cities: master.cities.map(cityId => cities.find(city => city.id === cityId)?.name).join(', ') }))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />

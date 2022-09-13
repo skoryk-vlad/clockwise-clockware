@@ -5,7 +5,7 @@ import { Op } from 'sequelize';
 import { Master } from './../models/master.model';
 import { Client } from './../models/client.model';
 import { City } from './../models/city.model';
-import { Order, STATUSES, WATCH_SIZES } from './../models/order.model';
+import { Order, STATUSES, WatchSizes } from './../models/order.model';
 import { Request, Response } from 'express';
 import { sendConfirmationMail } from '../mailer';
 
@@ -22,7 +22,7 @@ export default class OrderController {
             const existCityMaster = await CityMaster.findOne({ where: { cityId, masterId } });
             if (!existCityMaster) return res.status(404).json('No such city and master relation');
 
-            const endTime = time + Object.values(WATCH_SIZES).indexOf(watchSize);
+            const endTime = time + WatchSizes[watchSize];
 
             const overlapsOrders = await Order.findAll({
                 where: {
@@ -120,7 +120,7 @@ export default class OrderController {
             const existCityMaster = await CityMaster.findOne({ where: { cityId, masterId } });
             if (!existCityMaster) return res.status(404).json('No such city and master relation');
 
-            const endTime = time + Object.values(WATCH_SIZES).indexOf(watchSize);
+            const endTime = time + WatchSizes[watchSize];
 
             const overlapsOrders = await Order.findAll({
                 where: {

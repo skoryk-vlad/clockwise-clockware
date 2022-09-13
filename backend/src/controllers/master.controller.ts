@@ -1,6 +1,6 @@
-import { CityMaster } from './../models/cityMaster.model';
+import { City } from './../models/city.model';
 import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema } from './../validationSchemas/master.schema';
-import { Order, WATCH_SIZES } from './../models/order.model';
+import { Order, WatchSizes } from './../models/order.model';
 import { Master } from './../models/master.model';
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
@@ -12,15 +12,19 @@ export default class MasterController {
         try {
             const { name, cities } = AddMasterSchema.parse(req.body);
 
+            const existCities = await City.findAll({
+                where: { id: cities }
+            });
+            if (existCities.length !== cities.length) return res.status(404).json('Some of the cities does not exist');
+
             const master = await Master.create({ name }, {
                 transaction: addMasterTransaction
             });
-            await cities.reduce(async (promise, city) => {
-                await promise;
-                await CityMaster.create({ cityId: city, masterId: master.getDataValue('id') }, {
-                    transaction: addMasterTransaction
-                });
-            }, Promise.resolve());
+            // @ts-ignore
+            await master.addCities(cities, {
+                transaction: addMasterTransaction
+            });
+
             await addMasterTransaction.commit();
             return res.status(201).json(master);
         } catch (error) {
@@ -33,17 +37,12 @@ export default class MasterController {
         try {
             const masters = await Master.findAll({
                 attributes: { include: [[sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 2), 'rating']] },
-                include: [{
-                    model: CityMaster,
-                    as: 'CityMaster',
-                    attributes: ['cityId']
-                },
-                {
+                include: [City, {
                     model: Order,
                     as: 'Order',
                     attributes: []
                 }],
-                group: ['Master.id', 'CityMaster.id'],
+                group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id'],
                 order: ['id']
             });
             return res.status(200).json(masters);
@@ -66,7 +65,7 @@ export default class MasterController {
         try {
             const { cityId, date, time, watchSize } = GetFreeMastersSchema.parse(req.query);
 
-            const endTime = time + Object.values(WATCH_SIZES).indexOf(watchSize);
+            const endTime = time + WatchSizes[watchSize];
 
             const overlapsOrders = await Order.findAll({
                 where: {
@@ -89,10 +88,10 @@ export default class MasterController {
                 },
                 attributes: { include: [[sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 2), 'rating']] },
                 include: [{
-                    model: CityMaster,
-                    as: 'CityMaster',
+                    model: City,
+                    as: 'Cities',
                     where: {
-                        cityId
+                        id: cityId
                     }
                 },
                 {
@@ -100,7 +99,7 @@ export default class MasterController {
                     as: 'Order',
                     attributes: []
                 }],
-                group: ['Master.id', 'CityMaster.id']
+                group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id']
             });
 
             return res.status(200).json(freeMasters);
@@ -117,25 +116,21 @@ export default class MasterController {
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
 
-
             const { name, cities } = UpdateMasterSchema.parse(req.body);
+
+            const existCities = await City.findAll({
+                where: { id: cities }
+            });
+            if (existCities.length !== cities.length) return res.status(404).json('Some of the cities does not exist');
 
             if (master.getDataValue('name') !== name) {
                 master.update({ name });
             }
-            await CityMaster.destroy({
-                where: {
-                    masterId: id
-                }
-            })
-            await cities.reduce(async (promise, city) => {
-                await promise;
-                await CityMaster.upsert({ cityId: city, masterId: id }, {
-                    transaction: updateMasterTransaction,
-                    conflictFields: ['cityId', 'masterId'],
-                    returning: ['cityId', 'masterId']
-                });
-            }, Promise.resolve());
+
+            // @ts-ignore
+            await master.setCities(cities, {
+                transaction: updateMasterTransaction
+            });
 
             await updateMasterTransaction.commit();
             return res.status(200).json(master);
@@ -150,7 +145,7 @@ export default class MasterController {
             const { id } = DeleteMasterSchema.parse({ id: +req.params.id });
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
-            await master.destroy();
+            await master.destroy({});
             return res.status(200).json(master);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);

@@ -28,8 +28,11 @@ export const CityMaster: ModelDefined<CityMasterAttributes, CityMasterCreationAt
     }
 );
 
-CityMaster.belongsTo(City, { foreignKey: 'cityId' });
-City.hasMany(CityMaster, {foreignKey: 'cityId', as: 'CityMaster'});
-
-CityMaster.belongsTo(Master, { foreignKey: 'masterId' });
-Master.hasMany(CityMaster, {foreignKey: 'masterId', as: 'CityMaster'});
+City.belongsToMany(Master, {
+    through: CityMaster,
+    foreignKey: 'cityId'
+});
+Master.belongsToMany(City, {
+    through: CityMaster,
+    foreignKey: 'masterId'
+});

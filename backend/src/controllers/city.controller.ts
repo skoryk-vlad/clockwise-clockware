@@ -1,5 +1,4 @@
 import { Master } from './../models/master.model';
-import { CityMaster } from './../models/cityMaster.model';
 import { AddCitySchema, DeleteCitySchema, GetCitySchema, UpdateCitySchema } from './../validationSchemas/city.schema';
 import { City } from './../models/city.model';
 import { Request, Response } from 'express';
@@ -18,17 +17,8 @@ export default class CityController {
     async getCities(req: Request, res: Response): Promise<Response> {
         try {
             const cities = await City.findAll({
-                order: [
-                    ['id', 'ASC']
-                ],
-                include: [{
-                    model: CityMaster,
-                    as: 'CityMaster',
-                    include: [{
-                        model: Master,
-                        as: 'Master',
-                    }]
-                }]
+                include: Master,
+                order: ['id']
             });
             return res.status(200).json(cities);
         } catch (error) {

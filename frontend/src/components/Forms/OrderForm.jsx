@@ -100,7 +100,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                             onChange={val => setValue('masterId', +val)}
                             value={value || ''}
                             error={error}
-                            options={cities.find(city => city.id === watch('cityId')) ? cities.find(city => city.id === watch('cityId')).CityMaster.map(cityMaster => ({ value: cityMaster.Master.id, name: cityMaster.Master.name })) : []}
+                            options={cities.find(city => city.id === watch('cityId')) ? cities.find(city => city.id === watch('cityId')).Masters.map(master => ({ value: master.id, name: master.name })) : []}
                         />
                     )}
                 />

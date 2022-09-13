@@ -15,6 +15,12 @@ export enum WATCH_SIZES {
     MEDIUM = 'medium',
     BIG = 'big'
 }
+type WatchSizesType = Partial<Record<WATCH_SIZES, number>>;
+export const WatchSizes: WatchSizesType = {
+    [WATCH_SIZES.SMALL]: 1,
+    [WATCH_SIZES.MEDIUM]: 2,
+    [WATCH_SIZES.BIG]: 3,
+}
 
 export interface OrderAttributes {
     id: number;
@@ -73,11 +79,11 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
     }
 );
 
-Order.belongsTo(City, {foreignKey: 'cityId'});
+Order.belongsTo(City, { foreignKey: 'cityId' });
 City.hasMany(Order, { foreignKey: 'cityId', as: 'Order' });
 
-Order.belongsTo(Master, {foreignKey: 'masterId'});
+Order.belongsTo(Master, { foreignKey: 'masterId' });
 Master.hasMany(Order, { foreignKey: 'masterId', as: 'Order' });
 
-Order.belongsTo(Client, {foreignKey: 'clientId'});
-Client.hasMany(Order, {foreignKey: 'clientId', as: 'Order'});
+Order.belongsTo(Client, { foreignKey: 'clientId' });
+Client.hasMany(Order, { foreignKey: 'clientId', as: 'Order' });
