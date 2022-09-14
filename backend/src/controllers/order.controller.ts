@@ -5,9 +5,10 @@ import { Op } from 'sequelize';
 import { Master } from './../models/master.model';
 import { Client } from './../models/client.model';
 import { City } from './../models/city.model';
-import { Order, STATUSES, WatchSizes } from './../models/order.model';
+import { Order, WatchSizes } from './../models/order.model';
 import { Request, Response } from 'express';
 import { sendConfirmationMail } from '../mailer';
+import { v4 as uuidv4 } from 'uuid';
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
@@ -49,13 +50,15 @@ export default class OrderController {
                 transaction: addOrderTransaction
             });
 
+            const confirmationToken = uuidv4();
+            
             const order = await Order.create({
-                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime
+                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, confirmationToken
             }, {
                 transaction: addOrderTransaction
             });
 
-            await sendConfirmationMail(email, order.getDataValue('id'), name);
+            await sendConfirmationMail(email, confirmationToken, name);
             await addOrderTransaction.commit();
             return res.status(201).json(order);
         } catch (error) {

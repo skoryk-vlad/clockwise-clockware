@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken';
 import nodemailer, { Transporter, SentMessageInfo } from 'nodemailer';
 
 const transporter: Transporter = nodemailer.createTransport({
@@ -15,9 +14,7 @@ const transporter: Transporter = nodemailer.createTransport({
     }
 });
 
-export const sendConfirmationMail = async (email: string, orderId: number, name: string): Promise<SentMessageInfo> => {
-    const confirmationToken: string = jwt.sign({ orderId }, process.env.JWT_TOKEN_KEY, { expiresIn: '3h' });
-
+export const sendConfirmationMail = async (email: string, confirmationToken: string, name: string): Promise<SentMessageInfo> => {
     const confirmationLink: string = `${process.env.BASE_LINK}/api/confirmation/${confirmationToken}`;
 
     const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
