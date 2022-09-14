@@ -20,8 +20,9 @@ const ClientSchema = z.object({
 });
 
 export const ClientForm = ({ client, onClick, btnTitle }) => {
-    const { control, handleSubmit, getValues, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
-        mode: 'onChange',
+    const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
+        mode: 'onSubmit',
+        reValidateMode: 'onChange',
         defaultValues: client,
         resolver: zodResolver(ClientSchema)
     });
@@ -32,7 +33,7 @@ export const ClientForm = ({ client, onClick, btnTitle }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="name">Имя</label>
-                    {errors.name && touchedFields.name && (
+                    {errors.name && (
                         <div className={classes.errorMessage}>{errors.name.message}</div>
                     )}
                 </div>
@@ -40,12 +41,11 @@ export const ClientForm = ({ client, onClick, btnTitle }) => {
                     control={control}
                     name="name"
                     render={({
-                        field: { onChange, onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <MyInput
                             type="text" name={name}
-                            onBlur={onBlur}
                             onChange={onChange}
                             value={value}
                             error={error}
@@ -57,7 +57,7 @@ export const ClientForm = ({ client, onClick, btnTitle }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="email">Почта</label>
-                    {errors.email && touchedFields.email && (
+                    {errors.email && (
                         <div className={classes.errorMessage}>{errors.email.message}</div>
                     )}
                 </div>
@@ -65,12 +65,11 @@ export const ClientForm = ({ client, onClick, btnTitle }) => {
                     control={control}
                     name="email"
                     render={({
-                        field: { onChange, onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error },
                     }) => (
                         <MyInput
-                            type="email" name={name}
-                            onBlur={onBlur}
+                            type="text" name={name}
                             onChange={onChange}
                             value={value}
                             error={error}
@@ -80,8 +79,8 @@ export const ClientForm = ({ client, onClick, btnTitle }) => {
                 />
             </div>
 
-            <AdminButton type="submit" className={!(isDirty && isValid) ? "disabledBtn" : ""}
-                disabled={!(isDirty && isValid)}>{btnTitle}</AdminButton>
+            <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
+                disabled={(isSubmitted && !isValid)}>{btnTitle}</AdminButton>
         </form>
     )
 }

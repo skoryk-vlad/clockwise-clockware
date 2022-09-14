@@ -15,8 +15,9 @@ const CitySchema = z.object({
 });
 
 export const CityForm = ({ city, onClick, btnTitle }) => {
-    const { control, handleSubmit, getValues, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
-        mode: 'onChange',
+    const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
+        mode: 'onSubmit',
+        reValidateMode: 'onChange',
         defaultValues: city,
         resolver: zodResolver(CitySchema)
     });
@@ -27,7 +28,7 @@ export const CityForm = ({ city, onClick, btnTitle }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="name">Имя</label>
-                    {errors.name && touchedFields.name && (
+                    {errors.name && (
                         <div className={classes.errorMessage}>{errors.name.message}</div>
                     )}
                 </div>
@@ -35,12 +36,11 @@ export const CityForm = ({ city, onClick, btnTitle }) => {
                     control={control}
                     name="name"
                     render={({
-                        field: { onChange, onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <MyInput
                             type="text" name={name}
-                            onBlur={onBlur}
                             onChange={onChange}
                             value={value}
                             error={error}
@@ -50,8 +50,8 @@ export const CityForm = ({ city, onClick, btnTitle }) => {
                 />
             </div>
 
-            <AdminButton type="submit" className={!(isDirty && isValid) ? "disabledBtn" : ""}
-                disabled={!(isDirty && isValid)}>{btnTitle}</AdminButton>
+            <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
+                disabled={(isSubmitted && !isValid)}>{btnTitle}</AdminButton>
         </form>
     )
 }

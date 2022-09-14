@@ -14,8 +14,9 @@ const ChangeStatusSchema = z.object({
 });
 
 export const ChangeStatusForm = ({ order, onClick }) => {
-    const { control, handleSubmit, getValues, setValue, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
-        mode: 'onChange',
+    const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
+        mode: 'onSubmit',
+        reValidateMode: 'onChange',
         defaultValues: order,
         resolver: zodResolver(ChangeStatusSchema)
     });
@@ -26,7 +27,7 @@ export const ChangeStatusForm = ({ order, onClick }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="time">Рейтинг</label>
-                    {errors.rating && touchedFields.rating && (
+                    {errors.rating && (
                         <div className={classes.errorMessage}>{errors.rating.message}</div>
                     )}
                 </div>
@@ -34,13 +35,12 @@ export const ChangeStatusForm = ({ order, onClick }) => {
                     control={control}
                     name="rating"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <MyInput
                             name={name} type="number"
-                            onBlur={onBlur}
-                            onChange={event => setValue('rating', +event.target.value)}
+                            onChange={event => onChange(+event.target.value)}
                             value={value}
                             error={error}
                             placeholder="Рейтинг..."
@@ -51,7 +51,7 @@ export const ChangeStatusForm = ({ order, onClick }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="status">Статус</label>
-                    {errors.status && touchedFields.status && (
+                    {errors.status && (
                         <div className={classes.errorMessage}>{errors.status.message}</div>
                     )}
                 </div>
@@ -59,12 +59,11 @@ export const ChangeStatusForm = ({ order, onClick }) => {
                     control={control}
                     name="status"
                     render={({
-                        field: { onChange, onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <MySelect
                             name={name}
-                            onBlur={onBlur}
                             onChange={onChange}
                             value={value || ''}
                             error={error}
@@ -74,8 +73,8 @@ export const ChangeStatusForm = ({ order, onClick }) => {
                 />
             </div>
 
-            <AdminButton type="submit" className={!(isDirty && isValid) ? "disabledBtn" : ""}
-                disabled={!(isDirty && isValid)}>Изменить</AdminButton>
+            <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
+                disabled={(isSubmitted && !isValid)}>Изменить</AdminButton>
         </form>
     )
 }
