@@ -51,9 +51,10 @@ export default class OrderController {
             });
 
             const confirmationToken = uuidv4();
+            const price = existCity.getDataValue('price') * (endTime - time);
             
             const order = await Order.create({
-                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, confirmationToken
+                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, confirmationToken, price
             }, {
                 transaction: addOrderTransaction
             });
@@ -109,8 +110,8 @@ export default class OrderController {
         try {
             const { id } = GetOrderSchema.parse({ id: +req.params.id });
 
-            const existOrder = await Order.findByPk(id);
-            if (!existOrder) return res.status(404).json('No such order');
+            const order = await Order.findByPk(id);
+            if (!order) return res.status(404).json('No such order');
 
             const { clientId, masterId, cityId, watchSize, date, time, status, rating } = UpdateOrderSchema.parse(req.body);
 
@@ -144,8 +145,10 @@ export default class OrderController {
             });
             if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
 
-            const [order, created] = await Order.upsert({
-                id, clientId, masterId, cityId, watchSize, date, time, status, rating, endTime
+            const price = existCity.getDataValue('price') * (endTime - time);
+
+            await order.update({
+                clientId, masterId, cityId, watchSize, date, time, status, rating, endTime, price
             });
             return res.status(200).json(order);
         } catch (error) {

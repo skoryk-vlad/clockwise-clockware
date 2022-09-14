@@ -1,5 +1,5 @@
 import { QueryInterface } from 'sequelize';
-'use strict';
+import { v4 as uuidv4 } from 'uuid';
 
 enum STATUSES {
   AWAITING_CONFIRMATION = 'awaiting confirmation',
@@ -22,12 +22,14 @@ module.exports = {
         watchSize: WATCH_SIZES.SMALL,
         date: "2022-08-20",
         time: 12,
-        endTime: 12 + Object.values(WATCH_SIZES).indexOf(WATCH_SIZES.SMALL),
+        endTime: 13,
         rating: 0,
         clientId: 1,
         masterId: 1,
         cityId: 1,
         status: STATUSES.AWAITING_CONFIRMATION,
+        confirmationToken: uuidv4(),
+        price: 75,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -36,12 +38,14 @@ module.exports = {
         watchSize: WATCH_SIZES.BIG,
         date: "2022-08-21",
         time: 14,
-        endTime: 14 + Object.values(WATCH_SIZES).indexOf(WATCH_SIZES.BIG),
+        endTime: 17,
         rating: 0,
         clientId: 2,
         masterId: 2,
         cityId: 2,
         status: STATUSES.AWAITING_CONFIRMATION,
+        confirmationToken: uuidv4(),
+        price: 150,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

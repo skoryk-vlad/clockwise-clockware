@@ -9,7 +9,7 @@ export default class ClientController {
             const client = await Client.create({ name, email });
             return res.status(201).json(client);
         } catch (error) {
-            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
         }
     }
@@ -32,7 +32,7 @@ export default class ClientController {
             if (!client) return res.status(404).json('No such client');
             return res.status(200).json(client);
         } catch (error) {
-            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
         }
     }
@@ -40,19 +40,15 @@ export default class ClientController {
         try {
             const { id } = GetClientSchema.parse({ id: +req.params.id });
 
-            const existClient = await Client.findByPk(id);
-            if (!existClient) return res.status(404).json('No such client');
-            
+            const client = await Client.findByPk(id);
+            if (!client) return res.status(404).json('No such client');
+
             const { name, email } = UpdateClientSchema.parse(req.body);
 
-            const [client, created] = await Client.upsert({
-                id,
-                name,
-                email
-            });
+            client.update({ name, email })
             return res.status(200).json(client);
         } catch (error) {
-            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
         }
     }
@@ -64,7 +60,7 @@ export default class ClientController {
             await client.destroy();
             return res.status(200).json(client);
         } catch (error) {
-            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
         }
     }

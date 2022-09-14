@@ -86,7 +86,7 @@ export const Orders = () => {
         }
     }
 
-    const tableHeaders = ["id", "Размер часов", "Дата", "Время", "Рейтинг", "Город", "Клиент", "Мастер", "Статус", "Изменение", "Удаление"];
+    const tableHeaders = ["id", "Размер часов", "Дата", "Время", "Рейтинг", "Город", "Клиент", "Мастер", "Статус", "Цена", "Изменение", "Удаление"];
 
     const tableBodies = [
         `id`,
@@ -98,6 +98,7 @@ export const Orders = () => {
         `Client.name`,
         `Master.name`,
         `status`,
+        `price`,
         {
             name: `Изменить`,
             callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(order => order.id === id)); },

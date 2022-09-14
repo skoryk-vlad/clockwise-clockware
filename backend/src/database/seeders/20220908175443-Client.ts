@@ -1,5 +1,4 @@
 import { QueryInterface } from 'sequelize';
-'use strict';
 
 module.exports = {
   up: (queryInterface: QueryInterface): Promise<number | object> => queryInterface.bulkInsert(
