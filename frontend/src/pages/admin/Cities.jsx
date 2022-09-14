@@ -10,7 +10,8 @@ import { CityForm } from '../../components/Forms/CityForm';
 import { Table } from '../../components/Table/Table';
 
 const defaultCity = {
-    name: ''
+    name: '',
+    price: 0
 };
 
 export const Cities = () => {
@@ -67,11 +68,12 @@ export const Cities = () => {
         }
     }
 
-    const tableHeaders = ["id", "Имя", "Изменение", "Удаление"];
+    const tableHeaders = ["id", "Имя", "Цена", "Изменение", "Удаление"];
 
     const tableBodies = [
         `id`,
         `name`,
+        `price`,
         {
             name: `Изменить`,
             callback: id => { setIsModalOpened(true); setCurrentCity(cities.find(city => city.id === id)) },

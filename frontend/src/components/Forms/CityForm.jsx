@@ -11,7 +11,8 @@ const CitySchema = z.object({
         message: 'Требуется название'
     }).min(3, {
         message: 'Название должно быть не короче 3-х букв'
-    }).max(255)
+    }).max(255),
+    price: z.number({ invalid_type_error: 'Цена должна быть числом' }).int().positive('Цена должна быть положительным числом'),
 });
 
 export const CityForm = ({ city, onClick, btnTitle }) => {
@@ -45,6 +46,30 @@ export const CityForm = ({ city, onClick, btnTitle }) => {
                             value={value}
                             error={error}
                             placeholder="Название города..."
+                        />
+                    )}
+                />
+            </div>
+            <div className={classes.formRow}>
+                <div className={classes.rowTop}>
+                    <label htmlFor="price">Цена</label>
+                    {errors.price && (
+                        <div className={classes.errorMessage}>{errors.price.message}</div>
+                    )}
+                </div>
+                <Controller
+                    control={control}
+                    name="price"
+                    render={({
+                        field: { onChange, value, name },
+                        fieldState: { error }
+                    }) => (
+                        <MyInput
+                            name={name} type="number"
+                            onChange={event => onChange(+event.target.value)}
+                            value={value}
+                            error={error}
+                            placeholder="Цена..."
                         />
                     )}
                 />

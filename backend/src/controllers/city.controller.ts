@@ -6,8 +6,8 @@ import { Request, Response } from 'express';
 export default class CityController {
     async addCity(req: Request, res: Response): Promise<Response> {
         try {
-            const { name } = AddCitySchema.parse(req.body);
-            const city = await City.create({ name });
+            const { name, price } = AddCitySchema.parse(req.body);
+            const city = await City.create({ name, price });
             return res.status(201).json(city);
         } catch (error) {
             if(error?.name === "ZodError") return res.status(400).json(error.issues);
@@ -41,15 +41,12 @@ export default class CityController {
         try {
             const { id } = GetCitySchema.parse({id: +req.params.id});
 
-            const existCity = await City.findByPk(id);
-            if (!existCity) return res.status(404).json('No such city');
+            const city = await City.findByPk(id);
+            if (!city) return res.status(404).json('No such city');
 
-            const { name } = UpdateCitySchema.parse(req.body);
+            const { name, price } = UpdateCitySchema.parse(req.body);
 
-            const [city, created] = await City.upsert({
-                id,
-                name
-            });
+            city.update({ name, price })
             return res.status(200).json(city);
         } catch (error) {
             if(error?.name === "ZodError") return res.status(400).json(error.issues);

@@ -4,6 +4,7 @@ import { DataTypes, Optional, ModelDefined } from 'sequelize';
 export interface CityAttributes {
     id: number;
     name: string;
+    price: number;
 }
 
 type CityCreationAttributes = Optional<CityAttributes, 'id'>;
@@ -19,6 +20,10 @@ export const City: ModelDefined<CityAttributes,CityCreationAttributes> = sequeli
         },
         name: {
             type: DataTypes.STRING,
+            allowNull: false
+        },
+        price: {
+            type: DataTypes.INTEGER,
             allowNull: false
         },
         createdAt: DataTypes.DATE,

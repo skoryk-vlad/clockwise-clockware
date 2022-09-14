@@ -34,6 +34,7 @@ export interface OrderAttributes {
     masterId: number;
     status: STATUSES;
     confirmationToken: string;
+    price: number;
 }
 
 type OrderCreationAttributes = Optional<OrderAttributes, 'id'>;
@@ -74,6 +75,10 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
         },
         confirmationToken: {
             type: DataTypes.UUID,
+            allowNull: false
+        },
+        price: {
+            type: DataTypes.INTEGER,
             allowNull: false
         },
         createdAt: DataTypes.DATE,
