@@ -18,22 +18,36 @@ const OrderSchema = z.object({
     masterId: z.number({ invalid_type_error: 'Требуется выбрать мастера' }).int().positive(),
     cityId: z.number({ invalid_type_error: 'Требуется выбрать город' }).int().positive(),
     status: z.nativeEnum(Object.keys(STATUSES))
+}).superRefine((order, ctx) => {
+    if (!(order.time + Object.keys(WATCH_SIZES).indexOf(order.watchSize) + 1 < 20)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['time'],
+            message: "Выбрано неверное время или размер часов",
+        });
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['watchSize'],
+            message: "Выбрано неверное время или размер часов",
+        });
+    }
 });
 
 export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
-    const { control, handleSubmit, getValues, setValue, watch, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
-        mode: 'all',
+    const { control, handleSubmit, getValues, watch, formState: { errors, isSubmitted, isValid } } = useForm({
+        mode: 'onSubmit',
+        reValidateMode: 'onChange',
         defaultValues: order,
         resolver: zodResolver(OrderSchema)
     });
     const onSubmit = () => onClick(getValues());
-    
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="clientId">Клиент</label>
-                    {errors.clientId && touchedFields.clientId && (
+                    {errors.clientId && (
                         <div className={classes.errorMessage}>{errors.clientId.message}</div>
                     )}
                 </div>
@@ -41,13 +55,12 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="clientId"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <MySelect
                             name={name}
-                            onBlur={onBlur}
-                            onChange={val => setValue('clientId', +val)}
+                            onChange={(value) => onChange(+value)}
                             value={value || ''}
                             error={error}
                             options={clients.map(client => ({ value: client.id, name: `${client.name} (${client.email})` }))}
@@ -58,7 +71,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="cityId">Город</label>
-                    {errors.cityId && touchedFields.cityId && (
+                    {errors.cityId && (
                         <div className={classes.errorMessage}>{errors.cityId.message}</div>
                     )}
                 </div>
@@ -66,13 +79,12 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="cityId"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <MySelect
                             name={name}
-                            onBlur={onBlur}
-                            onChange={val => setValue('cityId', +val)}
+                            onChange={(value) => onChange(+value)}
                             value={value || ''}
                             error={error}
                             options={cities.map(city => ({ value: city.id, name: city.name }))}
@@ -83,7 +95,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="masterId">Мастер</label>
-                    {errors.masterId && touchedFields.masterId && (
+                    {errors.masterId && (
                         <div className={classes.errorMessage}>{errors.masterId.message}</div>
                     )}
                 </div>
@@ -91,13 +103,12 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="masterId"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <MySelect
                             name={name}
-                            onBlur={onBlur}
-                            onChange={val => setValue('masterId', +val)}
+                            onChange={(value) => onChange(+value)}
                             value={value || ''}
                             error={error}
                             options={cities.find(city => city.id === watch('cityId')) ? cities.find(city => city.id === watch('cityId')).Masters.map(master => ({ value: master.id, name: master.name })) : []}
@@ -108,7 +119,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="watchSize">Размер часов</label>
-                    {errors.watchSize && touchedFields.watchSize && (
+                    {errors.watchSize && !isValid && (
                         <div className={classes.errorMessage}>{errors.watchSize.message}</div>
                     )}
                 </div>
@@ -116,14 +127,13 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="watchSize"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <NumPicker
                             name={name}
-                            onBlur={onBlur}
                             from='1' to='3'
-                            onClick={event => setValue('watchSize', Object.keys(WATCH_SIZES)[+event.target.dataset.num - 1])}
+                            onClick={(event) => onChange(Object.keys(WATCH_SIZES)[+event.target.dataset.num - 1])}
                             value={Object.keys(WATCH_SIZES).indexOf(value) + 1}
                             error={error}
                         />
@@ -133,7 +143,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="date">Дата</label>
-                    {errors.date && touchedFields.date && (
+                    {errors.date && (
                         <div className={classes.errorMessage}>{errors.date.message}</div>
                     )}
                 </div>
@@ -141,12 +151,11 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="date"
                     render={({
-                        field: { onChange, onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error },
                     }) => (
                         <MyInput
                             type="date" name={name}
-                            onBlur={onBlur}
                             onChange={onChange}
                             value={value}
                             error={error}
@@ -157,7 +166,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="time">Время</label>
-                    {errors.time && touchedFields.time && (
+                    {errors.time && !isValid && (
                         <div className={classes.errorMessage}>{errors.time.message}</div>
                     )}
                 </div>
@@ -165,14 +174,13 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="time"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <NumPicker
                             name={name}
-                            onBlur={onBlur}
                             from='10' to='18' count={Object.keys(WATCH_SIZES).indexOf(watch("watchSize")) + 1}
-                            onClick={event => setValue('time', +event.target.dataset.num)}
+                            onClick={(event) => onChange(+event.target.dataset.num)}
                             value={value}
                             error={error}
                         />
@@ -182,7 +190,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="rating">Рейтинг</label>
-                    {errors.rating && touchedFields.rating && (
+                    {errors.rating && (
                         <div className={classes.errorMessage}>{errors.rating.message}</div>
                     )}
                 </div>
@@ -190,13 +198,12 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="rating"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <MyInput
                             name={name} type="number"
-                            onBlur={onBlur}
-                            onChange={event => setValue('rating', +event.target.value)}
+                            onChange={event => onChange(+event.target.value)}
                             value={value}
                             error={error}
                             placeholder="Рейтинг..."
@@ -207,7 +214,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="status">Статус</label>
-                    {errors.status && touchedFields.status && (
+                    {errors.status && (
                         <div className={classes.errorMessage}>{errors.status.message}</div>
                     )}
                 </div>
@@ -215,12 +222,11 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="status"
                     render={({
-                        field: { onChange, onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <MySelect
                             name={name}
-                            onBlur={onBlur}
                             onChange={onChange}
                             value={value || ''}
                             error={error}
@@ -230,8 +236,8 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                 />
             </div>
 
-            <AdminButton type="submit" className={!(isDirty && isValid) ? "disabledBtn" : ""}
-                disabled={!(isDirty && isValid)}>{btnTitle}</AdminButton>
+            <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
+                disabled={(isSubmitted && !isValid)}>{btnTitle}</AdminButton>
         </form>
     )
 }

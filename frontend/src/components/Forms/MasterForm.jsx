@@ -24,8 +24,9 @@ const deleteValueFromArray = (array, value) => {
 }
 
 export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
-    const { control, handleSubmit, getValues, setValue, formState: { errors, isDirty, isValid, touchedFields } } = useForm({
-        mode: 'onBlur',
+    const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
+        mode: 'onSubmit',
+        reValidateMode: 'onChange',
         defaultValues: master,
         resolver: zodResolver(MasterSchema)
     });
@@ -36,7 +37,7 @@ export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="name">Имя</label>
-                    {errors.name && touchedFields.name && (
+                    {errors.name && (
                         <div className={classes.errorMessage}>{errors.name.message}</div>
                     )}
                 </div>
@@ -44,12 +45,11 @@ export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
                     control={control}
                     name="name"
                     render={({
-                        field: { onChange, onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error }
                     }) => (
                         <MyInput
                             type="text" name={name}
-                            onBlur={onBlur}
                             onChange={onChange}
                             value={value}
                             error={error}
@@ -61,7 +61,7 @@ export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="cities">Города</label>
-                    {errors.cities && touchedFields.cities && (
+                    {errors.cities && (
                         <div className={classes.errorMessage}>{errors.cities.message}</div>
                     )}
                 </div>
@@ -69,13 +69,12 @@ export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
                     control={control}
                     name="cities"
                     render={({
-                        field: { onBlur, value, name },
+                        field: { onChange, value, name },
                         fieldState: { error },
                     }) => (
                         <MySelect multiple={true} size="4"
                             name={name}
-                            onBlur={onBlur}
-                            onChange={val => setValue('cities', getValues().cities.includes(parseInt(val)) ? deleteValueFromArray(getValues().cities, +val) : [...getValues().cities, +val])}
+                            onChange={(value) => onChange(getValues().cities.includes(parseInt(value)) ? deleteValueFromArray(getValues().cities, +value) : [...getValues().cities, +value])}
                             value={value}
                             error={error}
                             options={cities.map(city => ({ value: city.id, name: city.name }))}
@@ -84,8 +83,8 @@ export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
                 />
             </div>
 
-            <AdminButton type="submit" className={!(isDirty && isValid) ? "disabledBtn" : ""}
-                disabled={!(isDirty && isValid)}>{btnTitle}</AdminButton>
+            <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
+                disabled={(isSubmitted && !isValid)}>{btnTitle}</AdminButton>
         </form>
     )
 }
