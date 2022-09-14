@@ -4,7 +4,7 @@ module.exports = {
   async up(queryInterface: QueryInterface, Sequelize: any): Promise<void> {
     return await queryInterface.addColumn(
       'Order',
-      'uuid',
+      'confirmationToken',
       {
         type: Sequelize.UUID,
         allowNull: false
@@ -13,6 +13,6 @@ module.exports = {
   },
 
   async down(queryInterface: QueryInterface): Promise<void> {
-    return await queryInterface.removeColumn('Order', 'uuid');
+    return await queryInterface.removeColumn('Order', 'confirmationToken');
   }
 };

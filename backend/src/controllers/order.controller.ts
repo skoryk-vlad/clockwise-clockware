@@ -50,15 +50,15 @@ export default class OrderController {
                 transaction: addOrderTransaction
             });
 
-            const uuid = uuidv4();
+            const confirmationToken = uuidv4();
             
             const order = await Order.create({
-                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, uuid
+                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, confirmationToken
             }, {
                 transaction: addOrderTransaction
             });
 
-            await sendConfirmationMail(email, uuid, name);
+            await sendConfirmationMail(email, confirmationToken, name);
             await addOrderTransaction.commit();
             return res.status(201).json(order);
         } catch (error) {

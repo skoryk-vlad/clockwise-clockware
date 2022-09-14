@@ -33,7 +33,7 @@ export interface OrderAttributes {
     cityId: number;
     masterId: number;
     status: STATUSES;
-    uuid: string;
+    confirmationToken: string;
 }
 
 type OrderCreationAttributes = Optional<OrderAttributes, 'id'>;
@@ -72,7 +72,7 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
             allowNull: false,
             defaultValue: 0
         },
-        uuid: {
+        confirmationToken: {
             type: DataTypes.UUID,
             allowNull: false
         },

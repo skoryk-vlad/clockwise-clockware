@@ -14,8 +14,8 @@ const transporter: Transporter = nodemailer.createTransport({
     }
 });
 
-export const sendConfirmationMail = async (email: string, uuid: string, name: string): Promise<SentMessageInfo> => {
-    const confirmationLink: string = `${process.env.BASE_LINK}/api/confirmation/${uuid}`;
+export const sendConfirmationMail = async (email: string, confirmationToken: string, name: string): Promise<SentMessageInfo> => {
+    const confirmationLink: string = `${process.env.BASE_LINK}/api/confirmation/${confirmationToken}`;
 
     const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
         <div style="max-width: 600px; background-color: #fff; margin: auto; border: 1px solid lightgray; border-radius: 2px;">

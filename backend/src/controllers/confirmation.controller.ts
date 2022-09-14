@@ -4,11 +4,11 @@ import { validate as uuidValidate } from 'uuid';
 
 export default class ConfirmationController {
     async confirmOrder(req: Request, res: Response): Promise<void> {
-        const uuid: string = req.params.uuid;
+        const confirmationToken: string = req.params.confirmationToken;
 
-        if (uuidValidate(uuid)) {
+        if (uuidValidate(confirmationToken)) {
             try {
-                const order = await Order.findOne({ where: { uuid } });
+                const order = await Order.findOne({ where: { confirmationToken } });
                 if (!order) return res.redirect(`${process.env.CLIENT_LINK}?error`);
                 if (order.getDataValue('status') === STATUSES.CONFIRMED) return res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
                 await order.update({ status: STATUSES.CONFIRMED });
