@@ -21,7 +21,7 @@ api.interceptors.response.use((response) => {
 }, (error) => {
     if (error.response.status === 401) {
         localStorage.removeItem('token');
-        document.location.assign(`${document.location.origin}/admin/login`);
+        document.location.assign(`${document.location.origin}/login`);
     }
     return Promise.reject(error.message);
 });
@@ -66,11 +66,23 @@ export class MasterService {
         const { data } = await axios.get(`${API_URL}/api/freemasters?cityId=${cityId}&date=${date}&time=${time}&watchSize=${watchSize}`);
         return data;
     }
+    static async resetMasterPasswordById(id) {
+        const { data } = await api.post(`/master/reset/${id}`);
+        return data;
+    }
 }
 
 export class ClientService {
     static async getClients() {
         const { data } = await api.get(`/client`);
+        return data;
+    }
+    static async getClientById(id) {
+        const { data } = await api.get(`/client/${id}`);
+        return data;
+    }
+    static async checkClientByEmail(email) {
+        const { data } = await api.get(`/client/email/${email}`);
         return data;
     }
     static async addClient(newClient) {
@@ -85,11 +97,17 @@ export class ClientService {
         const { data } = await api.put(`/client/${updClient.id}`, updClient);
         return data;
     }
+    static async resetClientPasswordById(id) {
+        const { data } = await api.post(`/client/reset/${id}`);
+        return data;
+    }
 }
 
 export class OrderService {
-    static async getOrders() {
-        const { data } = await api.get(`/order`);
+    static async getOrders(role = null, id = null) {
+        let link = `/order`;
+        if (role && id) link += `?role=${role}&id=${id}`;
+        const { data } = await api.get(link);
         return data;
     }
     static async addOrder(newOrder) {

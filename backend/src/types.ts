@@ -1,4 +1,4 @@
 export type AuthInfo = {
-    login: string,
+    email: string,
     password: string
 }

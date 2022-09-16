@@ -1,4 +1,4 @@
-import { WATCH_SIZES, STATUSES } from './../models/order.model';
+import { WATCH_SIZES, ORDER_STATUSES } from './../models/order.model';
 import { z } from 'zod';
 
 export const AddOrderSchema = z.object({
@@ -9,7 +9,7 @@ export const AddOrderSchema = z.object({
     time: z.number().int().min(10).max(18),
     masterId: z.number().int().positive(),
     cityId: z.number().int().positive(),
-    status: z.nativeEnum(STATUSES).optional()
+    status: z.nativeEnum(ORDER_STATUSES).optional()
 });
 export const GetOrderSchema = z.object({
     id: z.number().int().positive()
@@ -22,7 +22,7 @@ export const UpdateOrderSchema = z.object({
     clientId: z.number().int().positive(),
     masterId: z.number().int().positive(),
     cityId: z.number().int().positive(),
-    status: z.nativeEnum(STATUSES)
+    status: z.nativeEnum(ORDER_STATUSES)
 });
 export const DeleteOrderSchema = z.object({
     id: z.number().int().positive()
@@ -30,5 +30,5 @@ export const DeleteOrderSchema = z.object({
 export const ChangeStatusSchema = z.object({
     id: z.number().int().positive(),
     rating: z.number().int().min(0).max(5),
-    status: z.nativeEnum(STATUSES)
+    status: z.nativeEnum(ORDER_STATUSES)
 });

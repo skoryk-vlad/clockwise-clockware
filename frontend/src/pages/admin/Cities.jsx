@@ -88,7 +88,7 @@ export const Cities = () => {
 
     return (
         <div className='admin-container'>
-            <Navbar />
+            <Navbar role='admin' />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Города</h1>
 

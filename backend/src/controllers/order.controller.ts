@@ -1,13 +1,14 @@
+import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
 import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema } from './../validationSchemas/order.schema';
 import { sequelize } from './../sequelize';
-import { Op } from 'sequelize';
+import { FindOptions, Op } from 'sequelize';
 import { Master } from './../models/master.model';
 import { Client } from './../models/client.model';
 import { City } from './../models/city.model';
 import { Order, WatchSizes } from './../models/order.model';
 import { Request, Response } from 'express';
-import { sendConfirmationMail } from '../mailer';
+import { sendConfirmOrderMail } from '../mailer';
 import { v4 as uuidv4 } from 'uuid';
 
 export default class OrderController {
@@ -43,53 +44,86 @@ export default class OrderController {
             });
             if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
 
-            const [client, created] = await Client.upsert({
-                email, name
-            }, {
-                conflictFields: ['email'],
-                transaction: addOrderTransaction
-            });
-
+            // const [client, created] = await Client.upsert({
+            //     email, name
+            // }, {
+            //     conflictFields: ['email'],
+            //     transaction: addOrderTransaction
+            // });
+            const user = await User.findOne({ where: { email } });
+            const client = await Client.findOne({ where: { userId: user.getDataValue('id') } });
+            // const [client, created] = await Client.upsert({
+            //     name, userId: user.getDataValue('id')
+            // }, {
+            //     conflictFields: ['email'],
+            //     transaction: addOrderTransaction
+            // });
             const confirmationToken = uuidv4();
             const price = existCity.getDataValue('price') * (endTime - time);
-            
+
             const order = await Order.create({
                 watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, confirmationToken, price
             }, {
                 transaction: addOrderTransaction
             });
 
-            await sendConfirmationMail(email, confirmationToken, name);
+            await sendConfirmOrderMail(email, confirmationToken, name);
             await addOrderTransaction.commit();
             return res.status(201).json(order);
         } catch (error) {
+            console.log(error);
+
             await addOrderTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
         }
     }
     async getOrders(req: Request, res: Response): Promise<Response> {
+        const { role, id } = req.query;
+        const config: FindOptions = {
+            include:
+                [
+                    {
+                        model: City,
+                        as: 'City'
+                    },
+                    {
+                        model: Master,
+                        as: 'Master'
+                    },
+                    {
+                        model: Client,
+                        as: 'Client'
+                    }
+                ],
+            order: ['id']
+        };
+        if (role && id) {
+            if (role === ROLES.MASTER) {
+                config.where = {
+                    masterId: id
+                };
+                config.attributes = ['id', [sequelize.col('Client.name'), 'client'], [sequelize.col('City.name'), 'city'], 'watchSize', 'date', 'time', 'endTime', 'price', 'status'];
+                config.include = [{
+                    model: City, attributes: []
+                }, {
+                    model: Client, attributes: []
+                }];
+            }
+            if (role === ROLES.CLIENT) {
+                config.where = {
+                    clientId: id
+                };
+                config.attributes = ['id', [sequelize.col('Master.name'), 'master'], 'watchSize', 'date', 'time', 'endTime', 'price', 'status'];
+                config.include = [{
+                    model: Master, attributes: []
+                }];
+            }
+        }
+
         try {
-            const orders = await Order.findAll({
-                include:
-                    [
-                        {
-                            model: City,
-                            as: 'City'
-                        },
-                        {
-                            model: Master,
-                            as: 'Master'
-                        },
-                        {
-                            model: Client,
-                            as: 'Client'
-                        }
-                    ],
-                order: [
-                    ['id', 'ASC']
-                ]
-            });
+            const orders = await Order.findAll(config);
+
             return res.status(200).json(orders);
         } catch (error) {
             return res.status(500).json(error);

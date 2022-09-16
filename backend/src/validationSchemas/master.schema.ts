@@ -1,16 +1,22 @@
+import { MASTER_STATUSES } from './../models/master.model';
 import { WATCH_SIZES } from './../models/order.model';
 import { z } from 'zod';
 
 export const AddMasterSchema = z.object({
     name: z.string().trim().min(3).max(255),
-    cities: z.array(z.number().int().positive()).nonempty()
+    email: z.string().email().max(255),
+    cities: z.array(z.number().int().positive()).nonempty(),
+    status: z.nativeEnum(MASTER_STATUSES),
+    password: z.string().min(8).max(30).optional()
 });
 export const GetMasterSchema = z.object({
     id: z.number().int().positive()
 });
 export const UpdateMasterSchema = z.object({
     name: z.string().trim().min(3).max(255),
-    cities: z.array(z.number().int().positive()).nonempty()
+    email: z.string().email().max(255),
+    cities: z.array(z.number().int().positive()).nonempty(),
+    status: z.nativeEnum(MASTER_STATUSES)
 });
 export const DeleteMasterSchema = z.object({
     id: z.number().int().positive()

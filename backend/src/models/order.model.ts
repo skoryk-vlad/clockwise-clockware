@@ -4,7 +4,7 @@ import { Client } from './client.model';
 import { sequelize } from '../sequelize';
 import { DataTypes, Optional, ModelDefined } from 'sequelize';
 
-export enum STATUSES {
+export enum ORDER_STATUSES {
     AWAITING_CONFIRMATION = 'awaiting confirmation',
     CONFIRMED = 'confirmed',
     COMPLETED = 'completed',
@@ -32,7 +32,7 @@ export interface OrderAttributes {
     clientId: number;
     cityId: number;
     masterId: number;
-    status: STATUSES;
+    status: ORDER_STATUSES;
     confirmationToken: string;
     price: number;
 }
@@ -53,7 +53,7 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
             allowNull: false
         },
         status: {
-            type: DataTypes.ENUM(...Object.values(STATUSES)),
+            type: DataTypes.ENUM(...Object.values(ORDER_STATUSES)),
             allowNull: false
         },
         date: {

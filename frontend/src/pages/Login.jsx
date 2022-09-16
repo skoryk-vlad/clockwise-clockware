@@ -7,26 +7,29 @@ import { MyModal } from '../components/modal/MyModal';
 import '../styles/App.css';
 import '../styles/reset.css';
 import { useEffect } from 'react';
+import { jwtPayload } from '../components/PrivateRoute';
 
 export const Login = () => {
     const [redirect, setRedirect] = useState(false);
     const [modal, setModal] = useState(false);
     const [error, setError] = useState('');
+    const [path, setPath] = useState('');
 
     const [authInfo, setAuthInfo] = useState({
-        login: 'admin@example.com',
+        email: 'admin@example.com',
         password: 'passwordsecret'
     });
 
     useEffect(() => {
         document.title = "Авторизация - Clockwise Clockware";
     }, []);
-
+    
     const login = async event => {
         event.preventDefault();
         const loginInfo = await AuthService.auth(authInfo);
         if (loginInfo.token) {
             localStorage.setItem('token', loginInfo.token);
+            setPath(jwtPayload(loginInfo.token).role);
             setRedirect(true);
         } else {
             setError(loginInfo.response.data.message);
@@ -36,12 +39,12 @@ export const Login = () => {
 
     return (
         redirect ?
-            <Navigate push to="/admin/main" />
+            <Navigate push to={`/${path}/main`} />
             :
             <div className='login'>
                 <h1>Страница входа</h1>
                 <form onSubmit={login}>
-                    <MyInput value={authInfo.login} onChange={event => setAuthInfo({ ...authInfo, login: event.target.value })} type="text" placeholder="Введите логин" />
+                    <MyInput value={authInfo.email} onChange={event => setAuthInfo({ ...authInfo, email: event.target.value })} type="text" placeholder="Введите логин" />
                     <MyInput value={authInfo.password} onChange={event => setAuthInfo({ ...authInfo, password: event.target.value })} type="password" placeholder="Введите пароль" />
                     <OrderButton>Войти</OrderButton>
                 </form>

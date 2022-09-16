@@ -1,10 +1,16 @@
 import { sequelize } from '../sequelize';
 import { DataTypes, Optional, ModelDefined } from 'sequelize';
 
+export enum CLIENT_STATUSES {
+    NOT_CONFIRMED = 'not confirmed',
+    CONFIRMED = 'confirmed'
+}
+
 export interface ClientAttributes {
     id: number;
     name: string;
-    email: string;
+    userId: number;
+    status: CLIENT_STATUSES;
 }
 
 type ClientCreationAttributes = Optional<ClientAttributes, 'id'>;
@@ -22,8 +28,8 @@ export const Client: ModelDefined<ClientAttributes, ClientCreationAttributes> = 
             type: DataTypes.STRING,
             allowNull: false
         },
-        email: {
-            type: DataTypes.STRING,
+        status: {
+            type: DataTypes.ENUM(...Object.values(CLIENT_STATUSES)),
             allowNull: false
         },
         createdAt: DataTypes.DATE,

@@ -4,7 +4,7 @@ import { ChangeStatusForm } from '../../components/Forms/ChangeStatusForm';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar'
 import { Table } from '../../components/Table/Table';
-import { STATUSES, WATCH_SIZES } from '../../constants.ts';
+import { ORDER_STATUSES, WATCH_SIZES } from '../../constants.ts';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 
@@ -29,7 +29,7 @@ export const Admin = () => {
 
         setOrdersCount(orders.length);
 
-        setOrders(orders.filter(order => order.status === Object.keys(STATUSES)[0] || order.status === Object.keys(STATUSES)[1]));
+        setOrders(orders.filter(order => order.status === Object.keys(ORDER_STATUSES)[0] || order.status === Object.keys(ORDER_STATUSES)[1]));
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -79,7 +79,7 @@ export const Admin = () => {
 
     return (
         <div className='admin-container'>
-            <Navbar />
+            <Navbar role='admin' />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Главная</h1>
                 <div className='admin-main'>
@@ -107,7 +107,7 @@ export const Admin = () => {
                     </div>
                     <h2 className='admin-main__title'>Активные заказы</h2>
                     <Table
-                        data={orders.map(order => ({...order, status: STATUSES[order.status], watchSize: WATCH_SIZES[order.watchSize]}))}
+                        data={orders.map(order => ({...order, status: ORDER_STATUSES[order.status], watchSize: WATCH_SIZES[order.watchSize]}))}
                         tableHeaders={tableHeaders}
                         tableBodies={tableBodies}
                     />

@@ -8,10 +8,13 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { MasterForm } from '../../components/Forms/MasterForm';
 import { Table } from '../../components/Table/Table';
+import { MASTER_STATUSES } from '../../constants.ts';
 
 const defaultMaster = {
     name: '',
-    cities: []
+    email: '',
+    cities: [],
+    status: Object.keys(MASTER_STATUSES)[2]
 };
 
 export const Masters = () => {
@@ -73,13 +76,15 @@ export const Masters = () => {
         }
     }
 
-    const tableHeaders = ["id", "Имя", "Города", "Рейтинг", "Изменение", "Удаление"];
+    const tableHeaders = ["id", "Имя", "Почта", "Города", "Рейтинг", "Статус", "Изменение", "Удаление"];
 
     const tableBodies = [
         `id`,
         `name`,
+        `email`,
         `cities`,
         `rating`,
+        `status`,
         {
             name: `Изменить`,
             callback: id => { setIsModalOpened(true); setCurrentMaster(masters.find(master => master.id === id)) },
@@ -94,7 +99,7 @@ export const Masters = () => {
 
     return (
         <div className='admin-container'>
-            <Navbar />
+            <Navbar role='admin' />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Мастера</h1>
 
@@ -109,7 +114,7 @@ export const Masters = () => {
                 </MyModal>
 
                 <Table
-                    data={masters.map(master => ({ ...master, cities: master.cities.map(cityId => cities.find(city => city.id === cityId)?.name).join(', ') }))}
+                    data={masters.map(master => ({ ...master, cities: master.cities.map(cityId => cities.find(city => city.id === cityId)?.name).join(', '), status: MASTER_STATUSES[master.status] }))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />

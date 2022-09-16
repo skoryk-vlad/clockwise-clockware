@@ -1,29 +1,52 @@
+import { sendConfirmUserMail, sendUserLoginInfoMail, sendResetedPasswordMail } from './../mailer';
+import { generatePassword, encryptPassword } from './../password';
+import { User, ROLES } from './../models/user.model';
 import { City } from './../models/city.model';
 import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema } from './../validationSchemas/master.schema';
 import { Order, WatchSizes } from './../models/order.model';
-import { Master } from './../models/master.model';
+import { Master, MASTER_STATUSES } from './../models/master.model';
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import { sequelize } from '../sequelize';
+import { v4 as uuidv4 } from 'uuid';
 
 export default class MasterController {
     async addMaster(req: Request, res: Response): Promise<Response> {
         const addMasterTransaction = await sequelize.transaction();
         try {
-            const { name, cities } = AddMasterSchema.parse(req.body);
+            const { name, email, password, cities, status } = AddMasterSchema.parse(req.body);
+
+            const existUser = await User.findOne({ where: { email } });
+            if (existUser) return res.status(409).json('User with this email exist');
+
+            const masterPassword = password || generatePassword();
+            const hash = encryptPassword(masterPassword);
+            const confirmationToken = uuidv4();
 
             const existCities = await City.findAll({
                 where: { id: cities }
             });
             if (existCities.length !== cities.length) return res.status(404).json('Some of the cities does not exist');
 
-            const master = await Master.create({ name }, {
+            const user = await User.create({
+                email, password: hash, role: ROLES.MASTER, confirmationToken
+            }, {
+                transaction: addMasterTransaction
+            });
+
+            const master = await Master.create({ name, userId: user.getDataValue('id'), status }, {
                 transaction: addMasterTransaction
             });
             // @ts-ignore
             await master.addCities(cities, {
                 transaction: addMasterTransaction
             });
+
+            if (status === MASTER_STATUSES.NOT_CONFIRMED) {
+                await sendConfirmUserMail(email, masterPassword, confirmationToken, name);
+            } else if (status === MASTER_STATUSES.CONFIRMED || status === MASTER_STATUSES.APPROVED) {
+                await sendUserLoginInfoMail(email, masterPassword, name);
+            }
 
             await addMasterTransaction.commit();
             return res.status(201).json(master);
@@ -36,13 +59,16 @@ export default class MasterController {
     async getMasters(req: Request, res: Response): Promise<Response> {
         try {
             const masters = await Master.findAll({
-                attributes: { include: [[sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 2), 'rating']] },
+                attributes: { include: [[sequelize.col('User.email'), 'email'], [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 2), 'rating']] },
                 include: [City, {
                     model: Order,
                     as: 'Order',
                     attributes: []
-                }],
-                group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id'],
+                }, {
+                        model: User,
+                        attributes: []
+                    }],
+                group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id', 'User.email'],
                 order: ['id']
             });
             return res.status(200).json(masters);
@@ -53,7 +79,15 @@ export default class MasterController {
     async getMasterById(req: Request, res: Response): Promise<Response> {
         try {
             const { id } = GetMasterSchema.parse({ id: +req.params.id });
-            const master = await Master.findByPk(id);
+            const master = await Master.findByPk(id, {
+                attributes: { include: [[sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 2), 'rating']] },
+                include: [City, {
+                    model: Order,
+                    as: 'Order',
+                    attributes: []
+                }],
+                group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id']
+            });
             if (!master) return res.status(404).json('No such master');
             return res.status(200).json(master);
         } catch (error) {
@@ -116,16 +150,19 @@ export default class MasterController {
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
 
-            const { name, cities } = UpdateMasterSchema.parse(req.body);
+            const { name, email, cities, status } = UpdateMasterSchema.parse(req.body);
 
             const existCities = await City.findAll({
                 where: { id: cities }
             });
             if (existCities.length !== cities.length) return res.status(404).json('Some of the cities does not exist');
 
-            if (master.getDataValue('name') !== name) {
-                master.update({ name });
-            }
+            const existUser = await User.findOne({ where: { email, id: { [Op.ne]: master.getDataValue('userId') } } });
+            if (existUser) return res.status(409).json('User with this email exist');
+
+            await User.update({ email }, { where: { id: master.getDataValue('userId') }, transaction: updateMasterTransaction })
+
+            await master.update({ name, status }, { transaction: updateMasterTransaction });
 
             // @ts-ignore
             await master.setCities(cities, {
@@ -141,15 +178,44 @@ export default class MasterController {
         }
     }
     async deleteMaster(req: Request, res: Response): Promise<Response> {
+        const deleteMasterTransaction = await sequelize.transaction();
         try {
             const { id } = DeleteMasterSchema.parse({ id: +req.params.id });
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
-            await master.destroy();
+
+            const user = await User.findByPk(master.getDataValue('userId'));
+
+            await master.destroy({ transaction: deleteMasterTransaction });
+            await user.destroy({ transaction: deleteMasterTransaction });
+
+            await deleteMasterTransaction.commit();
             return res.status(200).json(master);
         } catch (error) {
+            await deleteMasterTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
+        }
+    }
+    async resetPassword(req: Request, res: Response): Promise<Response> {
+        const resetPasswordTransaction = await sequelize.transaction();
+        try {
+            const { id } = GetMasterSchema.parse({ id: +req.params.id });
+            const master = await Master.findByPk(id);
+            if (!master) return res.status(404).json('No such master');
+
+            const masterPassword = generatePassword();
+            const hash = encryptPassword(masterPassword);
+
+            await User.update({ password: hash }, { where: { id: master.getDataValue('userId') }, transaction: resetPasswordTransaction });
+            const user = await User.findOne({ where: { id: master.getDataValue('userId') } });
+            await sendResetedPasswordMail(user.getDataValue('email'), masterPassword, master.getDataValue('name'));
+            await resetPasswordTransaction.commit();
+            return res.status(200).json(master);
+        } catch (error) {
+            await resetPasswordTransaction.rollback();
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json('error');
         }
     }
 }

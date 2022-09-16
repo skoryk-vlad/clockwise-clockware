@@ -8,7 +8,7 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { OrderForm } from '../../components/Forms/OrderForm';
 import { Table } from '../../components/Table/Table';
-import { STATUSES, WATCH_SIZES } from '../../constants.ts';
+import { ORDER_STATUSES, WATCH_SIZES } from '../../constants.ts';
 
 const defaultOrder = {
     clientId: null,
@@ -18,7 +18,7 @@ const defaultOrder = {
     date: '',
     time: null,
     rating: 0,
-    status: Object.keys(STATUSES)[0]
+    status: Object.keys(ORDER_STATUSES)[0]
 };
 
 export const Orders = () => {
@@ -113,7 +113,7 @@ export const Orders = () => {
 
     return (
         <div className='admin-container'>
-            <Navbar />
+            <Navbar role='admin' />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Заказы</h1>
 
@@ -129,7 +129,7 @@ export const Orders = () => {
                 </MyModal>
 
                 <Table
-                    data={orders.map(order => ({...order, status: STATUSES[order.status], watchSize: WATCH_SIZES[order.watchSize]}))}
+                    data={orders.map(order => ({...order, status: ORDER_STATUSES[order.status], watchSize: WATCH_SIZES[order.watchSize]}))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />

@@ -7,7 +7,7 @@ import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
-import { STATUSES, WATCH_SIZES } from '../../constants.ts';
+import { ORDER_STATUSES, WATCH_SIZES } from '../../constants.ts';
 
 const OrderSchema = z.object({
     watchSize: z.nativeEnum(Object.keys(WATCH_SIZES)),
@@ -17,7 +17,7 @@ const OrderSchema = z.object({
     clientId: z.number({ invalid_type_error: 'Требуется выбрать клиента' }).int().positive(),
     masterId: z.number({ invalid_type_error: 'Требуется выбрать мастера' }).int().positive(),
     cityId: z.number({ invalid_type_error: 'Требуется выбрать город' }).int().positive(),
-    status: z.nativeEnum(Object.keys(STATUSES))
+    status: z.nativeEnum(Object.keys(ORDER_STATUSES))
 }).superRefine((order, ctx) => {
     if (!(order.time + Object.keys(WATCH_SIZES).indexOf(order.watchSize) + 1 < 20)) {
         ctx.addIssue({
@@ -230,7 +230,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                             onChange={onChange}
                             value={value || ''}
                             error={error}
-                            options={Object.keys(STATUSES).map(statusKey => ({ value: statusKey, name: STATUSES[statusKey] }))}
+                            options={Object.keys(ORDER_STATUSES).map(statusKey => ({ value: statusKey, name: ORDER_STATUSES[statusKey] }))}
                         />
                     )}
                 />

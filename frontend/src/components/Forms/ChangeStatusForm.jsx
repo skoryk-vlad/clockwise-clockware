@@ -6,11 +6,11 @@ import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
-import { STATUSES } from '../../constants.ts';
+import { ORDER_STATUSES } from '../../constants.ts';
 
 const ChangeStatusSchema = z.object({
     rating: z.number({ invalid_type_error: 'Рейтинг должен быть числом' }).int().min(0, 'Рейтинг должен находиться в диапазоне 0-5').max(5, 'Рейтинг должен находиться в диапазоне 0-5'),
-    status: z.nativeEnum(Object.keys(STATUSES))
+    status: z.nativeEnum(Object.keys(ORDER_STATUSES))
 });
 
 export const ChangeStatusForm = ({ order, onClick }) => {
@@ -67,7 +67,7 @@ export const ChangeStatusForm = ({ order, onClick }) => {
                             onChange={onChange}
                             value={value || ''}
                             error={error}
-                            options={Object.keys(STATUSES).map(statusKey => ({ value: statusKey, name: STATUSES[statusKey] }))}
+                            options={Object.keys(ORDER_STATUSES).map(statusKey => ({ value: statusKey, name: ORDER_STATUSES[statusKey] }))}
                         />
                     )}
                 />
