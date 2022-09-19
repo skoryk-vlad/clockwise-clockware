@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
-import { CLIENT_STATUSES } from '../../constants.ts';
+import { CLIENT_STATUSES } from '../../constants';
 import { MySelect } from '../select/MySelect';
 
 const ClientSchema = z.object({

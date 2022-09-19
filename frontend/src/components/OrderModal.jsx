@@ -4,7 +4,9 @@ import { useFetching } from '../hooks/useFetching';
 import { OrderButton } from './OrderButton/OrderButton';
 import classes from './OrderModal.module.css';
 import { ClientOrderForm } from './Forms/ClientOrderForm';
-import { WATCH_SIZES, ORDER_STATUSES } from '../constants.ts';
+import { WATCH_SIZES, ORDER_STATUSES, CLIENT_STATUSES } from '../constants';
+import { Confirm } from './Confirm/Confirm';
+import { jwtPayload } from './PrivateRoute';
 
 const defaultOrder = {
     name: "",
@@ -16,11 +18,18 @@ const defaultOrder = {
     status: Object.keys(ORDER_STATUSES)[0]
 };
 
-export const OrderModal = ({ setMessage, setIsOrderModalOpened }) => {
+export const OrderModal = ({ setMessage, setIsOrderModalOpened, login }) => {
     const [isFormOpened, setIsFormOpened] = useState(true);
     const [freeMasters, setFreeMasters] = useState([]);
     const [order, setOrder] = useState(defaultOrder);
     const [chosenMaster, setChosenMaster] = useState(null);
+
+    const [isConfirmOpened, setIsConfirmOpened] = useState(false);
+    const [confirmInfo, setConfirmInfo] = useState({
+        text: '',
+        onAccept: () => { },
+        onReject: () => { }
+    });
 
     const [cities, setCities] = useState([]);
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
@@ -45,19 +54,46 @@ export const OrderModal = ({ setMessage, setIsOrderModalOpened }) => {
         setOrder(defaultOrder);
         setIsFormOpened(true);
     }
-    const findMasters = async (order) => {
+    const checkUserExist = async (order) => {
+        setOrder(order);
         const client = await ClientService.checkClientByEmail(order.email);
-        console.log(client);
         if (!client) {
-            setOrder(order);
-            setChosenMaster(null)
-            const freeMasters = await MasterService.getFreeMasters(order.cityId, order.date, order.time, order.watchSize);
-            setFreeMasters(freeMasters.sort((a, b) => b.rating - a.rating).map(master => master.rating && +master.rating !== 0 ? master : { ...master, rating: '-' }));
-            setIsFormOpened(false);
+            setIsConfirmOpened(true);
+            setConfirmInfo({
+                text: 'Вы желаете зарегистрироваться для просмотра истории заказов?',
+                onAccept: () => registerClient(order),
+                onReject: () => findMasters(order)
+            });
         } else {
-            setMessage({ show: true, color: 'red', message: 'Для оформления заказа сперва авторизуйтесь!' });
-            setIsOrderModalOpened(false);
+            if (jwtPayload(localStorage.getItem('token'))?.role === 'client' && jwtPayload(localStorage.getItem('token'))?.id === client.id) {
+                findMasters(order);
+            } else {
+                if (order.name !== client.name) {
+                    setIsConfirmOpened(true);
+                    setConfirmInfo({
+                        text: `В системе Ваша учетная запись сохранена с именем ${client.name}, а Вы сейчас ввели ${order.name}. Желаете заменить?`,
+                        onAccept: () => { setIsConfirmOpened(false); login(); },
+                        onReject: () => { setOrder({ ...order, name: client.name }); setIsConfirmOpened(false); login(); }
+                    });
+                } else {
+                    login();
+                }
+                setMessage({ show: true, color: 'red', message: 'Для оформления заказа сперва авторизуйтесь!' });
+            }
         }
+    }
+    
+    const registerClient = async (order) => {
+        await ClientService.addClient({ name: order.name, email: order.email, status: Object.keys(CLIENT_STATUSES)[0] });
+        setMessage({ show: true, color: 'green', message: 'Аккаунт успешно создан!' });
+        findMasters();
+    }
+    const findMasters = async (order) => {
+        setChosenMaster(null)
+        const freeMasters = await MasterService.getFreeMasters(order.cityId, order.date, order.time, order.watchSize);
+        setFreeMasters(freeMasters.sort((a, b) => b.rating - a.rating).map(master => master.rating && +master.rating !== 0 ? master : { ...master, rating: '-' }));
+        setIsFormOpened(false);
+        setIsConfirmOpened(false);
     }
 
     const returnForm = () => {
@@ -66,10 +102,11 @@ export const OrderModal = ({ setMessage, setIsOrderModalOpened }) => {
 
     return (
         <div>
+            {isConfirmOpened && <Confirm text={confirmInfo.text} onAccept={confirmInfo.onAccept} onReject={confirmInfo.onReject} />}
             {
                 isFormOpened
                     ?
-                    <ClientOrderForm order={order} onClick={findMasters} cities={cities}></ClientOrderForm>
+                    <ClientOrderForm order={order} onClick={checkUserExist} cities={cities}></ClientOrderForm>
                     :
                     <div className={classes.mastersBlock}>
                         <div className={classes.mastersList}>

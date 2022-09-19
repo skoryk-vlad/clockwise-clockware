@@ -4,12 +4,11 @@ import { ChangeStatusForm } from '../../components/Forms/ChangeStatusForm';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar'
 import { Table } from '../../components/Table/Table';
-import { ORDER_STATUSES, WATCH_SIZES } from '../../constants.ts';
+import { ORDER_STATUSES, WATCH_SIZES } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 
 const defaultOrder = {
-    rating: 0,
     status: ''
 };
 
@@ -53,7 +52,7 @@ export const Admin = () => {
     }, [isModalOpened]);
 
     const changeStatus = async (order) => {
-        await OrderService.changeStatusById(order.id, order.status, order.rating);
+        await OrderService.changeStatusById(order.id, order.status);
         setIsModalOpened(false);
         fetchOrders();
     };

@@ -8,7 +8,7 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { ClientForm } from '../../components/Forms/ClientForm';
 import { Table } from '../../components/Table/Table';
-import { CLIENT_STATUSES } from '../../constants.ts';
+import { CLIENT_STATUSES } from '../../constants';
 import { Confirm } from '../../components/Confirm/Confirm';
 
 const defaultClient = {
@@ -57,6 +57,7 @@ export const Clients = () => {
     const resetClientPassword = async (id) => {
         try {
             await ClientService.resetClientPasswordById(id);
+            setIsModalOpened(false);
         } catch (error) {
             console.log(error.response.data);
             setErrorModal(true);
@@ -118,10 +119,6 @@ export const Clients = () => {
                         Добавить
                     </AdminButton>
                 </div>
-
-                {/* <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                    {currentClient && <ClientForm client={currentClient} onClick={currentClient.id ? updateClient : addClient} btnTitle={currentClient.id ? 'Изменить' : 'Добавить'}></ClientForm>}
-                </MyModal> */}
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
                     {currentClient && <ClientForm client={currentClient} onClick={currentClient.id ? updateClient : addClient} btnTitle={currentClient.id ? 'Изменить' : 'Добавить'}></ClientForm>}

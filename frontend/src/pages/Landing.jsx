@@ -15,7 +15,8 @@ export const Landing = () => {
     const [isAuthorizationModalOpened, setIsAuthorizationModalOpened] = useState(false);
     const [isRegistration, setIsRegistration] = useState(true);
     const [confirmModalText, setConfirmModalText] = useState(false);
-    const [message, setMessage] = useState({show: false, color: 'green', message: ''});
+    const [message, setMessage] = useState({ show: false, color: 'green', message: '' });
+    const [needRedirect, setNeedRedirect] = useState(true);
 
     useEffect(() => {
         document.title = "Ремонт напольных часов - Clockwise Clockware";
@@ -44,7 +45,8 @@ export const Landing = () => {
             <TopButton />
 
             <MyModal visible={isOrderModalOpened} setVisible={setIsOrderModalOpened}>
-                <OrderModal setMessage={setMessage} setIsOrderModalOpened={setIsOrderModalOpened} />
+                <OrderModal setMessage={setMessage} setIsOrderModalOpened={setIsOrderModalOpened}
+                    login={() => { setIsAuthorizationModalOpened(true); setIsRegistration(false); setNeedRedirect(false) }} />
             </MyModal>
             {message.show && <Message setMessage={setMessage} message={message} />}
 
@@ -53,7 +55,7 @@ export const Landing = () => {
             </MyModal>
 
             <MyModal visible={isAuthorizationModalOpened} setVisible={setIsAuthorizationModalOpened}>
-                <AuthorizationModal isRegistration={isRegistration} />
+                <AuthorizationModal setMessage={setMessage} isRegistration={isRegistration} needRedirect={needRedirect} setIsAuthorizationModalOpened={setIsAuthorizationModalOpened} />
             </MyModal>
         </div>
     );

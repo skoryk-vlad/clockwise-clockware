@@ -13,8 +13,10 @@ export default class ConfirmationController {
             try {
                 const order = await Order.findOne({ where: { confirmationToken } });
                 if (!order) return res.redirect(`${process.env.CLIENT_LINK}?error`);
-                if (order.getDataValue('status') === ORDER_STATUSES.CONFIRMED) return res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
+                if (order.getDataValue('status') !== ORDER_STATUSES.AWAITING_CONFIRMATION) return res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
                 await order.update({ status: ORDER_STATUSES.CONFIRMED });
+                const client = await Client.findByPk(order.getDataValue('clientId'));
+                if (client.getDataValue('status') === CLIENT_STATUSES.NOT_CONFIRMED) await client.update({ status: CLIENT_STATUSES.CONFIRMED });
                 return res.redirect(`${process.env.CLIENT_LINK}?success`);
             } catch (error) {
                 return res.redirect(`${process.env.CLIENT_LINK}?error`);
@@ -34,14 +36,14 @@ export default class ConfirmationController {
                 if (user.getDataValue('role') === ROLES.CLIENT) {
                     const client = await Client.findOne({ where: { userId: user.getDataValue('id') } });
                     if (client) {
-                        if (client.getDataValue('status') === CLIENT_STATUSES.CONFIRMED) return res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
+                        if (client.getDataValue('status') !== CLIENT_STATUSES.NOT_CONFIRMED) return res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
                         await client.update({ status: CLIENT_STATUSES.CONFIRMED });
                     }
                 }
                 if (user.getDataValue('role') === ROLES.MASTER) {
                     const master = await Master.findOne({ where: { userId: user.getDataValue('id') } });
                     if (master) {
-                        if (master.getDataValue('status') === MASTER_STATUSES.CONFIRMED || master.getDataValue('status') === MASTER_STATUSES.APPROVED) return res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
+                        if (master.getDataValue('status') !== MASTER_STATUSES.NOT_CONFIRMED || master.getDataValue('status') === MASTER_STATUSES.APPROVED) return res.redirect(`${process.env.CLIENT_LINK}?confirmed`);
                         await master.update({ status: MASTER_STATUSES.CONFIRMED });
                     }
                 }

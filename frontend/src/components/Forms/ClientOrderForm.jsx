@@ -8,7 +8,7 @@ import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
 import { formatISO } from 'date-fns'
-import { WATCH_SIZES } from '../../constants.ts';
+import { WATCH_SIZES } from '../../constants';
 
 const date = new Date();
 const minDate = formatISO(date, { representation: 'date' });

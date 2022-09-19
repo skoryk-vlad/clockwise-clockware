@@ -1,12 +1,12 @@
 import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
-import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema } from './../validationSchemas/order.schema';
+import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema } from './../validationSchemas/order.schema';
 import { sequelize } from './../sequelize';
-import { FindOptions, Op } from 'sequelize';
+import { FindOptions, Model, Op } from 'sequelize';
 import { Master } from './../models/master.model';
-import { Client } from './../models/client.model';
+import { Client, CLIENT_STATUSES } from './../models/client.model';
 import { City } from './../models/city.model';
-import { Order, WatchSizes } from './../models/order.model';
+import { Order, ORDER_STATUSES, WatchSizes } from './../models/order.model';
 import { Request, Response } from 'express';
 import { sendConfirmOrderMail } from '../mailer';
 import { v4 as uuidv4 } from 'uuid';
@@ -44,20 +44,25 @@ export default class OrderController {
             });
             if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
 
-            // const [client, created] = await Client.upsert({
-            //     email, name
-            // }, {
-            //     conflictFields: ['email'],
-            //     transaction: addOrderTransaction
-            // });
-            const user = await User.findOne({ where: { email } });
-            const client = await Client.findOne({ where: { userId: user.getDataValue('id') } });
-            // const [client, created] = await Client.upsert({
-            //     name, userId: user.getDataValue('id')
-            // }, {
-            //     conflictFields: ['email'],
-            //     transaction: addOrderTransaction
-            // });
+            let user = await User.findOne({ where: { email } });
+            let client: Model<any, any>;
+            if (!user) {
+                const confirmationToken = uuidv4();
+                user = await User.create({
+                    email, role: ROLES.CLIENT, confirmationToken
+                }, {
+                    transaction: addOrderTransaction
+                });
+                client = await Client.create({
+                    name, userId: user.getDataValue('id'), status: CLIENT_STATUSES.NOT_CONFIRMED
+                }, {
+                    transaction: addOrderTransaction
+                });
+            } else {
+                client = await Client.findOne({ where: { userId: user.getDataValue('id') } });
+                await client.update({ name });
+            }
+
             const confirmationToken = uuidv4();
             const price = existCity.getDataValue('price') * (endTime - time);
 
@@ -71,8 +76,6 @@ export default class OrderController {
             await addOrderTransaction.commit();
             return res.status(201).json(order);
         } catch (error) {
-            console.log(error);
-
             await addOrderTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
@@ -114,7 +117,7 @@ export default class OrderController {
                 config.where = {
                     clientId: id
                 };
-                config.attributes = ['id', [sequelize.col('Master.name'), 'master'], 'watchSize', 'date', 'time', 'endTime', 'price', 'status'];
+                config.attributes = ['id', [sequelize.col('Master.name'), 'master'], 'watchSize', 'date', 'time', 'endTime', 'price', 'status', 'rating'];
                 config.include = [{
                     model: Master, attributes: []
                 }];
@@ -192,11 +195,30 @@ export default class OrderController {
     }
     async changeStatus(req: Request, res: Response): Promise<Response> {
         try {
-            const { id, status, rating } = ChangeStatusSchema.parse(req.body);
+            const { id } = GetOrderSchema.parse({ id: +req.params.id });
 
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');
-            await order.update({ status, rating });
+            
+            const { status } = ChangeStatusSchema.parse(req.body);
+            await order.update({ status });
+            return res.status(200).json(order);
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
+        }
+    }
+    async setRating(req: Request, res: Response): Promise<Response> {
+        try {
+            const { id } = GetOrderSchema.parse({ id: +req.params.id });
+
+            const order = await Order.findByPk(id);
+            if (!order) return res.status(404).json('No such order');
+            if (order.getDataValue('status') !== ORDER_STATUSES.COMPLETED) return res.status(409).json('Order not completed');
+
+            const { rating } = SetRatingSchema.parse(req.body);
+            if (order.getDataValue('rating')) return res.status(409).json('Rating already set');
+            await order.update({ rating });
             return res.status(200).json(order);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);

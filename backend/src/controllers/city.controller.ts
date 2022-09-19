@@ -1,3 +1,4 @@
+import { ROLES } from './../models/user.model';
 import { Master } from './../models/master.model';
 import { AddCitySchema, DeleteCitySchema, GetCitySchema, UpdateCitySchema } from './../validationSchemas/city.schema';
 import { City } from './../models/city.model';
@@ -14,7 +15,7 @@ export default class CityController {
             return res.status(500).json(error);
         }
     }
-    async getCities(req: Request, res: Response): Promise<Response> {
+    async getCities(req: Request, res: Response, role: ROLES): Promise<Response> {
         try {
             const cities = await City.findAll({
                 include: Master,

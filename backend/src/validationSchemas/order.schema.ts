@@ -28,7 +28,8 @@ export const DeleteOrderSchema = z.object({
     id: z.number().int().positive()
 });
 export const ChangeStatusSchema = z.object({
-    id: z.number().int().positive(),
-    rating: z.number().int().min(0).max(5),
     status: z.nativeEnum(ORDER_STATUSES)
+});
+export const SetRatingSchema = z.object({
+    rating: z.number().int().min(0).max(5)
 });

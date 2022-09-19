@@ -5,18 +5,18 @@ import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
-import { ORDER_STATUSES } from '../../constants';
+import { ORDER_MASTER_STATUSES } from '../../constants';
 
-const ChangeStatusSchema = z.object({
-    status: z.nativeEnum(Object.keys(ORDER_STATUSES))
+const ChangeStatusMasterSchema = z.object({
+    status: z.nativeEnum(Object.keys(ORDER_MASTER_STATUSES))
 });
 
-export const ChangeStatusForm = ({ order, onClick }) => {
+export const ChangeStatusMasterForm = ({ order, onClick }) => {
     const { control, handleSubmit, getValues, watch, formState: { errors, isSubmitted, isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
         defaultValues: order,
-        resolver: zodResolver(ChangeStatusSchema)
+        resolver: zodResolver(ChangeStatusMasterSchema)
     });
     const onSubmit = () => onClick(getValues());
 
@@ -41,7 +41,7 @@ export const ChangeStatusForm = ({ order, onClick }) => {
                             onChange={onChange}
                             value={value || ''}
                             error={error}
-                            options={Object.keys(ORDER_STATUSES).map(statusKey => ({ value: statusKey, name: ORDER_STATUSES[statusKey] }))}
+                            options={Object.keys(ORDER_MASTER_STATUSES).map(statusKey => ({ value: statusKey, name: ORDER_MASTER_STATUSES[statusKey] }))}
                         />
                     )}
                 />

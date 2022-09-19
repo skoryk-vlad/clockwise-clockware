@@ -8,7 +8,8 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { MasterForm } from '../../components/Forms/MasterForm';
 import { Table } from '../../components/Table/Table';
-import { MASTER_STATUSES } from '../../constants.ts';
+import { MASTER_STATUSES } from '../../constants';
+import { Confirm } from '../../components/Confirm/Confirm';
 
 const defaultMaster = {
     name: '',
@@ -24,11 +25,13 @@ export const Masters = () => {
     const [currentMaster, setCurrentMaster] = useState(defaultMaster);
     const [isModalOpened, setIsModalOpened] = useState(false);
 
+    const [masterIdToReset, setMasterIdToReset] = useState(null);
+
     const [errorModal, setErrorModal] = useState(false);
 
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
         const masters = await MasterService.getMasters();
-        setMasters(masters.map(master => ({...master, cities: master.Cities.map(city => city.id)})));
+        setMasters(masters.map(master => ({ ...master, cities: master.Cities.map(city => city.id) })));
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -42,14 +45,25 @@ export const Masters = () => {
     }, []);
 
     useEffect(() => {
-        if (!isModalOpened)
+        if (!isModalOpened) {
             setCurrentMaster(null);
+            setMasterIdToReset(null);
+        }
     }, [isModalOpened]);
 
     const deleteMaster = async (id) => {
         try {
             await MasterService.deleteMasterById(id);
             fetchMasters();
+        } catch (error) {
+            console.log(error.response.data);
+            setErrorModal(true);
+        }
+    }
+    const resetMasterPassword = async (id) => {
+        try {
+            await MasterService.resetMasterPasswordById(id);
+            setIsModalOpened(false);
         } catch (error) {
             console.log(error.response.data);
             setErrorModal(true);
@@ -76,7 +90,7 @@ export const Masters = () => {
         }
     }
 
-    const tableHeaders = ["id", "Имя", "Почта", "Города", "Рейтинг", "Статус", "Изменение", "Удаление"];
+    const tableHeaders = ["id", "Имя", "Почта", "Города", "Рейтинг", "Статус", "Изменение", "Удаление", "Сброс пароля"];
 
     const tableBodies = [
         `id`,
@@ -94,6 +108,11 @@ export const Masters = () => {
             name: `Удалить`,
             callback: deleteMaster,
             param: `id`
+        },
+        {
+            name: `Сбросить`,
+            callback: id => { setIsModalOpened(true); setMasterIdToReset(id) },
+            param: `id`
         }
     ];
 
@@ -110,6 +129,7 @@ export const Masters = () => {
                 </div>
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
+                    {masterIdToReset && <Confirm text='Вы уверены, что хотите сбросить пароль пользователя?' onAccept={() => resetMasterPassword(masterIdToReset)} onReject={() => setIsModalOpened(false)} />}
                     {currentMaster && <MasterForm master={currentMaster} onClick={currentMaster.id ? updateMaster : addMaster} cities={cities} btnTitle={currentMaster.id ? 'Изменить' : 'Добавить'}></MasterForm>}
                 </MyModal>
 

@@ -1,8 +1,8 @@
-import { sendConfirmUserMail, sendUserLoginInfoMail, sendResetedPasswordMail } from './../mailer';
+import { sendConfirmUserMail, sendUserLoginInfoMail, sendResetedPasswordMail, sendApproveMasterMail } from './../mailer';
 import { generatePassword, encryptPassword } from './../password';
 import { User, ROLES } from './../models/user.model';
 import { City } from './../models/city.model';
-import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema } from './../validationSchemas/master.schema';
+import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, checkMasterByEmailSchema } from './../validationSchemas/master.schema';
 import { Order, WatchSizes } from './../models/order.model';
 import { Master, MASTER_STATUSES } from './../models/master.model';
 import { Request, Response } from 'express';
@@ -95,6 +95,23 @@ export default class MasterController {
             return res.status(500).json(error);
         }
     }
+    async checkMasterByEmail(req: Request, res: Response): Promise<Response> {
+        try {
+            const { email } = checkMasterByEmailSchema.parse({ email: req.params.email });
+            
+            const user = await User.findOne({ where: { email } });
+            if(!user) return res.status(200).json(null);
+            const master = await Master.findOne({
+                where: {
+                    userId: user.getDataValue('id')
+                }
+            });
+            return res.status(200).json(master);
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
+        }
+    }
     async getFreeMasters(req: Request, res: Response): Promise<Response> {
         try {
             const { cityId, date, time, watchSize } = GetFreeMastersSchema.parse(req.query);
@@ -162,7 +179,12 @@ export default class MasterController {
 
             await User.update({ email }, { where: { id: master.getDataValue('userId') }, transaction: updateMasterTransaction })
 
+            if(master.getDataValue('status') !== MASTER_STATUSES.APPROVED && status === MASTER_STATUSES.APPROVED) {
+                await sendApproveMasterMail(email, name);
+            }
+            
             await master.update({ name, status }, { transaction: updateMasterTransaction });
+
 
             // @ts-ignore
             await master.setCities(cities, {

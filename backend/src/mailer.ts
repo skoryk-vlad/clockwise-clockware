@@ -1,18 +1,5 @@
 import nodemailer, { Transporter, SentMessageInfo } from 'nodemailer';
 
-// const transporter: Transporter = nodemailer.createTransport({
-//     service: "Outlook365",
-//     host: "smtp.office365.com",
-//     port: 587,
-//     tls: {
-//         ciphers: "SSLv3",
-//         rejectUnauthorized: false,
-//     },
-//     auth: {
-//         user: process.env.MAIL_USER,
-//         pass: process.env.MAIL_PASS
-//     }
-// });
 const transporter: Transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {

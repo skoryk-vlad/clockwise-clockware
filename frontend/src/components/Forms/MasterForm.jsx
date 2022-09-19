@@ -6,7 +6,7 @@ import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
-import { MASTER_STATUSES } from '../../constants.ts';
+import { MASTER_STATUSES } from '../../constants';
 
 const MasterSchema = z.object({
     name: z.string().trim().min(1, { message: 'Требуется имя' })

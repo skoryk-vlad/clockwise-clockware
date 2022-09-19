@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { CityService, ClientService, MasterService, OrderService } from '../../API/Server';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
-import { ClientOrderForm } from '../../components/Forms/ClientOrderForm';
 import { ClientPersonalForm } from '../../components/Forms/ClientPersonalForm';
+import { SetRatingForm } from '../../components/Forms/SetRatingForm';
 import { Loader } from '../../components/Loader/Loader';
 import { Message } from '../../components/Message/Message';
 import { MyModal } from '../../components/modal/MyModal';
@@ -10,7 +10,7 @@ import { Navbar } from '../../components/Navbar/Navbar';
 import { OrderButton } from '../../components/OrderButton/OrderButton';
 import { jwtPayload } from '../../components/PrivateRoute';
 import { Table } from '../../components/Table/Table';
-import { WATCH_SIZES, ORDER_STATUSES } from '../../constants.ts';
+import { WATCH_SIZES, ORDER_STATUSES } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 
@@ -30,11 +30,14 @@ export const ClientOrders = () => {
     const [order, setOrder] = useState(defaultOrder);
     const [chosenMaster, setChosenMaster] = useState(null);
 
+    const [orderId, setOrderId] = useState(null);
+    const [isSetRatingOpened, setIsSetRatingOpened] = useState(false);
+
     const [client, setClient] = useState({});
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
     const [isModalOpened, setIsModalOpened] = useState(false);
-    const [showMessage, setShowMessage] = useState(false);
+    const [message, setMessage] = useState({ show: false, color: 'green', message: '' });
 
     const [fetchOrders, isLoading, Error] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'))
@@ -58,7 +61,6 @@ export const ClientOrders = () => {
     };
 
     const findMasters = async (order) => {
-        console.log(order);
         setOrder(order);
         setChosenMaster(null)
         const freeMasters = await MasterService.getFreeMasters(order.cityId, order.date, order.time, order.watchSize);
@@ -71,23 +73,40 @@ export const ClientOrders = () => {
     }
 
     useEffect(() => {
-        document.title = "Личный кабинет мастера - Clockwise Clockware";
+        document.title = "Личный кабинет клиента - Clockwise Clockware";
         fetchAdditionalData();
         fetchOrders();
     }, []);
+    useEffect(() => {
+        if (isModalOpened === false) {
+            setIsSetRatingOpened(false);
+        }
+    }, [isModalOpened]);
 
     const addOrder = async () => {
         try {
             await OrderService.addOrder({ ...order, name: client.name, email: client.email });
             setIsModalOpened(false);
             setIsFormOpened(true);
-            setShowMessage(true);
+            setMessage({ show: true, color: 'green', message: 'Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!' });
             setOrder(defaultOrder);
             setIsFormOpened(true);
             fetchOrders();
         } catch (error) {
             console.log(error.response.data);
-            // setErrorModal(true);
+        }
+    }
+    const setRating = async (order) => {
+        setIsSetRatingOpened(false);
+        setIsModalOpened(false);
+        try {
+            await OrderService.setOrderRating(orderId, order.rating);
+            setIsSetRatingOpened(false);
+            setIsModalOpened(false);
+            setMessage({ show: true, color: 'green', message: 'Рейтинг успешно выставлен!' });
+            fetchOrders();
+        } catch (error) {
+            console.log(error.response.data);
         }
     }
 
@@ -102,8 +121,16 @@ export const ClientOrders = () => {
         `price`,
         `status`,
         {
-            name: `Изменить`,
-            callback: () => console.log('Изменить'),
+            mixed: true,
+            field: `rating`,
+            name: `Выставить`,
+            callback: id => {
+                if(orders.find(order => order.id === id).status === 'completed') {
+                    setOrderId(id); setIsSetRatingOpened(true); setIsModalOpened(true)
+                } else {
+                    setMessage({ show: true, color: 'red', message: 'Заказ еще не выполнен!' });
+                }
+            },
             param: `id`
         }
     ];
@@ -122,43 +149,45 @@ export const ClientOrders = () => {
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
                     {
-                        isFormOpened
+                        isSetRatingOpened
                             ?
-                            <ClientPersonalForm order={defaultOrder} onClick={findMasters} btnTitle={'Добавить'} cities={cities}></ClientPersonalForm>
+                            <SetRatingForm onClick={setRating} />
                             :
-                            <div className='mastersBlock'>
-                                <div className='mastersList'>
-                                    {
-                                        freeMasters.map(master =>
-                                            <div key={master.id} id={master.id} className={'masterItem mstr_itm' + (+chosenMaster === master.id ? ' active' : '')}>
-                                                <div className='masterName'>{master.name}</div>
-                                                <div className='masterRating'>Рейтинг: {master.rating}</div>
-                                                <OrderButton onClick={event => chooseMaster(event)} className='masterBtn'>Выбрать</OrderButton>
-                                            </div>
-                                        )
-                                    }
-                                    {
-                                        freeMasters.length === 0 &&
-                                        <div className='warning'>К сожалению, мастеров на это время в этот день нет. Выберите другое время или дату.</div>
-                                    }
-                                    <div className='return' onClick={returnForm}>
-                                        <img src="/images/icons/top.png" alt="Назад" />
+                            isFormOpened
+                                ?
+                                <ClientPersonalForm order={defaultOrder} onClick={findMasters} btnTitle={'Добавить'} cities={cities}></ClientPersonalForm>
+                                :
+                                <div className='mastersBlock'>
+                                    <div className='mastersList'>
+                                        {
+                                            freeMasters.map(master =>
+                                                <div key={master.id} id={master.id} className={'masterItem mstr_itm' + (+chosenMaster === master.id ? ' active' : '')}>
+                                                    <div className='masterName'>{master.name}</div>
+                                                    <div className='masterRating'>Рейтинг: {master.rating}</div>
+                                                    <OrderButton onClick={event => chooseMaster(event)} className='masterBtn'>Выбрать</OrderButton>
+                                                </div>
+                                            )
+                                        }
+                                        {
+                                            freeMasters.length === 0 &&
+                                            <div className='warning'>К сожалению, мастеров на это время в этот день нет. Выберите другое время или дату.</div>
+                                        }
+                                        <div className='return' onClick={returnForm}>
+                                            <img src="/images/icons/top.png" alt="Назад" />
+                                        </div>
                                     </div>
+                                    <OrderButton onClick={() => { addOrder() }} className={(chosenMaster === null ? "disabledBtn" : '')}
+                                        disabled={chosenMaster === null}>Оформить заказ</OrderButton>
                                 </div>
-                                <OrderButton onClick={() => { addOrder() }} className={(chosenMaster === null ? "disabledBtn" : '')}
-                                    disabled={chosenMaster === null}>Оформить заказ</OrderButton>
-                            </div>
                     }
                 </MyModal>
-                {showMessage && <Message setShowMessage={setShowMessage}>Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!</Message>}
+                {message.show && <Message setMessage={setMessage} message={message}>Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!</Message>}
 
                 <Table
                     data={orders.map(order => ({ ...order, watchSize: WATCH_SIZES[order.watchSize], status: ORDER_STATUSES[order.status] }))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />
-
-                {/* <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{ fontSize: '20px' }}>Произошла ошибка.</p></MyModal> */}
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>

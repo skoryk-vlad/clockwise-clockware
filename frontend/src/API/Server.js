@@ -19,9 +19,9 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use((response) => {
     return response;
 }, (error) => {
-    if (error.response.status === 401) {
+    if (error.response.status === 401 && error.response.data === 'Token expired') {
         localStorage.removeItem('token');
-        document.location.assign(`${document.location.origin}/login`);
+        document.location.assign(document.location.origin);
     }
     return Promise.reject(error.message);
 });
@@ -48,6 +48,10 @@ export class CityService {
 export class MasterService {
     static async getMasters() {
         const { data } = await axios.get(`${API_URL}/api/master`);
+        return data;
+    }
+    static async checkMasterByEmail(email) {
+        const { data } = await api.get(`/master/email/${email}`);
         return data;
     }
     static async addMaster(newMaster) {
@@ -122,8 +126,12 @@ export class OrderService {
         const { data } = await api.put(`/order/${updOrder.id}`, updOrder);
         return data;
     }
-    static async changeStatusById(id, status, rating) {
-        const { data } = await api.post(`/order/status`, { id, status, rating });
+    static async changeStatusById(id, status) {
+        const { data } = await api.post(`/order/status/${id}`, { status });
+        return data;
+    }
+    static async setOrderRating(id, rating) {
+        const { data } = await api.post(`/order/rating/${id}`, { rating });
         return data;
     }
 }
@@ -136,10 +144,5 @@ export class AuthService {
         } catch (error) {
             return error;
         }
-    }
-
-    static async checkAuth() {
-        const { data } = await api.get(`/admin`);
-        return data;
     }
 }

@@ -8,7 +8,7 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { OrderForm } from '../../components/Forms/OrderForm';
 import { Table } from '../../components/Table/Table';
-import { ORDER_STATUSES, WATCH_SIZES } from '../../constants.ts';
+import { ORDER_STATUSES, WATCH_SIZES } from '../../constants';
 
 const defaultOrder = {
     clientId: null,

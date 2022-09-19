@@ -2,14 +2,12 @@ import { Admin } from "../pages/admin/Admin";
 import { Cities } from "../pages/admin/Cities";
 import { Clients } from "../pages/admin/Clients";
 import { Landing } from "../pages/Landing";
-import { Login } from "../pages/Login";
 import { Masters } from "../pages/admin/Masters";
 import { Orders } from "../pages/admin/Orders";
 import { ClientOrders } from "../pages/client/ClientOrders";
 import { MasterOrders } from "../pages/master/MasterOrders";
 
 export const publicRoutes = [
-    { path: '/login', element: <Login /> },
     { path: '/', element: <Landing /> },
 ]
 

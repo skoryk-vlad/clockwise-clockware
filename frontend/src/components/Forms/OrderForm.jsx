@@ -7,7 +7,7 @@ import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
-import { ORDER_STATUSES, WATCH_SIZES } from '../../constants.ts';
+import { ORDER_STATUSES, WATCH_SIZES } from '../../constants';
 
 const OrderSchema = z.object({
     watchSize: z.nativeEnum(Object.keys(WATCH_SIZES)),
