@@ -80,7 +80,7 @@ export default class OrderController {
         } catch (error) {
             await addOrderTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getOrders(req: Request, res: Response): Promise<Response> {
@@ -106,7 +106,7 @@ export default class OrderController {
 
             return res.status(200).json(orders);
         } catch (error) {
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getOrderById(req: Request, res: Response): Promise<Response> {
@@ -117,7 +117,7 @@ export default class OrderController {
             return res.status(200).json(order);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async updateOrder(req: Request, res: Response): Promise<Response> {
@@ -167,7 +167,7 @@ export default class OrderController {
             return res.status(200).json(order);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async changeStatus(req: Request, res: Response): Promise<Response> {
@@ -182,7 +182,7 @@ export default class OrderController {
             return res.status(200).json(order);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async setRating(req: Request, res: Response): Promise<Response> {
@@ -199,7 +199,7 @@ export default class OrderController {
             return res.status(200).json(order);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async deleteOrder(req: Request, res: Response): Promise<Response> {
@@ -211,7 +211,7 @@ export default class OrderController {
             return res.status(200).json(order);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
 }

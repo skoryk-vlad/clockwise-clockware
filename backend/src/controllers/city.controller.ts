@@ -1,4 +1,3 @@
-import { ROLES } from './../models/user.model';
 import { Master } from './../models/master.model';
 import { AddCitySchema, DeleteCitySchema, GetCitySchema, UpdateCitySchema } from './../validationSchemas/city.schema';
 import { City } from './../models/city.model';
@@ -12,7 +11,7 @@ export default class CityController {
             return res.status(201).json(city);
         } catch (error) {
             if(error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getCities(req: Request, res: Response): Promise<Response> {
@@ -23,7 +22,7 @@ export default class CityController {
             });
             return res.status(200).json(cities);
         } catch (error) {
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getCityById(req: Request, res: Response): Promise<Response> {
@@ -34,7 +33,7 @@ export default class CityController {
             return res.status(200).json(city);
         } catch (error) {
             if(error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
 
@@ -51,7 +50,7 @@ export default class CityController {
             return res.status(200).json(city);
         } catch (error) {
             if(error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
 
@@ -64,7 +63,7 @@ export default class CityController {
             return res.status(200).json(city);
         } catch (error) {
             if(error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
 }
