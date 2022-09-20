@@ -1,17 +1,18 @@
+import { ROLES } from './../models/user.model';
 import { Router } from 'express';
 import MasterController from '../controllers/master.controller';
-import { checkOnlyAdmin } from './auth.routes';
+import { isJwtNotExpired, hasRoles } from './auth.routes';
 
 const router: Router = Router();
-const masterController: any = new MasterController();
+const masterController: MasterController = new MasterController();
 
-router.post('/master', masterController.addMaster);
-router.get('/master', masterController.getMasters);
-router.get('/master/:id', masterController.getMasterById);
-router.get('/client/email/:email', masterController.checkMasterByEmail);
+router.post('/master/user', masterController.addMaster);
+router.post('/master/admin', isJwtNotExpired, hasRoles([ROLES.ADMIN]), masterController.addMasterByAdmin);
+router.get('/master', isJwtNotExpired, hasRoles([ROLES.ADMIN]), masterController.getMasters);
+router.get('/master/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), masterController.getMasterById);
+router.get('/master/:id/orders', isJwtNotExpired, hasRoles([ROLES.ADMIN, ROLES.MASTER]), masterController.getMasterOrdersById);
 router.get('/freemasters', masterController.getFreeMasters);
-router.put('/master/:id', checkOnlyAdmin, masterController.updateMaster);
-router.delete('/master/:id', checkOnlyAdmin, masterController.deleteMaster);
-router.post('/master/reset/:id', masterController.resetPassword);
+router.put('/master/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), masterController.updateMaster);
+router.delete('/master/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), masterController.deleteMaster);
 
 export default router;

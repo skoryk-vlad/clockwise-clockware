@@ -1,31 +1,32 @@
 import React, { useEffect, useState } from 'react'
-import { CityService, ClientService, MasterService, OrderService } from '../API/Server';
+import { CityService, MasterService, OrderService, UserService } from '../API/Server';
 import { useFetching } from '../hooks/useFetching';
 import { OrderButton } from './OrderButton/OrderButton';
 import classes from './OrderModal.module.css';
 import { ClientOrderForm } from './Forms/ClientOrderForm';
-import { WATCH_SIZES, ORDER_STATUSES, CLIENT_STATUSES } from '../constants';
-import { Confirm } from './Confirm/Confirm';
+import { WATCH_SIZES, ORDER_STATUSES, ROLES } from '../constants';
+import { ConfirmationModal } from './ConfirmationModal/ConfirmationModal';
 import { jwtPayload } from './PrivateRoute';
+import { notify, NOTIFY_TYPES } from './Notifications';
 
 const defaultOrder = {
     name: "",
     email: "",
-    watchSize: Object.keys(WATCH_SIZES)[0],
+    watchSize: WATCH_SIZES.SMALL,
     cityId: null,
     date: "",
     time: null,
-    status: Object.keys(ORDER_STATUSES)[0]
+    status: ORDER_STATUSES.AWAITING_CONFIRMATION
 };
 
-export const OrderModal = ({ setMessage, setIsOrderModalOpened, login }) => {
+export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
     const [isFormOpened, setIsFormOpened] = useState(true);
     const [freeMasters, setFreeMasters] = useState([]);
     const [order, setOrder] = useState(defaultOrder);
     const [chosenMaster, setChosenMaster] = useState(null);
 
-    const [isConfirmOpened, setIsConfirmOpened] = useState(false);
-    const [confirmInfo, setConfirmInfo] = useState({
+    const [isConfirmationModalOpened, setIsConfirmationModalOpened] = useState(false);
+    const [confirmationModalInfo, setConfirmationModalInfo] = useState({
         text: '',
         onAccept: () => { },
         onReject: () => { }
@@ -50,50 +51,49 @@ export const OrderModal = ({ setMessage, setIsOrderModalOpened, login }) => {
         await OrderService.addOrder(order);
         setIsFormOpened(true);
         setIsOrderModalOpened(false);
-        setMessage({ show: true, color: 'green', message: 'Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!' });
+        notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!');
         setOrder(defaultOrder);
         setIsFormOpened(true);
     }
     const checkUserExist = async (order) => {
         setOrder(order);
-        const client = await ClientService.checkClientByEmail(order.email);
+        const client = await UserService.checkUserByEmail(order.email);
         if (!client) {
-            setIsConfirmOpened(true);
-            setConfirmInfo({
+            setIsConfirmationModalOpened(true);
+            setConfirmationModalInfo({
                 text: 'Вы желаете зарегистрироваться для просмотра истории заказов?',
-                onAccept: () => registerClient(order),
+                onAccept: () => registerClient(),
                 onReject: () => findMasters(order)
             });
         } else {
-            if (jwtPayload(localStorage.getItem('token'))?.role === 'client' && jwtPayload(localStorage.getItem('token'))?.id === client.id) {
+            if (jwtPayload(localStorage.getItem('token'))?.role === ROLES.CLIENT && jwtPayload(localStorage.getItem('token'))?.id === client.id) {
                 findMasters(order);
             } else {
                 if (order.name !== client.name) {
-                    setIsConfirmOpened(true);
-                    setConfirmInfo({
+                    setIsConfirmationModalOpened(true);
+                    setConfirmationModalInfo({
                         text: `В системе Ваша учетная запись сохранена с именем ${client.name}, а Вы сейчас ввели ${order.name}. Желаете заменить?`,
-                        onAccept: () => { setIsConfirmOpened(false); login(); },
-                        onReject: () => { setOrder({ ...order, name: client.name }); setIsConfirmOpened(false); login(); }
+                        onAccept: () => { setIsConfirmationModalOpened(false); login(); },
+                        onReject: () => { setOrder({ ...order, name: client.name }); setIsConfirmationModalOpened(false); login(); }
                     });
                 } else {
                     login();
                 }
-                setMessage({ show: true, color: 'red', message: 'Для оформления заказа сперва авторизуйтесь!' });
+                notify(NOTIFY_TYPES.SUCCESS, 'Для оформления заказа сперва авторизуйтесь!');
             }
         }
     }
     
-    const registerClient = async (order) => {
-        await ClientService.addClient({ name: order.name, email: order.email, status: Object.keys(CLIENT_STATUSES)[0] });
-        setMessage({ show: true, color: 'green', message: 'Аккаунт успешно создан!' });
-        findMasters();
+    const registerClient = async () => {
+        setIsConfirmationModalOpened(false);
+        register();
     }
     const findMasters = async (order) => {
-        setChosenMaster(null)
+        setChosenMaster(null);
         const freeMasters = await MasterService.getFreeMasters(order.cityId, order.date, order.time, order.watchSize);
         setFreeMasters(freeMasters.sort((a, b) => b.rating - a.rating).map(master => master.rating && +master.rating !== 0 ? master : { ...master, rating: '-' }));
         setIsFormOpened(false);
-        setIsConfirmOpened(false);
+        setIsConfirmationModalOpened(false);
     }
 
     const returnForm = () => {
@@ -102,7 +102,7 @@ export const OrderModal = ({ setMessage, setIsOrderModalOpened, login }) => {
 
     return (
         <div>
-            {isConfirmOpened && <Confirm text={confirmInfo.text} onAccept={confirmInfo.onAccept} onReject={confirmInfo.onReject} />}
+            {isConfirmationModalOpened && <ConfirmationModal text={confirmationModalInfo.text} onAccept={confirmationModalInfo.onAccept} onReject={confirmationModalInfo.onReject} />}
             {
                 isFormOpened
                     ?

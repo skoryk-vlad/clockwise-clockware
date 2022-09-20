@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { AuthService, CityService, ClientService, MasterService } from '../API/Server';
+import { AuthService, CityService, ClientService, MasterService, UserService } from '../API/Server';
 import { CLIENT_STATUSES } from '../constants';
 import { useFetching } from '../hooks/useFetching';
-import { Confirm } from './Confirm/Confirm';
+import { ConfirmationModal } from './ConfirmationModal/ConfirmationModal';
 import { LoginForm } from './Forms/LoginForm';
 import { RegistrationForm } from './Forms/RegistrationForm';
+import { notify, NOTIFY_TYPES } from './Notifications';
 import { jwtPayload } from './PrivateRoute';
 
 const defaultUser = {
@@ -15,14 +16,14 @@ const defaultUser = {
     isAgree: false,
     isMaster: false,
     cities: [],
-    status: Object.keys(CLIENT_STATUSES)[0]
+    status: CLIENT_STATUSES.NOT_CONFIRMED
 }
 
-export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsAuthorizationModalOpened, setMessage }) => {
+export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsAuthorizationModalOpened }) => {
     const [redirect, setRedirect] = useState({ isRedirect: false, path: '' });
 
-    const [isConfirmOpened, setIsConfirmOpened] = useState(false);
-    const [confirmInfo, setConfirmInfo] = useState({
+    const [isConfirmationModalOpened, setIsConfirmationModalOpened] = useState(false);
+    const [confirmationModalInfo, setConfirmationModalInfo] = useState({
         text: '',
         onAccept: () => { },
         onReject: () => { }
@@ -44,11 +45,11 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
             } else {
                 await ClientService.addClient(user);
             }
-            setMessage({ show: true, color: 'green', message: 'Аккаунт успешно создан!' });
+            notify(NOTIFY_TYPES.SUCCESS, 'Аккаунт успешно создан!');
             setIsAuthorizationModalOpened(false);
         } catch (error) {
-            setMessage({ show: true, color: 'red', message: 'Произошла ошибка!' });
-            console.log(error);
+            notify(NOTIFY_TYPES.ERROR);
+            console.log(error.response.data);
         }
     }
     const loginUser = async (loginInfo) => {
@@ -61,30 +62,23 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
                 }
                 setIsAuthorizationModalOpened(false);
             } else {
-                setMessage({ show: true, color: 'red', message: 'Произошла ошибка!' });
-                if (loginResponse?.response?.data?.name === "User don't have a password") {
-                    setIsConfirmOpened(true);
-                    setConfirmInfo({
+                notify(NOTIFY_TYPES.ERROR);
+                if (loginResponse?.response?.data === "User don't have a password") {
+                    setIsConfirmationModalOpened(true);
+                    setConfirmationModalInfo({
                         text: 'У Вас отсутствует пароль для входа. Желаете получить его на свою почту?',
                         onAccept: async () => {
-                            if (loginResponse.response.data.role === 'client') {
-                                const client = await ClientService.checkClientByEmail(loginInfo.email);
-                                await ClientService.resetClientPasswordById(client.id);
-                                setIsConfirmOpened(false);
-                                setMessage({ show: true, color: 'green', message: 'Пароль успешно отправлен!' });
-                            }
-                            if (loginResponse.response.data.role === 'master') {
-                                const master = await MasterService.checkMasterByEmail(loginInfo.email);
-                                await MasterService.resetMasterPasswordById(master.id);
-                            }
+                            await UserService.createPassword(loginInfo.email);
+                            setIsConfirmationModalOpened(false);
+                            notify(NOTIFY_TYPES.SUCCESS, 'Пароль успешно отправлен!');
                         },
-                        onReject: () => setIsConfirmOpened(false)
+                        onReject: () => setIsConfirmationModalOpened(false)
                     });
                 }
             }
         } catch (error) {
-            setMessage({ show: true, color: 'red', message: 'Произошла ошибка!' });
-            console.log(error);
+            notify(NOTIFY_TYPES.ERROR);
+            console.log(error.response.data);
         }
     }
 
@@ -93,7 +87,7 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
             <Navigate push to={`/${redirect.path}/main`} />
             :
             <div>
-                {isConfirmOpened && <Confirm text={confirmInfo.text} onAccept={confirmInfo.onAccept} onReject={confirmInfo.onReject} />}
+                {isConfirmationModalOpened && <ConfirmationModal text={confirmationModalInfo.text} onAccept={confirmationModalInfo.onAccept} onReject={confirmationModalInfo.onReject} />}
                 {isRegistration
                     ? <RegistrationForm user={defaultUser} onClick={registerUser} cities={cities} btnTitle={'Регистрация'} isRegistration={isRegistration} ></RegistrationForm>
                     : <LoginForm user={defaultUser} onClick={loginUser} cities={cities} btnTitle={'Вход'} isRegistration={isRegistration} ></LoginForm>

@@ -5,14 +5,14 @@ import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
-import { ORDER_MASTER_STATUSES } from '../../constants';
+import { ORDER_MASTER_STATUSES, ORDER_MASTER_STATUSES_TRANSLATE } from '../../constants';
 
 const ChangeStatusMasterSchema = z.object({
-    status: z.nativeEnum(Object.keys(ORDER_MASTER_STATUSES))
+    status: z.nativeEnum(ORDER_MASTER_STATUSES)
 });
 
 export const ChangeStatusMasterForm = ({ order, onClick }) => {
-    const { control, handleSubmit, getValues, watch, formState: { errors, isSubmitted, isValid } } = useForm({
+    const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
         defaultValues: order,
@@ -41,7 +41,7 @@ export const ChangeStatusMasterForm = ({ order, onClick }) => {
                             onChange={onChange}
                             value={value || ''}
                             error={error}
-                            options={Object.keys(ORDER_MASTER_STATUSES).map(statusKey => ({ value: statusKey, name: ORDER_MASTER_STATUSES[statusKey] }))}
+                            options={Object.entries(ORDER_MASTER_STATUSES_TRANSLATE).map(([value, name]) => ({ value, name }))}
                         />
                     )}
                 />

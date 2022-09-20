@@ -1,9 +1,9 @@
 import React from 'react';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MyModal } from '../modal/MyModal';
-import classes from './Confirm.module.css';
+import classes from './ConfirmationModal.module.css';
 
-export const Confirm = ({ onAccept, onReject, text }) => {
+export const ConfirmationModal = ({ onAccept, onReject, text }) => {
     return (
         <MyModal visible={true} setVisible={() => {}}>
             <div className={classes.confirmWrapper}>

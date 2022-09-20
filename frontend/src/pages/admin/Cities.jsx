@@ -8,6 +8,8 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { CityForm } from '../../components/Forms/CityForm';
 import { Table } from '../../components/Table/Table';
+import { ROLES } from '../../constants';
+import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 
 const defaultCity = {
     name: '',
@@ -19,8 +21,6 @@ export const Cities = () => {
 
     const [currentCity, setCurrentCity] = useState(defaultCity);
     const [isModalOpened, setIsModalOpened] = useState(false);
-
-    const [errorModal, setErrorModal] = useState(false);
 
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -41,30 +41,33 @@ export const Cities = () => {
     const deleteCity = async (id) => {
         try {
             await CityService.deleteCityById(id);
+            notify(NOTIFY_TYPES.SUCCESS, 'Город успешно удален');
             fetchCities();
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
-            setErrorModal(true);
         }
     }
     const addCity = async (city) => {
         try {
             await CityService.addCity(city);
+            notify(NOTIFY_TYPES.SUCCESS, 'Город успешно добавлен');
             setIsModalOpened(false);
             fetchCities();
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
-            setErrorModal(true);
         }
     }
     const updateCity = async (city) => {
         try {
             await CityService.updateCityById(city);
+            notify(NOTIFY_TYPES.SUCCESS, 'Город успешно изменен');
             setIsModalOpened(false);
             fetchCities();
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
-            setErrorModal(true);
         }
     }
 
@@ -88,7 +91,7 @@ export const Cities = () => {
 
     return (
         <div className='admin-container'>
-            <Navbar role='admin' />
+            <Navbar role={ROLES.ADMIN} />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Города</h1>
 
@@ -107,8 +110,6 @@ export const Cities = () => {
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />
-
-                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{ fontSize: '20px' }}>Произошла ошибка.</p></MyModal>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>

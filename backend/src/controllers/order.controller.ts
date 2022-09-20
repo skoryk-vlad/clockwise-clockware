@@ -2,13 +2,13 @@ import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
 import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema } from './../validationSchemas/order.schema';
 import { sequelize } from './../sequelize';
-import { FindOptions, Model, Op } from 'sequelize';
+import { Model, Op } from 'sequelize';
 import { Master } from './../models/master.model';
-import { Client, CLIENT_STATUSES } from './../models/client.model';
+import { Client, CLIENT_STATUSES, ClientAttributes, ClientCreationAttributes } from './../models/client.model';
 import { City } from './../models/city.model';
 import { Order, ORDER_STATUSES, WatchSizes } from './../models/order.model';
 import { Request, Response } from 'express';
-import { sendConfirmOrderMail } from '../mailer';
+import { sendConfirmationOrderMail } from '../mailer';
 import { v4 as uuidv4 } from 'uuid';
 
 export default class OrderController {
@@ -45,7 +45,7 @@ export default class OrderController {
             if (overlapsOrders.length !== 0) return res.status(400).json("The order overlaps with others. Select another master, date or time");
 
             let user = await User.findOne({ where: { email } });
-            let client: Model<any, any>;
+            let client: Model<ClientAttributes, ClientCreationAttributes>;
             if (!user) {
                 const confirmationToken = uuidv4();
                 user = await User.create({
@@ -60,7 +60,9 @@ export default class OrderController {
                 });
             } else {
                 client = await Client.findOne({ where: { userId: user.getDataValue('id') } });
-                await client.update({ name });
+                if (name !== client.getDataValue('name')) {
+                    await client.update({ name }, { transaction: addOrderTransaction });
+                }
             }
 
             const confirmationToken = uuidv4();
@@ -72,7 +74,7 @@ export default class OrderController {
                 transaction: addOrderTransaction
             });
 
-            await sendConfirmOrderMail(email, confirmationToken, name);
+            await sendConfirmationOrderMail(email, confirmationToken, name);
             await addOrderTransaction.commit();
             return res.status(201).json(order);
         } catch (error) {
@@ -82,50 +84,25 @@ export default class OrderController {
         }
     }
     async getOrders(req: Request, res: Response): Promise<Response> {
-        const { role, id } = req.query;
-        const config: FindOptions = {
-            include:
-                [
-                    {
-                        model: City,
-                        as: 'City'
-                    },
-                    {
-                        model: Master,
-                        as: 'Master'
-                    },
-                    {
-                        model: Client,
-                        as: 'Client'
-                    }
-                ],
-            order: ['id']
-        };
-        if (role && id) {
-            if (role === ROLES.MASTER) {
-                config.where = {
-                    masterId: id
-                };
-                config.attributes = ['id', [sequelize.col('Client.name'), 'client'], [sequelize.col('City.name'), 'city'], 'watchSize', 'date', 'time', 'endTime', 'price', 'status'];
-                config.include = [{
-                    model: City, attributes: []
-                }, {
-                    model: Client, attributes: []
-                }];
-            }
-            if (role === ROLES.CLIENT) {
-                config.where = {
-                    clientId: id
-                };
-                config.attributes = ['id', [sequelize.col('Master.name'), 'master'], 'watchSize', 'date', 'time', 'endTime', 'price', 'status', 'rating'];
-                config.include = [{
-                    model: Master, attributes: []
-                }];
-            }
-        }
-
         try {
-            const orders = await Order.findAll(config);
+            const orders = await Order.findAll({
+                include:
+                    [
+                        {
+                            model: City,
+                            as: 'City'
+                        },
+                        {
+                            model: Master,
+                            as: 'Master'
+                        },
+                        {
+                            model: Client,
+                            as: 'Client'
+                        }
+                    ],
+                order: ['id']
+            });
 
             return res.status(200).json(orders);
         } catch (error) {
@@ -199,7 +176,7 @@ export default class OrderController {
 
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');
-            
+
             const { status } = ChangeStatusSchema.parse(req.body);
             await order.update({ status });
             return res.status(200).json(order);

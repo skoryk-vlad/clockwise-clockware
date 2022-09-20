@@ -11,20 +11,21 @@ export default class AuthController {
         const { email, password }: AuthInfo = req.body;
 
         const user = await User.findOne({ where: { email } });
-        if (!user) return res.status(404).json('User with this email address is not registered');
+        if (!user) return res.status(404).json('Email or password is incorrect');
         
-        if (!user.getDataValue('password')) return res.status(403).json({ name: `User don't have a password`, role: user.getDataValue('role') });
+        if (!user.getDataValue('password')) return res.status(403).json(`User don't have a password`);
 
         if (bcrypt.compareSync(password, user.getDataValue('password'))) {
-            let id = 1;
-            if (user.getDataValue('role') === ROLES.CLIENT) {
+            let id = null;
+            if (user.getDataValue('role') === ROLES.ADMIN) {
+                id = 1;
+            } else if (user.getDataValue('role') === ROLES.CLIENT) {
                 const client = await Client.findOne({ where: { userId: user.getDataValue('id') } });
-                if (client.getDataValue('status') === CLIENT_STATUSES.NOT_CONFIRMED) return res.status(403).json('Email not verified');
+                if (client.getDataValue('status') === CLIENT_STATUSES.NOT_CONFIRMED) return res.status(403).json('Email is not verified');
                 id = client.getDataValue('id');
-            }
-            if (user.getDataValue('role') === ROLES.MASTER) {
+            } else if (user.getDataValue('role') === ROLES.MASTER) {
                 const master = await Master.findOne({ where: { userId: user.getDataValue('id') } });
-                if (master.getDataValue('status') === MASTER_STATUSES.NOT_CONFIRMED) return res.status(403).json('Email not verified');
+                if (master.getDataValue('status') === MASTER_STATUSES.NOT_CONFIRMED) return res.status(403).json('Email is not verified');
                 if (master.getDataValue('status') !== MASTER_STATUSES.APPROVED) return res.status(403).json('Master not yet approved');
                 id = master.getDataValue('id');
             }
@@ -34,6 +35,6 @@ export default class AuthController {
             });
         }
 
-        return res.status(401).json('Email or password incorrect')
+        return res.status(401).json('Email or password is incorrect')
     }
 }

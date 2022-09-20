@@ -6,14 +6,14 @@ import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
-import { MASTER_STATUSES } from '../../constants';
+import { MASTER_STATUSES, MASTER_STATUSES_TRANSLATE } from '../../constants';
 
 const MasterSchema = z.object({
     name: z.string().trim().min(1, { message: 'Требуется имя' })
         .min(3, { message: 'Имя должно быть не короче 3-х букв' }).max(255),
     email: z.string().trim().min(1, { message: 'Требуется почта' }).email({ message: 'Неверный формат почты' }).max(255),
     cities: z.array(z.number().int().positive()).nonempty({ message: 'Требуется выбрать хотя бы 1 город' }),
-    status: z.nativeEnum(Object.keys(MASTER_STATUSES))
+    status: z.nativeEnum(MASTER_STATUSES)
 });
 
 const deleteValueFromArray = (array, value) => {
@@ -123,7 +123,7 @@ export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
                             onChange={onChange}
                             value={value || ''}
                             error={error}
-                            options={Object.keys(MASTER_STATUSES).map(statusKey => ({ value: statusKey, name: MASTER_STATUSES[statusKey] }))}
+                            options={Object.entries(MASTER_STATUSES_TRANSLATE).map(([value, name]) => ({ value, name }))}
                         />
                     )}
                 />

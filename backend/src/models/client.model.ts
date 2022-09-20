@@ -13,7 +13,7 @@ export interface ClientAttributes {
     status: CLIENT_STATUSES;
 }
 
-type ClientCreationAttributes = Optional<ClientAttributes, 'id'>;
+export type ClientCreationAttributes = Optional<ClientAttributes, 'id'>;
 
 export const Client: ModelDefined<ClientAttributes, ClientCreationAttributes> = sequelize.define(
     'Client',

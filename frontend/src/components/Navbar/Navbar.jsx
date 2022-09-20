@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { ROLES } from '../../constants';
 import classes from './Navbar.module.css';
 
 export const Navbar = ({ role }) => {
@@ -13,7 +14,7 @@ export const Navbar = ({ role }) => {
                 <img src="../images/logo.png" alt="" />
                 <p>Clockwise Clockware</p>
             </div>
-            {role === 'admin' &&
+            {role === ROLES.ADMIN &&
                 <div className={classes.navbar__links}>
                     <NavLink className={navData => navData.isActive ? [classes.active, classes.navbar__link].join(' ') : classes.navbar__link} to="/admin/main">Главная</NavLink>
                     <NavLink className={navData => navData.isActive ? [classes.active, classes.navbar__link].join(' ') : classes.navbar__link} to="/admin/cities">Города</NavLink>
@@ -23,13 +24,13 @@ export const Navbar = ({ role }) => {
                     <NavLink onClick={logout} className={classes.navbar__link} to="/">Выйти</NavLink>
                 </div>
             }
-            {role === 'master' &&
+            {role === ROLES.MASTER &&
                 <div className={classes.navbar__links}>
                     <NavLink className={navData => navData.isActive ? [classes.active, classes.navbar__link].join(' ') : classes.navbar__link} to="/master/main">Заказы</NavLink>
                     <NavLink onClick={logout} className={classes.navbar__link} to="/">Выйти</NavLink>
                 </div>
             }
-            {role === 'client' &&
+            {role === ROLES.CLIENT &&
                 <div className={classes.navbar__links}>
                     <NavLink className={navData => navData.isActive ? [classes.active, classes.navbar__link].join(' ') : classes.navbar__link} to="/client/main">Заказы</NavLink>
                     <NavLink onClick={logout} className={classes.navbar__link} to="/">Выйти</NavLink>

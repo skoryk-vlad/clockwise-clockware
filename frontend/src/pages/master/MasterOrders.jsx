@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { OrderService } from '../../API/Server';
+import { MasterService, OrderService } from '../../API/Server';
 import { ChangeStatusMasterForm } from '../../components/Forms/ChangeStatusMasterForm';
 import { Loader } from '../../components/Loader/Loader';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar';
+import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { jwtPayload } from '../../components/PrivateRoute';
 import { Table } from '../../components/Table/Table';
-import { WATCH_SIZES, ORDER_MASTER_STATUSES } from '../../constants';
+import { ORDER_MASTER_STATUSES_TRANSLATE, ROLES, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 
@@ -18,7 +19,7 @@ export const MasterOrders = () => {
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'))
-        const orders = await OrderService.getOrders(payload.role, payload.id);
+        const orders = await MasterService.getMasterOrders(payload.id);
 
         setOrders(orders);
     });
@@ -33,6 +34,7 @@ export const MasterOrders = () => {
             await OrderService.changeStatusById(order.id, order.status);
             fetchOrders();
         }
+        notify(NOTIFY_TYPES.SUCCESS, 'Статус успешно изменен');
         setIsModalOpened(false);
     };
 
@@ -56,12 +58,12 @@ export const MasterOrders = () => {
 
     return (
         <div className='admin-container'>
-            <Navbar role='master' />
+            <Navbar role={ROLES.MASTER} />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Заказы</h1>
 
                 <Table
-                    data={orders.map(order => ({ ...order, watchSize: WATCH_SIZES[order.watchSize], status: ORDER_MASTER_STATUSES[order.status === 'completed' ? 'completed' : 'not completed'] }))}
+                    data={orders.map(order => ({ ...order, watchSize: WATCH_SIZES_TRANSLATE[order.watchSize], status: ORDER_MASTER_STATUSES_TRANSLATE[order.status === 'completed' ? 'completed' : 'not completed'] }))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />

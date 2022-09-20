@@ -5,14 +5,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
-import { CLIENT_STATUSES } from '../../constants';
+import { CLIENT_STATUSES, CLIENT_STATUSES_TRANSLATE } from '../../constants';
 import { MySelect } from '../select/MySelect';
 
 const ClientSchema = z.object({
     name: z.string().trim().min(1, { message: 'Требуется имя' })
         .min(3, { message: 'Имя должно быть не короче 3-х букв' }).max(255),
     email: z.string().trim().min(1, { message: 'Требуется почта' }).email({ message: 'Неверный формат почты' }).max(255),
-    status: z.nativeEnum(Object.keys(CLIENT_STATUSES))
+    status: z.nativeEnum(CLIENT_STATUSES)
 });
 
 export const ClientForm = ({ client, onClick, btnTitle }) => {
@@ -93,7 +93,7 @@ export const ClientForm = ({ client, onClick, btnTitle }) => {
                             onChange={onChange}
                             value={value || ''}
                             error={error}
-                            options={Object.keys(CLIENT_STATUSES).map(statusKey => ({ value: statusKey, name: CLIENT_STATUSES[statusKey] }))}
+                            options={Object.entries(CLIENT_STATUSES_TRANSLATE).map(([value, name]) => ({ value, name }))}
                         />
                     )}
                 />

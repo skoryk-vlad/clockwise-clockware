@@ -4,24 +4,24 @@ import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { ClientPersonalForm } from '../../components/Forms/ClientPersonalForm';
 import { SetRatingForm } from '../../components/Forms/SetRatingForm';
 import { Loader } from '../../components/Loader/Loader';
-import { Message } from '../../components/Message/Message';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar';
+import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { OrderButton } from '../../components/OrderButton/OrderButton';
 import { jwtPayload } from '../../components/PrivateRoute';
 import { Table } from '../../components/Table/Table';
-import { WATCH_SIZES, ORDER_STATUSES } from '../../constants';
+import { WATCH_SIZES, ORDER_STATUSES, ROLES, ORDER_STATUSES_TRANSLATE, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 
 const defaultOrder = {
     masterId: null,
     cityId: null,
-    watchSize: Object.keys(WATCH_SIZES)[0],
+    watchSize: WATCH_SIZES.SMALL,
     date: '',
     time: null,
     rating: 0,
-    status: Object.keys(ORDER_STATUSES)[0]
+    status: ORDER_STATUSES.AWAITING_CONFIRMATION
 };
 
 export const ClientOrders = () => {
@@ -37,11 +37,10 @@ export const ClientOrders = () => {
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
     const [isModalOpened, setIsModalOpened] = useState(false);
-    const [message, setMessage] = useState({ show: false, color: 'green', message: '' });
 
     const [fetchOrders, isLoading, Error] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'))
-        const orders = await OrderService.getOrders(payload.role, payload.id);
+        const orders = await ClientService.getClientOrders(payload.id);
 
         setOrders(orders);
     });
@@ -88,11 +87,12 @@ export const ClientOrders = () => {
             await OrderService.addOrder({ ...order, name: client.name, email: client.email });
             setIsModalOpened(false);
             setIsFormOpened(true);
-            setMessage({ show: true, color: 'green', message: 'Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!' });
+            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!');
             setOrder(defaultOrder);
             setIsFormOpened(true);
             fetchOrders();
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
         }
     }
@@ -103,9 +103,10 @@ export const ClientOrders = () => {
             await OrderService.setOrderRating(orderId, order.rating);
             setIsSetRatingOpened(false);
             setIsModalOpened(false);
-            setMessage({ show: true, color: 'green', message: 'Рейтинг успешно выставлен!' });
+            notify(NOTIFY_TYPES.SUCCESS, 'Рейтинг успешно выставлен!');
             fetchOrders();
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
         }
     }
@@ -128,7 +129,7 @@ export const ClientOrders = () => {
                 if(orders.find(order => order.id === id).status === 'completed') {
                     setOrderId(id); setIsSetRatingOpened(true); setIsModalOpened(true)
                 } else {
-                    setMessage({ show: true, color: 'red', message: 'Заказ еще не выполнен!' });
+                    notify(NOTIFY_TYPES.ERROR, 'Заказ еще не выполнен!');
                 }
             },
             param: `id`
@@ -137,7 +138,7 @@ export const ClientOrders = () => {
 
     return (
         <div className='admin-container'>
-            <Navbar role='client' />
+            <Navbar role={ROLES.CLIENT} />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Заказы</h1>
 
@@ -181,10 +182,9 @@ export const ClientOrders = () => {
                                 </div>
                     }
                 </MyModal>
-                {message.show && <Message setMessage={setMessage} message={message}>Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!</Message>}
-
+                
                 <Table
-                    data={orders.map(order => ({ ...order, watchSize: WATCH_SIZES[order.watchSize], status: ORDER_STATUSES[order.status] }))}
+                    data={orders.map(order => ({ ...order, watchSize: WATCH_SIZES_TRANSLATE[order.watchSize], status: ORDER_STATUSES_TRANSLATE[order.status] }))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />

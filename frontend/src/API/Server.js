@@ -28,7 +28,7 @@ api.interceptors.response.use((response) => {
 
 export class CityService {
     static async getCities() {
-        const { data } = await axios.get(`${API_URL}/api/city`);
+        const { data } = await api.get(`/city`);
         return data;
     }
     static async addCity(newCity) {
@@ -47,15 +47,15 @@ export class CityService {
 
 export class MasterService {
     static async getMasters() {
-        const { data } = await axios.get(`${API_URL}/api/master`);
+        const { data } = await api.get(`/master`);
         return data;
     }
-    static async checkMasterByEmail(email) {
-        const { data } = await api.get(`/master/email/${email}`);
+    static async addMaster(newClient) {
+        const { data } = await api.post(`/master/user`, newClient);
         return data;
     }
-    static async addMaster(newMaster) {
-        const { data } = await api.post(`/master`, newMaster);
+    static async addMasterByAdmin(newClient) {
+        const { data } = await api.post(`/master/admin`, newClient);
         return data;
     }
     static async deleteMasterById(id) {
@@ -67,11 +67,11 @@ export class MasterService {
         return data;
     }
     static async getFreeMasters(cityId, date, time, watchSize) {
-        const { data } = await axios.get(`${API_URL}/api/freemasters?cityId=${cityId}&date=${date}&time=${time}&watchSize=${watchSize}`);
+        const { data } = await api.get(`/freemasters?cityId=${cityId}&date=${date}&time=${time}&watchSize=${watchSize}`);
         return data;
     }
-    static async resetMasterPasswordById(id) {
-        const { data } = await api.post(`/master/reset/${id}`);
+    static async getMasterOrders(id) {
+        const { data } = await api.get(`/master/${id}/orders`);
         return data;
     }
 }
@@ -85,12 +85,12 @@ export class ClientService {
         const { data } = await api.get(`/client/${id}`);
         return data;
     }
-    static async checkClientByEmail(email) {
-        const { data } = await api.get(`/client/email/${email}`);
+    static async addClient(newClient) {
+        const { data } = await api.post(`/client/user`, newClient);
         return data;
     }
-    static async addClient(newClient) {
-        const { data } = await api.post(`/client`, newClient);
+    static async addClientByAdmin(newClient) {
+        const { data } = await api.post(`/client/admin`, newClient);
         return data;
     }
     static async deleteClientById(id) {
@@ -101,17 +101,15 @@ export class ClientService {
         const { data } = await api.put(`/client/${updClient.id}`, updClient);
         return data;
     }
-    static async resetClientPasswordById(id) {
-        const { data } = await api.post(`/client/reset/${id}`);
+    static async getClientOrders(id) {
+        const { data } = await api.get(`/client/${id}/orders`);
         return data;
     }
 }
 
 export class OrderService {
-    static async getOrders(role = null, id = null) {
-        let link = `/order`;
-        if (role && id) link += `?role=${role}&id=${id}`;
-        const { data } = await api.get(link);
+    static async getOrders() {
+        const { data } = await api.get(`/order`);
         return data;
     }
     static async addOrder(newOrder) {
@@ -135,11 +133,25 @@ export class OrderService {
         return data;
     }
 }
+export class UserService {
+    static async resetPassword(email) {
+        const { data } = await api.post(`/user/password/reset/${email}`);
+        return data;
+    }
+    static async createPassword(email) {
+        const { data } = await api.post(`/user/password/create/${email}`);
+        return data;
+    }
+    static async checkUserByEmail(email) {
+        const { data } = await api.get(`/user/email/${email}`);
+        return data;
+    }
+}
 
 export class AuthService {
     static async auth(authInfo) {
         try {
-            const { data } = await axios.post(`${API_URL}/api/auth`, authInfo);
+            const { data } = await api.post(`/auth`, authInfo);
             return data;
         } catch (error) {
             return error;

@@ -8,7 +8,7 @@ const transporter: Transporter = nodemailer.createTransport({
     }
 });
 
-export const sendConfirmOrderMail = async (email: string, confirmationToken: string, name: string): Promise<SentMessageInfo> => {
+export const sendConfirmationOrderMail = async (email: string, confirmationToken: string, name: string): Promise<SentMessageInfo> => {
     const confirmationLink: string = `${process.env.BASE_LINK}/api/confirm/order/${confirmationToken}`;
 
     const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
@@ -38,7 +38,7 @@ export const sendConfirmOrderMail = async (email: string, confirmationToken: str
     });
 };
 
-export const sendConfirmUserMail = async (email: string, password: string, confirmationToken: string, name: string): Promise<SentMessageInfo> => {
+export const sendConfirmationUserMail = async (email: string, password: string, confirmationToken: string, name: string): Promise<SentMessageInfo> => {
     const confirmationLink: string = `${process.env.BASE_LINK}/api/confirm/user/${confirmationToken}`;
 
     const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
@@ -102,7 +102,7 @@ export const sendUserLoginInfoMail = async (email: string, password: string, nam
     });
 };
 
-export const sendApproveMasterMail = async (email: string, name: string): Promise<SentMessageInfo> => {
+export const sendMasterApprovedMail = async (email: string, name: string): Promise<SentMessageInfo> => {
     const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
     <div style="max-width: 600px; background-color: #fff; margin: auto; border: 1px solid lightgray; border-radius: 2px;">
         <div style="overflow: hidden; height: 40px; display: flex; align-items: center; padding: 10px;">

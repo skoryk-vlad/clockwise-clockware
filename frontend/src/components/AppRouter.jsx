@@ -1,25 +1,36 @@
 import React from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { ROLES } from '../constants';
 import { publicRoutes, adminRoutes, clientRoutes, masterRoutes } from '../router/routes';
-import { jwtPayload, PrivateRoute } from './PrivateRoute';
+import { PrivateRoute } from './PrivateRoute';
 
 export const AppRouter = () => {
     return (
         <Routes>
-            {publicRoutes.map(route =>
-                <Route path={route.path} element={route.element} exact={route.exact} key={route.path} />
-            )}
-            {adminRoutes.map(route =>
-                <Route path={route.path} element={<PrivateRoute role="admin">{route.element}</PrivateRoute>} exact={route.exact} key={route.path} />
-            )}
-            {clientRoutes.map(route =>
-                <Route path={route.path} element={<PrivateRoute role="client">{route.element}</PrivateRoute>} exact={route.exact} key={route.path} />
-            )}
-            {masterRoutes.map(route =>
-                <Route path={route.path} element={<PrivateRoute role="master">{route.element}</PrivateRoute>} exact={route.exact} key={route.path} />
-            )}
-            <Route path="*" element={<Navigate replace to="/" />} />
-            <Route path={`/${jwtPayload(localStorage.getItem('token')).role}/*`} element={<Navigate replace to={`/${jwtPayload(localStorage.getItem('token')).role}/main`} />} />
+            <>
+                {publicRoutes.map(route =>
+                    <Route path={route.path} element={route.element} exact={route.exact} key={route.path} />
+                )}
+                <Route path="*" element={<Navigate replace to="/" />} />
+            </>
+            <>
+                {adminRoutes.map(route =>
+                    <Route path={route.path} element={<PrivateRoute role={ROLES.ADMIN}>{route.element}</PrivateRoute>} exact={route.exact} key={route.path} />
+                )}
+                <Route path={`/admin/*`} element={<PrivateRoute role={ROLES.ADMIN}><Navigate replace to={`/admin/main`} /></PrivateRoute>} />
+            </>
+            <>
+                {clientRoutes.map(route =>
+                    <Route path={route.path} element={<PrivateRoute role={ROLES.CLIENT}>{route.element}</PrivateRoute>} exact={route.exact} key={route.path} />
+                )}
+                <Route path={`/client/*`} element={<PrivateRoute role={ROLES.CLIENT}><Navigate replace to={`/client/main`} /></PrivateRoute>} />
+            </>
+            <>
+                {masterRoutes.map(route =>
+                    <Route path={route.path} element={<PrivateRoute role={ROLES.MASTER}>{route.element}</PrivateRoute>} exact={route.exact} key={route.path} />
+                )}
+                <Route path={`/master/*`} element={<PrivateRoute role={ROLES.MASTER}><Navigate replace to={`/master/main`} /></PrivateRoute>} />
+            </>
         </Routes>
     )
 }

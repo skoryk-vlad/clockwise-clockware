@@ -1,14 +1,15 @@
 import { Router } from 'express';
 import CityController from '../controllers/city.controller';
-import { checkOnlyAdmin } from './auth.routes';
+import { ROLES } from '../models/user.model';
+import { isJwtNotExpired, hasRoles } from './auth.routes';
 
 const router: Router = Router();
-const cityController: any = new CityController();
+const cityController: CityController = new CityController();
 
-router.post('/city', checkOnlyAdmin, cityController.addCity);
+router.post('/city', isJwtNotExpired, hasRoles([ROLES.ADMIN]), cityController.addCity);
 router.get('/city', cityController.getCities);
 router.get('/city/:id', cityController.getCityById);
-router.put('/city/:id', checkOnlyAdmin, cityController.updateCity);
-router.delete('/city/:id', checkOnlyAdmin, cityController.deleteCity);
+router.put('/city/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), cityController.updateCity);
+router.delete('/city/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), cityController.deleteCity);
 
 export default router;

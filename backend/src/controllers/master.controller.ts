@@ -1,8 +1,9 @@
-import { sendConfirmUserMail, sendUserLoginInfoMail, sendResetedPasswordMail, sendApproveMasterMail } from './../mailer';
+import { Client } from './../models/client.model';
+import { sendConfirmationUserMail, sendUserLoginInfoMail, sendMasterApprovedMail } from './../mailer';
 import { generatePassword, encryptPassword } from './../password';
 import { User, ROLES } from './../models/user.model';
 import { City } from './../models/city.model';
-import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, checkMasterByEmailSchema } from './../validationSchemas/master.schema';
+import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, AddMasterByAdminSchema } from './../validationSchemas/master.schema';
 import { Order, WatchSizes } from './../models/order.model';
 import { Master, MASTER_STATUSES } from './../models/master.model';
 import { Request, Response } from 'express';
@@ -19,8 +20,48 @@ export default class MasterController {
             const existUser = await User.findOne({ where: { email } });
             if (existUser) return res.status(409).json('User with this email exist');
 
-            const masterPassword = password || generatePassword();
-            const hash = encryptPassword(masterPassword);
+            const hash = encryptPassword(password);
+            const confirmationToken = uuidv4();
+
+            const existCities = await City.findAll({
+                where: { id: cities }
+            });
+            if (existCities.length !== cities.length) return res.status(404).json('Some of the cities does not exist');
+
+            const user = await User.create({
+                email, password: hash, role: ROLES.MASTER, confirmationToken
+            }, {
+                transaction: addMasterTransaction
+            });
+
+            const master = await Master.create({ name, userId: user.getDataValue('id'), status }, {
+                transaction: addMasterTransaction
+            });
+            // @ts-ignore
+            await master.addCities(cities, {
+                transaction: addMasterTransaction
+            });
+
+            await sendConfirmationUserMail(email, password, confirmationToken, name);
+
+            await addMasterTransaction.commit();
+            return res.status(201).json(master);
+        } catch (error) {
+            await addMasterTransaction.rollback();
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
+        }
+    }
+    async addMasterByAdmin(req: Request, res: Response): Promise<Response> {
+        const addMasterTransaction = await sequelize.transaction();
+        try {
+            const { name, email, cities, status } = AddMasterByAdminSchema.parse(req.body);
+
+            const existUser = await User.findOne({ where: { email } });
+            if (existUser) return res.status(409).json('User with this email exist');
+
+            const password = generatePassword();
+            const hash = encryptPassword(password);
             const confirmationToken = uuidv4();
 
             const existCities = await City.findAll({
@@ -43,9 +84,9 @@ export default class MasterController {
             });
 
             if (status === MASTER_STATUSES.NOT_CONFIRMED) {
-                await sendConfirmUserMail(email, masterPassword, confirmationToken, name);
+                await sendConfirmationUserMail(email, password, confirmationToken, name);
             } else if (status === MASTER_STATUSES.CONFIRMED || status === MASTER_STATUSES.APPROVED) {
-                await sendUserLoginInfoMail(email, masterPassword, name);
+                await sendUserLoginInfoMail(email, password, name);
             }
 
             await addMasterTransaction.commit();
@@ -95,18 +136,26 @@ export default class MasterController {
             return res.status(500).json(error);
         }
     }
-    async checkMasterByEmail(req: Request, res: Response): Promise<Response> {
+    async getMasterOrdersById(req: Request, res: Response): Promise<Response> {
         try {
-            const { email } = checkMasterByEmailSchema.parse({ email: req.params.email });
-            
-            const user = await User.findOne({ where: { email } });
-            if(!user) return res.status(200).json(null);
-            const master = await Master.findOne({
+            const { id } = GetMasterSchema.parse({ id: +req.params.id });
+
+            const master = await Master.findByPk(id);
+            if (!master) return res.status(404).json('No such master');
+
+            const orders = await Order.findAll({
                 where: {
-                    userId: user.getDataValue('id')
-                }
+                    masterId: id
+                },
+                attributes: ['id', [sequelize.col('Client.name'), 'client'], [sequelize.col('City.name'), 'city'], 'watchSize', 'date', 'time', 'endTime', 'price', 'status'],
+                include: [{
+                    model: City, attributes: []
+                }, {
+                    model: Client, attributes: []
+                }],
+                order: ['id']
             });
-            return res.status(200).json(master);
+            return res.status(200).json(orders);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
@@ -180,7 +229,7 @@ export default class MasterController {
             await User.update({ email }, { where: { id: master.getDataValue('userId') }, transaction: updateMasterTransaction })
 
             if(master.getDataValue('status') !== MASTER_STATUSES.APPROVED && status === MASTER_STATUSES.APPROVED) {
-                await sendApproveMasterMail(email, name);
+                await sendMasterApprovedMail(email, name);
             }
             
             await master.update({ name, status }, { transaction: updateMasterTransaction });
@@ -217,27 +266,6 @@ export default class MasterController {
             await deleteMasterTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
-        }
-    }
-    async resetPassword(req: Request, res: Response): Promise<Response> {
-        const resetPasswordTransaction = await sequelize.transaction();
-        try {
-            const { id } = GetMasterSchema.parse({ id: +req.params.id });
-            const master = await Master.findByPk(id);
-            if (!master) return res.status(404).json('No such master');
-
-            const masterPassword = generatePassword();
-            const hash = encryptPassword(masterPassword);
-
-            await User.update({ password: hash }, { where: { id: master.getDataValue('userId') }, transaction: resetPasswordTransaction });
-            const user = await User.findOne({ where: { id: master.getDataValue('userId') } });
-            await sendResetedPasswordMail(user.getDataValue('email'), masterPassword, master.getDataValue('name'));
-            await resetPasswordTransaction.commit();
-            return res.status(200).json(master);
-        } catch (error) {
-            await resetPasswordTransaction.rollback();
-            if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json('error');
         }
     }
 }

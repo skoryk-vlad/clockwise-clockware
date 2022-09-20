@@ -1,9 +1,11 @@
+import { Master } from './../models/master.model';
+import { Order } from './../models/order.model';
 import { generatePassword, encryptPassword } from './../password';
-import { sendConfirmUserMail, sendUserLoginInfoMail, sendResetedPasswordMail } from './../mailer';
+import { sendConfirmationUserMail, sendUserLoginInfoMail } from './../mailer';
 import { sequelize } from './../sequelize';
 import { Op } from 'sequelize';
 import { ROLES, User } from './../models/user.model';
-import { AddClientSchema, DeleteClientSchema, GetClientSchema, UpdateClientSchema, checkClientByEmailSchema } from './../validationSchemas/client.schema';
+import { AddClientSchema, DeleteClientSchema, GetClientSchema, UpdateClientSchema, AddClientByAdminSchema } from './../validationSchemas/client.schema';
 import { Client, CLIENT_STATUSES } from './../models/client.model';
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
@@ -17,8 +19,38 @@ export default class ClientController {
             const existUser = await User.findOne({ where: { email } });
             if (existUser) return res.status(409).json('User with this email exist');
 
-            const clientPassword = password || generatePassword();
-            const hash = encryptPassword(clientPassword);
+            const hash = encryptPassword(password);
+            const confirmationToken = uuidv4();
+
+            const user = await User.create({
+                email, password: hash, role: ROLES.CLIENT, confirmationToken
+            }, {
+                transaction: addClientTransaction
+            });
+
+            const client = await Client.create({ name, userId: user.getDataValue('id'), status }, {
+                transaction: addClientTransaction
+            });
+
+            await sendConfirmationUserMail(email, password, confirmationToken, name);
+            await addClientTransaction.commit();
+            return res.status(201).json(client);
+        } catch (error) {
+            await addClientTransaction.rollback();
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.status(500).json(error);
+        }
+    }
+    async addClientByAdmin(req: Request, res: Response): Promise<Response> {
+        const addClientTransaction = await sequelize.transaction();
+        try {
+            const { name, email, status } = AddClientByAdminSchema.parse(req.body);
+
+            const existUser = await User.findOne({ where: { email } });
+            if (existUser) return res.status(409).json('User with this email exist');
+
+            const password = generatePassword();
+            const hash = encryptPassword(password);
             const confirmationToken = uuidv4();
 
             const user = await User.create({
@@ -32,9 +64,9 @@ export default class ClientController {
             });
 
             if (status === CLIENT_STATUSES.NOT_CONFIRMED) {
-                await sendConfirmUserMail(email, clientPassword, confirmationToken, name);
+                await sendConfirmationUserMail(email, password, confirmationToken, name);
             } else if (status === CLIENT_STATUSES.CONFIRMED) {
-                await sendUserLoginInfoMail(email, clientPassword, name);
+                await sendUserLoginInfoMail(email, password, name);
             }
             await addClientTransaction.commit();
             return res.status(201).json(client);
@@ -78,18 +110,24 @@ export default class ClientController {
             return res.status(500).json(error);
         }
     }
-    async checkClientByEmail(req: Request, res: Response): Promise<Response> {
+    async getClientOrdersById(req: Request, res: Response): Promise<Response> {
         try {
-            const { email } = checkClientByEmailSchema.parse({ email: req.params.email });
-            
-            const user = await User.findOne({ where: { email } });
-            if(!user) return res.status(200).json(null);
-            const client = await Client.findOne({
+            const { id } = GetClientSchema.parse({ id: +req.params.id });
+
+            const client = await Client.findByPk(id);
+            if (!client) return res.status(404).json('No such client');
+
+            const orders = await Order.findAll({
                 where: {
-                    userId: user.getDataValue('id')
-                }
+                    clientId: id
+                },
+                attributes: ['id', [sequelize.col('Master.name'), 'master'], 'watchSize', 'date', 'time', 'endTime', 'price', 'status', 'rating'],
+                include: [{
+                    model: Master, attributes: []
+                }],
+                order: ['id']
             });
-            return res.status(200).json(client);
+            return res.status(200).json(orders);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
@@ -108,7 +146,7 @@ export default class ClientController {
             const existUser = await User.findOne({ where: { email, id: { [Op.ne]: client.getDataValue('userId') } } });
             if (existUser) return res.status(409).json('User with this email exist');
 
-            await User.update({ email }, { where: { id: client.getDataValue('userId') }, transaction: updateClientTransaction })
+            await User.update({ email }, { where: { id: client.getDataValue('userId') }, transaction: updateClientTransaction });
 
             await client.update({ name, status }, { transaction: updateClientTransaction });
 
@@ -138,27 +176,6 @@ export default class ClientController {
             await deleteClientTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.status(500).json(error);
-        }
-    }
-    async resetPassword(req: Request, res: Response): Promise<Response> {
-        const resetPasswordTransaction = await sequelize.transaction();
-        try {
-            const { id } = GetClientSchema.parse({ id: +req.params.id });
-            const client = await Client.findByPk(id);
-            if (!client) return res.status(404).json('No such master');
-
-            const clientPassword = generatePassword();
-            const hash = encryptPassword(clientPassword);
-
-            await User.update({ password: hash }, { where: { id: client.getDataValue('userId') }, transaction: resetPasswordTransaction });
-            const user = await User.findOne({ where: { id: client.getDataValue('userId') } });
-            await sendResetedPasswordMail(user.getDataValue('email'), clientPassword, client.getDataValue('name'));
-            await resetPasswordTransaction.commit();
-            return res.status(200).json(client);
-        } catch (error) {
-            await resetPasswordTransaction.rollback();
-            if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json('error');
         }
     }
 }

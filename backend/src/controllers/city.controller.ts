@@ -15,7 +15,7 @@ export default class CityController {
             return res.status(500).json(error);
         }
     }
-    async getCities(req: Request, res: Response, role: ROLES): Promise<Response> {
+    async getCities(req: Request, res: Response): Promise<Response> {
         try {
             const cities = await City.findAll({
                 include: Master,
@@ -47,7 +47,7 @@ export default class CityController {
 
             const { name, price } = UpdateCitySchema.parse(req.body);
 
-            city.update({ name, price })
+            city.update({ name, price });
             return res.status(200).json(city);
         } catch (error) {
             if(error?.name === "ZodError") return res.status(400).json(error.issues);

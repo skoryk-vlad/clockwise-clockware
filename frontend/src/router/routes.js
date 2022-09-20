@@ -6,9 +6,13 @@ import { Masters } from "../pages/admin/Masters";
 import { Orders } from "../pages/admin/Orders";
 import { ClientOrders } from "../pages/client/ClientOrders";
 import { MasterOrders } from "../pages/master/MasterOrders";
+import { MessageFromEmail } from "../pages/MessageFromEmail";
 
 export const publicRoutes = [
     { path: '/', element: <Landing /> },
+    { path: '/message/success', element: <MessageFromEmail>Подтверждение прошло успешно!</MessageFromEmail> },
+    { path: '/message/already-confirmed', element: <MessageFromEmail>Подтверждение уже было произведено!</MessageFromEmail> },
+    { path: '/message/error', element: <MessageFromEmail>Произошла ошибка!</MessageFromEmail> }
 ]
 
 export const adminRoutes = [
