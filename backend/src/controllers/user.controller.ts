@@ -32,7 +32,7 @@ export default class UserController {
             return res.status(200).json(user);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json('error');
+            return res.sendStatus(500);
         }
     }
     async createPassword(req: Request, res: Response): Promise<Response> {
@@ -59,7 +59,7 @@ export default class UserController {
             return res.status(200).json(user);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json('error');
+            return res.sendStatus(500);
         }
     }
     async checkUserByEmail(req: Request, res: Response): Promise<Response> {
@@ -95,7 +95,7 @@ export default class UserController {
             }
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json('error');
+            return res.sendStatus(500);
         }
     }
 }

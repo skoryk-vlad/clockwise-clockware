@@ -38,7 +38,7 @@ export default class ClientController {
         } catch (error) {
             await addClientTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async addClientByAdmin(req: Request, res: Response): Promise<Response> {
@@ -73,7 +73,7 @@ export default class ClientController {
         } catch (error) {
             await addClientTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getClients(req: Request, res: Response): Promise<Response> {
@@ -90,7 +90,7 @@ export default class ClientController {
             });
             return res.status(200).json(clients);
         } catch (error) {
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getClientById(req: Request, res: Response): Promise<Response> {
@@ -107,7 +107,7 @@ export default class ClientController {
             return res.status(200).json(client);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getClientOrdersById(req: Request, res: Response): Promise<Response> {
@@ -130,7 +130,7 @@ export default class ClientController {
             return res.status(200).json(orders);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async updateClient(req: Request, res: Response): Promise<Response> {
@@ -155,7 +155,7 @@ export default class ClientController {
         } catch (error) {
             await updateClientTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async deleteClient(req: Request, res: Response): Promise<Response> {
@@ -175,7 +175,7 @@ export default class ClientController {
         } catch (error) {
             await deleteClientTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
 }

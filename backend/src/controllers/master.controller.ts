@@ -49,7 +49,7 @@ export default class MasterController {
         } catch (error) {
             await addMasterTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async addMasterByAdmin(req: Request, res: Response): Promise<Response> {
@@ -94,7 +94,7 @@ export default class MasterController {
         } catch (error) {
             await addMasterTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getMasters(req: Request, res: Response): Promise<Response> {
@@ -114,7 +114,7 @@ export default class MasterController {
             });
             return res.status(200).json(masters);
         } catch (error) {
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getMasterById(req: Request, res: Response): Promise<Response> {
@@ -133,7 +133,7 @@ export default class MasterController {
             return res.status(200).json(master);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getMasterOrdersById(req: Request, res: Response): Promise<Response> {
@@ -158,7 +158,7 @@ export default class MasterController {
             return res.status(200).json(orders);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async getFreeMasters(req: Request, res: Response): Promise<Response> {
@@ -205,7 +205,7 @@ export default class MasterController {
             return res.status(200).json(freeMasters);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async updateMaster(req: Request, res: Response): Promise<Response> {
@@ -245,7 +245,7 @@ export default class MasterController {
         } catch (error) {
             await updateMasterTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
     async deleteMaster(req: Request, res: Response): Promise<Response> {
@@ -265,7 +265,7 @@ export default class MasterController {
         } catch (error) {
             await deleteMasterTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.status(500).json(error);
+            return res.sendStatus(500);
         }
     }
 }
