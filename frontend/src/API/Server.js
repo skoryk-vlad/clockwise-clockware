@@ -19,16 +19,16 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use((response) => {
     return response;
 }, (error) => {
-    if (error.response.status === 401) {
+    if (error.response.status === 401 && error.response.data === 'Token expired') {
         localStorage.removeItem('token');
-        document.location.assign(`${document.location.origin}/admin/login`);
+        document.location.assign(document.location.origin);
     }
     return Promise.reject(error.message);
 });
 
 export class CityService {
     static async getCities() {
-        const { data } = await axios.get(`${API_URL}/api/city`);
+        const { data } = await api.get(`/city`);
         return data;
     }
     static async addCity(newCity) {
@@ -47,11 +47,15 @@ export class CityService {
 
 export class MasterService {
     static async getMasters() {
-        const { data } = await axios.get(`${API_URL}/api/master`);
+        const { data } = await api.get(`/master`);
         return data;
     }
-    static async addMaster(newMaster) {
-        const { data } = await api.post(`/master`, newMaster);
+    static async addMaster(newClient) {
+        const { data } = await api.post(`/master/user`, newClient);
+        return data;
+    }
+    static async addMasterByAdmin(newClient) {
+        const { data } = await api.post(`/master/admin`, newClient);
         return data;
     }
     static async deleteMasterById(id) {
@@ -63,7 +67,11 @@ export class MasterService {
         return data;
     }
     static async getFreeMasters(cityId, date, time, watchSize) {
-        const { data } = await axios.get(`${API_URL}/api/freemasters?cityId=${cityId}&date=${date}&time=${time}&watchSize=${watchSize}`);
+        const { data } = await api.get(`/freemasters?cityId=${cityId}&date=${date}&time=${time}&watchSize=${watchSize}`);
+        return data;
+    }
+    static async getMasterOrders(id) {
+        const { data } = await api.get(`/master/${id}/orders`);
         return data;
     }
 }
@@ -73,8 +81,16 @@ export class ClientService {
         const { data } = await api.get(`/client`);
         return data;
     }
+    static async getClientById(id) {
+        const { data } = await api.get(`/client/${id}`);
+        return data;
+    }
     static async addClient(newClient) {
-        const { data } = await api.post(`/client`, newClient);
+        const { data } = await api.post(`/client/user`, newClient);
+        return data;
+    }
+    static async addClientByAdmin(newClient) {
+        const { data } = await api.post(`/client/admin`, newClient);
         return data;
     }
     static async deleteClientById(id) {
@@ -83,6 +99,10 @@ export class ClientService {
     }
     static async updateClientById(updClient) {
         const { data } = await api.put(`/client/${updClient.id}`, updClient);
+        return data;
+    }
+    static async getClientOrders(id) {
+        const { data } = await api.get(`/client/${id}/orders`);
         return data;
     }
 }
@@ -104,8 +124,26 @@ export class OrderService {
         const { data } = await api.put(`/order/${updOrder.id}`, updOrder);
         return data;
     }
-    static async changeStatusById(id, status, rating) {
-        const { data } = await api.post(`/order/status`, { id, status, rating });
+    static async changeStatusById(id, status) {
+        const { data } = await api.post(`/order/status/${id}`, { status });
+        return data;
+    }
+    static async setOrderRating(id, rating) {
+        const { data } = await api.post(`/order/rating/${id}`, { rating });
+        return data;
+    }
+}
+export class UserService {
+    static async resetPassword(email) {
+        const { data } = await api.post(`/user/password/reset/${email}`);
+        return data;
+    }
+    static async createPassword(email) {
+        const { data } = await api.post(`/user/password/create/${email}`);
+        return data;
+    }
+    static async checkUserByEmail(email) {
+        const { data } = await api.get(`/user/email/${email}`);
         return data;
     }
 }
@@ -113,15 +151,10 @@ export class OrderService {
 export class AuthService {
     static async auth(authInfo) {
         try {
-            const { data } = await axios.post(`${API_URL}/api/auth`, authInfo);
+            const { data } = await api.post(`/auth`, authInfo);
             return data;
         } catch (error) {
             return error;
         }
-    }
-
-    static async checkAuth() {
-        const { data } = await api.get(`/admin`);
-        return data;
     }
 }

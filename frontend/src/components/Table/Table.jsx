@@ -3,7 +3,7 @@ import classes from './Table.module.css';
 
 const getDeepObject = (obj, parts) => {
     let current = parts[0];
-    if(!obj[current] || parts.length < 1) {
+    if (!obj[current] || parts.length < 1) {
         return obj;
     }
     obj = obj[current];
@@ -17,7 +17,7 @@ const getProperty = (obj, prop) => {
 
     if (Array.isArray(parts)) {
         const last = parts.length > 1 ? parts.pop() : parts;
-        
+
         obj = getDeepObject(obj, parts);
 
         if (typeof obj === "object" && obj !== null) {
@@ -46,9 +46,12 @@ export const Table = ({ data, tableHeaders, tableBodies }) => {
                             typeof body === "string" ? (
                                 <td key={body}>{getProperty(data, body)}</td>
                             ) : (
-                                <td key={body.name} className={classes.adminBody__link}>
-                                    <span onClick={() => body.callback(getProperty(data, body.param))} >{body.name}</span>
-                                </td>
+                                body.mixed && getProperty(data, body?.field) ?
+                                    <td key={body}>{getProperty(data, body.field)}</td>
+                                    :
+                                    <td key={body.name} className={classes.adminBody__link}>
+                                        <span onClick={() => body.callback(getProperty(data, body.param))} >{body.name}</span>
+                                    </td>
                             )
                         )}
                     </tr>

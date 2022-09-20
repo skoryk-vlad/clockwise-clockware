@@ -1,15 +1,17 @@
+import { ROLES } from './../models/user.model';
 import { Router } from 'express';
 import OrderController from '../controllers/order.controller';
-import { authJWT } from './auth.routes';
+import { isJwtNotExpired, hasRoles } from './auth.routes';
 
 const router: Router = Router();
-const orderController: any = new OrderController();
+const orderController: OrderController = new OrderController();
 
 router.post('/order', orderController.addOrder);
-router.post('/order/status', authJWT, orderController.changeStatus);
-router.get('/order', authJWT, orderController.getOrders);
-router.get('/order/:id', authJWT, orderController.getOrderById);
-router.put('/order/:id', authJWT, orderController.updateOrder);
-router.delete('/order/:id', authJWT, orderController.deleteOrder);
+router.post('/order/status/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN, ROLES.MASTER]), orderController.changeStatus);
+router.post('/order/rating/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN, ROLES.CLIENT]), orderController.setRating);
+router.get('/order', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getOrders);
+router.get('/order/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getOrderById);
+router.put('/order/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.updateOrder);
+router.delete('/order/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.deleteOrder);
 
 export default router;

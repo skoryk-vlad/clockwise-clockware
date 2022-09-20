@@ -5,18 +5,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
+import { CLIENT_STATUSES, CLIENT_STATUSES_TRANSLATE } from '../../constants';
+import { MySelect } from '../select/MySelect';
 
 const ClientSchema = z.object({
-    name: z.string().trim().min(1, {
-        message: 'Требуется имя'
-    }).min(3, {
-        message: 'Имя должно быть не короче 3-х букв'
-    }).max(255),
-    email: z.string().trim().min(1, {
-        message: 'Требуется почта'
-    }).email({
-        message: 'Неверный формат почты'
-    }).max(255)
+    name: z.string().trim().min(1, { message: 'Требуется имя' })
+        .min(3, { message: 'Имя должно быть не короче 3-х букв' }).max(255),
+    email: z.string().trim().min(1, { message: 'Требуется почта' }).email({ message: 'Неверный формат почты' }).max(255),
+    status: z.nativeEnum(CLIENT_STATUSES)
 });
 
 export const ClientForm = ({ client, onClick, btnTitle }) => {
@@ -74,6 +70,30 @@ export const ClientForm = ({ client, onClick, btnTitle }) => {
                             value={value}
                             error={error}
                             placeholder="Почта клиента..."
+                        />
+                    )}
+                />
+            </div>
+            <div className={classes.formRow}>
+                <div className={classes.rowTop}>
+                    <label htmlFor="status">Статус</label>
+                    {errors.status && (
+                        <div className={classes.errorMessage}>{errors.status.message}</div>
+                    )}
+                </div>
+                <Controller
+                    control={control}
+                    name="status"
+                    render={({
+                        field: { onChange, value, name },
+                        fieldState: { error }
+                    }) => (
+                        <MySelect
+                            name={name}
+                            onChange={onChange}
+                            value={value || ''}
+                            error={error}
+                            options={Object.entries(CLIENT_STATUSES_TRANSLATE).map(([value, name]) => ({ value, name }))}
                         />
                     )}
                 />

@@ -1,3 +1,4 @@
+import { ROLES } from './../models/user.model';
 import { Master } from './../models/master.model';
 import { AddCitySchema, DeleteCitySchema, GetCitySchema, UpdateCitySchema } from './../validationSchemas/city.schema';
 import { City } from './../models/city.model';
@@ -46,7 +47,7 @@ export default class CityController {
 
             const { name, price } = UpdateCitySchema.parse(req.body);
 
-            city.update({ name, price })
+            city.update({ name, price });
             return res.status(200).json(city);
         } catch (error) {
             if(error?.name === "ZodError") return res.status(400).json(error.issues);

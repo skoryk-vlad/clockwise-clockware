@@ -3,13 +3,13 @@ import { CityService, ClientService, MasterService, OrderService } from '../../A
 import { ChangeStatusForm } from '../../components/Forms/ChangeStatusForm';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar'
+import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { Table } from '../../components/Table/Table';
-import { STATUSES, WATCH_SIZES } from '../../constants.ts';
+import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE, ROLES, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 
 const defaultOrder = {
-    rating: 0,
     status: ''
 };
 
@@ -29,7 +29,7 @@ export const Admin = () => {
 
         setOrdersCount(orders.length);
 
-        setOrders(orders.filter(order => order.status === Object.keys(STATUSES)[0] || order.status === Object.keys(STATUSES)[1]));
+        setOrders(orders.filter(order => order.status === ORDER_STATUSES.AWAITING_CONFIRMATION || order.status === ORDER_STATUSES.CONFIRMED));
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -53,9 +53,15 @@ export const Admin = () => {
     }, [isModalOpened]);
 
     const changeStatus = async (order) => {
-        await OrderService.changeStatusById(order.id, order.status, order.rating);
-        setIsModalOpened(false);
-        fetchOrders();
+        try {
+            await OrderService.changeStatusById(order.id, order.status);
+            setIsModalOpened(false);
+            notify(NOTIFY_TYPES.SUCCESS, 'Статус успешно изменен');
+            fetchOrders();
+        } catch(error) {
+            notify(NOTIFY_TYPES.ERROR);
+            console.log(error.response.data);
+        }
     };
 
     const tableHeaders = ["id", "Размер часов", "Дата", "Время", "Рейтинг", "Город", "Клиент", "Мастер", "Статус", "Изменение"];
@@ -79,7 +85,7 @@ export const Admin = () => {
 
     return (
         <div className='admin-container'>
-            <Navbar />
+            <Navbar role={ROLES.ADMIN} />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Главная</h1>
                 <div className='admin-main'>
@@ -107,7 +113,7 @@ export const Admin = () => {
                     </div>
                     <h2 className='admin-main__title'>Активные заказы</h2>
                     <Table
-                        data={orders.map(order => ({...order, status: STATUSES[order.status], watchSize: WATCH_SIZES[order.watchSize]}))}
+                        data={orders.map(order => ({...order, status: ORDER_STATUSES_TRANSLATE[order.status], watchSize: WATCH_SIZES_TRANSLATE[order.watchSize]}))}
                         tableHeaders={tableHeaders}
                         tableBodies={tableBodies}
                     />

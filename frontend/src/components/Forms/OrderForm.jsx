@@ -7,19 +7,19 @@ import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
-import { STATUSES, WATCH_SIZES } from '../../constants.ts';
+import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE, WATCH_SIZES } from '../../constants';
 
 const OrderSchema = z.object({
-    watchSize: z.nativeEnum(Object.keys(WATCH_SIZES)),
+    watchSize: z.nativeEnum(WATCH_SIZES),
     date: z.string().regex(/([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))/, 'Требуется выбрать дату'),
     time: z.number({ invalid_type_error: 'Требуется выбрать время' }).int().min(10).max(18),
     rating: z.number({ invalid_type_error: 'Рейтинг должен быть числом' }).int().min(0, 'Рейтинг должен находиться в диапазоне 0-5').max(5, 'Рейтинг должен находиться в диапазоне 0-5'),
     clientId: z.number({ invalid_type_error: 'Требуется выбрать клиента' }).int().positive(),
     masterId: z.number({ invalid_type_error: 'Требуется выбрать мастера' }).int().positive(),
     cityId: z.number({ invalid_type_error: 'Требуется выбрать город' }).int().positive(),
-    status: z.nativeEnum(Object.keys(STATUSES))
+    status: z.nativeEnum(ORDER_STATUSES)
 }).superRefine((order, ctx) => {
-    if (!(order.time + Object.keys(WATCH_SIZES).indexOf(order.watchSize) + 1 < 20)) {
+    if (!(order.time + Object.values(WATCH_SIZES).indexOf(order.watchSize) + 1 < 20)) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['time'],
@@ -133,8 +133,8 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                         <NumPicker
                             name={name}
                             from='1' to='3'
-                            onClick={(event) => onChange(Object.keys(WATCH_SIZES)[+event.target.dataset.num - 1])}
-                            value={Object.keys(WATCH_SIZES).indexOf(value) + 1}
+                            onClick={(event) => onChange(Object.values(WATCH_SIZES)[+event.target.dataset.num - 1])}
+                            value={Object.values(WATCH_SIZES).indexOf(value) + 1}
                             error={error}
                         />
                     )}
@@ -179,7 +179,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     }) => (
                         <NumPicker
                             name={name}
-                            from='10' to='18' count={Object.keys(WATCH_SIZES).indexOf(watch("watchSize")) + 1}
+                            from='10' to='18' count={Object.values(WATCH_SIZES).indexOf(watch("watchSize")) + 1}
                             onClick={(event) => onChange(+event.target.dataset.num)}
                             value={value}
                             error={error}
@@ -230,7 +230,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                             onChange={onChange}
                             value={value || ''}
                             error={error}
-                            options={Object.keys(STATUSES).map(statusKey => ({ value: statusKey, name: STATUSES[statusKey] }))}
+                            options={Object.entries(ORDER_STATUSES_TRANSLATE).map(([value, name]) => ({ value, name }))}
                         />
                     )}
                 />

@@ -1,4 +1,9 @@
+import { ROLES } from './models/user.model';
 export type AuthInfo = {
-    login: string,
+    email: string,
     password: string
+}
+export interface JWTUserPayload {
+    id: number;
+    role: ROLES
 }

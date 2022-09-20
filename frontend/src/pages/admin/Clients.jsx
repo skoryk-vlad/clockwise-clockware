@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ClientService } from '../../API/Server';
+import { ClientService, UserService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -8,10 +8,14 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { ClientForm } from '../../components/Forms/ClientForm';
 import { Table } from '../../components/Table/Table';
+import { CLIENT_STATUSES, CLIENT_STATUSES_TRANSLATE, ROLES } from '../../constants';
+import { ConfirmationModal } from '../../components/ConfirmationModal/ConfirmationModal';
+import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 
 const defaultClient = {
     name: '',
-    email: ''
+    email: '',
+    status: CLIENT_STATUSES.CONFIRMED
 };
 
 export const Clients = () => {
@@ -20,7 +24,7 @@ export const Clients = () => {
     const [currentClient, setCurrentClient] = useState(defaultClient);
     const [isModalOpened, setIsModalOpened] = useState(false);
 
-    const [errorModal, setErrorModal] = useState(false);
+    const [clientEmailToReset, setClientEmailToReset] = useState(null);
 
     const [fetchClients, isClientsLoading, Error] = useFetching(async () => {
         const clients = await ClientService.getClients();
@@ -34,46 +38,62 @@ export const Clients = () => {
     }, []);
 
     useEffect(() => {
-        if (!isModalOpened)
+        if (!isModalOpened) {
             setCurrentClient(null);
+            setClientEmailToReset(null);
+        }
     }, [isModalOpened]);
 
     const deleteClient = async (id) => {
         try {
             await ClientService.deleteClientById(id);
+            notify(NOTIFY_TYPES.SUCCESS, 'Клиент успешно удален');
             fetchClients();
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
-            setErrorModal(true);
+        }
+    }
+    const resetClientPassword = async (email) => {
+        try {
+            await UserService.resetPassword(email);
+            notify(NOTIFY_TYPES.SUCCESS, 'Пароль успешно сброшен');
+            setIsModalOpened(false);
+        } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
+            console.log(error.response.data);
         }
     }
     const addClient = async (client) => {
         try {
-            await ClientService.addClient(client);
+            await ClientService.addClientByAdmin(client);
+            notify(NOTIFY_TYPES.SUCCESS, 'Клиент успешно добавлен');
             setIsModalOpened(false);
             fetchClients();
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
-            setErrorModal(true);
         }
     }
     const updateClient = async (client) => {
         try {
             await ClientService.updateClientById(client);
+            notify(NOTIFY_TYPES.SUCCESS, 'Клиент успешно изменен');
             setIsModalOpened(false);
             fetchClients();
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
-            setErrorModal(true);
         }
     }
 
-    const tableHeaders = ["id", "Имя", "Почта", "Изменение", "Удаление"];
+    const tableHeaders = ["id", "Имя", "Почта", "Статус", "Изменение", "Удаление", "Сброс пароля"];
 
     const tableBodies = [
         `id`,
         `name`,
         `email`,
+        `status`,
         {
             name: `Изменить`,
             callback: id => { setIsModalOpened(true); setCurrentClient(clients.find(client => client.id === id)) },
@@ -83,12 +103,17 @@ export const Clients = () => {
             name: `Удалить`,
             callback: deleteClient,
             param: `id`
+        },
+        {
+            name: `Сбросить`,
+            callback: email => { setIsModalOpened(true); setClientEmailToReset(email) },
+            param: `email`
         }
     ];
 
     return (
         <div className='admin-container'>
-            <Navbar />
+            <Navbar role={ROLES.ADMIN} />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Клиенты</h1>
 
@@ -100,15 +125,14 @@ export const Clients = () => {
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
                     {currentClient && <ClientForm client={currentClient} onClick={currentClient.id ? updateClient : addClient} btnTitle={currentClient.id ? 'Изменить' : 'Добавить'}></ClientForm>}
+                    {clientEmailToReset && <ConfirmationModal text='Вы уверены, что хотите сбросить пароль пользователя?' onAccept={() => resetClientPassword(clientEmailToReset)} onReject={() => setIsModalOpened(false)} />}
                 </MyModal>
 
                 <Table
-                    data={clients}
+                    data={clients.map(order => ({ ...order, status: CLIENT_STATUSES_TRANSLATE[order.status] }))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />
-
-                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{ fontSize: '20px' }}>Произошла ошибка.</p></MyModal>
 
                 {isClientsLoading &&
                     <Loader />

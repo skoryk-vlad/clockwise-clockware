@@ -6,46 +6,34 @@ import { Main } from '../components/Landing/Main/Main';
 import { Footer } from '../components/Landing/Footer/Footer';
 import { TopButton } from '../components/Landing/TopButton/TopButton';
 import { OrderModal } from '../components/OrderModal';
+import { AuthorizationModal } from '../components/AuthorizationModal';
 
 export const Landing = () => {
     const [isOrderModalOpened, setIsOrderModalOpened] = useState(false);
-    const [isConfirmModalOpened, setIsConfirmModalOpened] = useState(false);
-    const [confirmModalText, setConfirmModalText] = useState(false);
+    const [isAuthorizationModalOpened, setIsAuthorizationModalOpened] = useState(false);
+    const [isRegistration, setIsRegistration] = useState(true);
+    const [needRedirect, setNeedRedirect] = useState(true);
 
     useEffect(() => {
         document.title = "Ремонт напольных часов - Clockwise Clockware";
-
-        if(document.location.search) {
-            const state = document.location.search.slice(1, document.location.search.length);
-            if(state === 'success') {
-                setConfirmModalText('Заказ успешно подтвержден!');
-                setIsConfirmModalOpened(true);
-            } else if(state === 'error') {
-                setConfirmModalText('Произошла ошибка!');
-                setIsConfirmModalOpened(true);
-            } else if(state === 'expired') {
-                setConfirmModalText('Истек срок подтверждения заказа!');
-                setIsConfirmModalOpened(true);
-            } else if(state === 'confirmed') {
-                setConfirmModalText('Заказ уже был подтвержден!');
-                setIsConfirmModalOpened(true);
-            }
-        }
     }, []);
 
     return (
         <div className="wrapper">
-            <Header onClick={() => setIsOrderModalOpened(true)} />
+            <Header register={() => { setIsAuthorizationModalOpened(true); setIsRegistration(true) }}
+                login={() => { setIsAuthorizationModalOpened(true); setIsRegistration(false) }} />
             <Main onClick={() => setIsOrderModalOpened(true)} />
             <Footer />
             <TopButton />
             
             <MyModal visible={isOrderModalOpened} setVisible={setIsOrderModalOpened}>
-                <OrderModal/>
+                <OrderModal setIsOrderModalOpened={setIsOrderModalOpened}
+                    login={() => { setIsAuthorizationModalOpened(true); setIsRegistration(false); setNeedRedirect(false) }}
+                    register={() => { setIsAuthorizationModalOpened(true); setIsRegistration(true) }} />
             </MyModal>
 
-            <MyModal visible={isConfirmModalOpened} setVisible={setIsConfirmModalOpened}>
-                <div className='modalMessage'>{confirmModalText}</div>
+            <MyModal visible={isAuthorizationModalOpened} setVisible={setIsAuthorizationModalOpened}>
+                <AuthorizationModal isRegistration={isRegistration} needRedirect={needRedirect} setIsAuthorizationModalOpened={setIsAuthorizationModalOpened} />
             </MyModal>
         </div>
     );

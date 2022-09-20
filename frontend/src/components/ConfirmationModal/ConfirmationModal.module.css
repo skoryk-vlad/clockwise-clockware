@@ -1,0 +1,24 @@
+.confirmWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.confirmWrapper h3 {
+    font-size: 25px;
+    margin: 0px 0px 20px 0px;
+    text-align: center;
+}
+.confirmButtons {
+    width: 350px;
+    display: flex;
+    justify-content: space-between;
+}
+.confirmButtons button {
+    width: 150px;
+}
+.confirmButtons button:first-of-type:hover {
+    background-color: rgb(194, 241, 194);
+}
+.confirmButtons button:last-of-type:hover {
+    background-color: rgb(242, 189, 189);
+}

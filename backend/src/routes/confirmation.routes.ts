@@ -2,8 +2,9 @@ import { Router } from 'express';
 import ConfirmationController from '../controllers/confirmation.controller';
 
 const router: Router = Router();
-const confirmationController: any = new ConfirmationController();
+const confirmationController: ConfirmationController = new ConfirmationController();
 
-router.get('/confirmation/:confirmationToken', confirmationController.confirmOrder);
+router.get('/confirm/order/:confirmationToken', confirmationController.confirmOrder);
+router.get('/confirm/user/:confirmationToken', confirmationController.confirmUser);
 
 export default router;

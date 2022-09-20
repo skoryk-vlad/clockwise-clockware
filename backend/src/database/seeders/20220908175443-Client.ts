@@ -7,14 +7,14 @@ module.exports = {
       {
         id: 1,
         name: 'Владислав',
-        email: 'vladyslav123@gmail.com',
+        userId: 4,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         id: 2,
         name: 'Арсений',
-        email: 'arseniy456@gmail.com',
+        userId: 5,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

@@ -1,12 +1,12 @@
 .topBtn {
-    border: 3px solid #373737;
+    border: 2px solid #373737;
     background-color: #eee;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    left: 20px;
     cursor: pointer;
     transition: .3s ease;
 }

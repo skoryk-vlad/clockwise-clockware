@@ -3,7 +3,7 @@ import { OrderButton } from '../../OrderButton/OrderButton';
 import classes from './Header.module.css';
 import { animateScroll as scroll, Link } from "react-scroll";
 
-export const Header = ({ onClick }) => {
+export const Header = ({ register, login }) => {
     return (
         <header className={classes.header}>
             <div className={classes.header__container + ' container'}>
@@ -32,7 +32,8 @@ export const Header = ({ onClick }) => {
                     </ul>
                 </nav>
                 <div className={classes.header__block}>
-                    <OrderButton onClick={onClick}>Заказать</OrderButton>
+                    <OrderButton onClick={register}>Регистрация</OrderButton>
+                    <OrderButton onClick={login}>Вход</OrderButton>
                 </div>
             </div>
         </header>

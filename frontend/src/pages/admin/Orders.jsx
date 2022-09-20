@@ -8,17 +8,18 @@ import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { OrderForm } from '../../components/Forms/OrderForm';
 import { Table } from '../../components/Table/Table';
-import { STATUSES, WATCH_SIZES } from '../../constants.ts';
+import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE, ROLES, WATCH_SIZES, WATCH_SIZES_TRANSLATE } from '../../constants';
+import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 
 const defaultOrder = {
     clientId: null,
     masterId: null,
     cityId: null,
-    watchSize: Object.keys(WATCH_SIZES)[0],
+    watchSize: WATCH_SIZES.SMALL,
     date: '',
     time: null,
     rating: 0,
-    status: Object.keys(STATUSES)[0]
+    status: ORDER_STATUSES.AWAITING_CONFIRMATION
 };
 
 export const Orders = () => {
@@ -28,8 +29,6 @@ export const Orders = () => {
 
     const [currentOrder, setCurrentOrder] = useState(defaultOrder);
     const [isModalOpened, setIsModalOpened] = useState(false);
-
-    const [errorModal, setErrorModal] = useState(false);
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
         let orders = await OrderService.getOrders();
@@ -57,32 +56,35 @@ export const Orders = () => {
     const deleteOrder = async (id) => {
         try {
             await OrderService.deleteOrderById(id);
+            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно удален');
             fetchOrders();
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
-            setErrorModal(true);
         }
     }
     const addOrder = async (order) => {
         try {
             const client = clients.find(client => client.id === order.clientId);
             await OrderService.addOrder({ ...order, name: client.name, email: client.email });
+            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно добавлен');
             setIsModalOpened(false);
             fetchOrders();
             return true;
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
-            setErrorModal(true);
         }
     }
     const updateOrder = async (order) => {
         try {
             await OrderService.updateOrderById(order);
+            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно изменен');
             setIsModalOpened(false);
             fetchOrders();
         } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
-            setErrorModal(true);
         }
     }
 
@@ -113,7 +115,7 @@ export const Orders = () => {
 
     return (
         <div className='admin-container'>
-            <Navbar />
+            <Navbar role={ROLES.ADMIN} />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Заказы</h1>
 
@@ -129,12 +131,10 @@ export const Orders = () => {
                 </MyModal>
 
                 <Table
-                    data={orders.map(order => ({...order, status: STATUSES[order.status], watchSize: WATCH_SIZES[order.watchSize]}))}
+                    data={orders.map(order => ({...order, status: ORDER_STATUSES_TRANSLATE[order.status], watchSize: WATCH_SIZES_TRANSLATE[order.watchSize]}))}
                     tableHeaders={tableHeaders}
                     tableBodies={tableBodies}
                 />
-
-                <MyModal visible={errorModal} setVisible={setErrorModal}><p style={{ fontSize: '20px' }}>Произошла ошибка.</p></MyModal>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка {Error}</h2>
