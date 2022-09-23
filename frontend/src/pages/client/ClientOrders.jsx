@@ -9,6 +9,7 @@ import { Navbar } from '../../components/Navbar/Navbar';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { OrderButton } from '../../components/OrderButton/OrderButton';
 import { jwtPayload } from '../../components/PrivateRoute';
+import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
 import { Table } from '../../components/Table/Table';
 import { WATCH_SIZES, ORDER_STATUSES, ROLES, ORDER_STATUSES_TRANSLATE, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
@@ -24,6 +25,25 @@ const defaultOrder = {
     status: ORDER_STATUSES.AWAITING_CONFIRMATION
 };
 
+const defaultPagination = {
+    page: 1,
+    limit: 10
+};
+const defaultSortByField = {
+    value: 'date',
+    isDirectedASC: false
+};
+const tableHeaders = [
+    { value: 'master', title: 'Мастер', sortable: true },
+    { value: 'watchSize', title: 'Размер часов', sortable: true },
+    { value: 'date', title: 'Дата', sortable: true },
+    { value: 'time', title: 'Время начала', sortable: true },
+    { value: 'endTime', title: 'Время конца', sortable: true },
+    { value: 'price', title: 'Цена', sortable: true },
+    { value: 'status', title: 'Статус', sortable: true },
+    { value: 'rating', title: 'Рейтинг', sortable: true }
+];
+
 export const ClientOrders = () => {
     const [isFormOpened, setIsFormOpened] = useState(true);
     const [freeMasters, setFreeMasters] = useState([]);
@@ -33,16 +53,20 @@ export const ClientOrders = () => {
     const [orderId, setOrderId] = useState(null);
     const [isSetRatingOpened, setIsSetRatingOpened] = useState(false);
 
+    const [pagination, setPagination] = useState(defaultPagination);
+    const [totalPages, setTotalPages] = useState(0);
+    const [sortByField, setSortByField] = useState(defaultSortByField);
+
     const [client, setClient] = useState({});
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
     const [isModalOpened, setIsModalOpened] = useState(false);
 
     const [fetchOrders, isLoading, Error] = useFetching(async () => {
-        const payload = jwtPayload(localStorage.getItem('token'))
-        const orders = await ClientService.getClientOrders(payload.id);
-
-        setOrders(orders);
+        const payload = jwtPayload(localStorage.getItem('token'));
+        const orders = await ClientService.getClientOrders(payload.id, pagination);
+        setTotalPages(Math.ceil(orders.count / pagination.limit));
+        sortByColumn(orders.rows, sortByField.value, sortByField.isDirectedASC, setOrders);
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'));
@@ -50,7 +74,7 @@ export const ClientOrders = () => {
         const cities = await CityService.getCities();
 
         setClient(client);
-        setCities(cities);
+        setCities(cities.rows);
     });
 
     const chooseMaster = (event) => {
@@ -76,6 +100,11 @@ export const ClientOrders = () => {
         fetchAdditionalData();
         fetchOrders();
     }, []);
+
+    useEffect(() => {
+        fetchOrders();
+    }, [pagination]);
+
     useEffect(() => {
         if (isModalOpened === false) {
             setIsSetRatingOpened(false);
@@ -110,31 +139,6 @@ export const ClientOrders = () => {
             console.log(error.response.data);
         }
     }
-
-    const tableHeaders = ["Мастер", "Размер часов", "Дата", "Время начала", "Время конца", "Цена", "Статус", "Рейтинг"];
-
-    const tableBodies = [
-        `master`,
-        `watchSize`,
-        `date`,
-        `time`,
-        `endTime`,
-        `price`,
-        `status`,
-        {
-            mixed: true,
-            field: `rating`,
-            name: `Выставить`,
-            callback: id => {
-                if(orders.find(order => order.id === id).status === 'completed') {
-                    setOrderId(id); setIsSetRatingOpened(true); setIsModalOpened(true)
-                } else {
-                    notify(NOTIFY_TYPES.ERROR, 'Заказ еще не выполнен!');
-                }
-            },
-            param: `id`
-        }
-    ];
 
     return (
         <div className='admin-container'>
@@ -182,12 +186,40 @@ export const ClientOrders = () => {
                                 </div>
                     }
                 </MyModal>
-                
-                <Table
-                    data={orders.map(order => ({ ...order, watchSize: WATCH_SIZES_TRANSLATE[order.watchSize], status: ORDER_STATUSES_TRANSLATE[order.status] }))}
-                    tableHeaders={tableHeaders}
-                    tableBodies={tableBodies}
-                />
+
+                <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}
+                    changePage={changeTo => (changeTo > 0 && changeTo <= totalPages) && setPagination({ ...pagination, page: changeTo })}
+                    currentPage={pagination.page} totalPages={totalPages}>
+                    <thead>
+                        <tr>
+                            {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
+                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
+                                    sortByColumn(orders, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setOrders);
+                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
+                                })}
+                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {orders.map(order => <tr key={order.id}>
+                            <td>{order.master}</td>
+                            <td>{WATCH_SIZES_TRANSLATE[order.watchSize]}</td>
+                            <td>{order.date}</td>
+                            <td>{order.time}</td>
+                            <td>{order.endTime}</td>
+                            <td>{order.price}</td>
+                            <td>{ORDER_STATUSES_TRANSLATE[order.status]}</td>
+                            <td className='tableLink' onClick={!order.rating ? () => {
+                                if (orders.find(orderToFind => orderToFind.id === order.id).status === 'completed') {
+                                    setOrderId(order.id); setIsSetRatingOpened(true); setIsModalOpened(true)
+                                } else {
+                                    notify(NOTIFY_TYPES.ERROR, 'Заказ еще не выполнен!');
+                                }
+                            } : () => { }}>{!order.rating ? <span>Выставить</span> : order.rating}</td>
+                        </tr>
+                        )}
+                    </tbody>
+                </Table>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>

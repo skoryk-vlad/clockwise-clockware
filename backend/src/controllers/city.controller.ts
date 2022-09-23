@@ -1,5 +1,5 @@
 import { Master } from './../models/master.model';
-import { AddCitySchema, DeleteCitySchema, GetCitySchema, UpdateCitySchema } from './../validationSchemas/city.schema';
+import { AddCitySchema, DeleteCitySchema, GetCitySchema, UpdateCitySchema, GetCitiesSchema } from './../validationSchemas/city.schema';
 import { City } from './../models/city.model';
 import { Request, Response } from 'express';
 
@@ -16,11 +16,16 @@ export default class CityController {
     }
     async getCities(req: Request, res: Response): Promise<Response> {
         try {
-            const cities = await City.findAll({
+            const { limit, page } = GetCitiesSchema.parse(req.query);
+
+            const { count, rows } = await City.findAndCountAll({
                 include: Master,
-                order: ['id']
+                order: ['id'],
+                limit: limit || 25,
+                offset: limit * (page - 1) || 0,
+                distinct: true
             });
-            return res.status(200).json(cities);
+            return res.status(200).json({ count, rows });
         } catch (error) {
             return res.sendStatus(500);
         }

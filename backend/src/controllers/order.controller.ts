@@ -1,12 +1,12 @@
 import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
-import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema } from './../validationSchemas/order.schema';
+import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema } from './../validationSchemas/order.schema';
 import { sequelize } from './../sequelize';
-import { Model, Op } from 'sequelize';
+import { Model, Op, FindAndCountOptions, Attributes } from 'sequelize';
 import { Master } from './../models/master.model';
 import { Client, CLIENT_STATUSES, ClientAttributes, ClientCreationAttributes } from './../models/client.model';
 import { City } from './../models/city.model';
-import { Order, ORDER_STATUSES, WatchSizes } from './../models/order.model';
+import { Order, ORDER_STATUSES, WatchSizes, OrderAttributes, OrderCreationAttributes } from './../models/order.model';
 import { Request, Response } from 'express';
 import { sendConfirmationOrderMail } from '../mailer';
 import { v4 as uuidv4 } from 'uuid';
@@ -85,27 +85,70 @@ export default class OrderController {
     }
     async getOrders(req: Request, res: Response): Promise<Response> {
         try {
-            const orders = await Order.findAll({
-                include:
-                    [
-                        {
-                            model: City,
-                            as: 'City'
-                        },
-                        {
-                            model: Master,
-                            as: 'Master'
-                        },
-                        {
-                            model: Client,
-                            as: 'Client'
-                        }
-                    ],
-                order: ['id']
-            });
+            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[];
+            if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
+            if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
+            if (req.query.masters) mastersQuery = req.query.masters.toString().split(',').map(masterId => +masterId);
 
-            return res.status(200).json(orders);
+            const { limit, page, cities, masters, statuses, dateStart, dateEnd } = GetOrdersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, masters: mastersQuery });
+
+            let include = [
+                { model: City, as: 'City', where: {} },
+                { model: Master, as: 'Master', where: {} },
+                { model: Client, as: 'Client' }
+            ];
+
+            if (cities) {
+                include = [...include,
+                {
+                    model: City,
+                    as: 'City',
+                    where: {
+                        id: cities
+                    }
+                }]
+            }
+            if (masters) {
+                include = [...include,
+                {
+                    model: Master,
+                    as: 'Master',
+                    where: {
+                        id: masters
+                    }
+                }]
+            }
+
+            const config: FindAndCountOptions<Attributes<Model<OrderAttributes, OrderCreationAttributes>>> = {
+                include,
+                order: [['date', 'DESC']],
+                limit: limit || 25,
+                offset: limit * (page - 1) || 0,
+                distinct: true
+            }
+            if (statuses) {
+                config.where = {
+                    ...config.where,
+                    status: statuses
+                }
+            }
+            if (dateStart || dateEnd) {
+                const dateConditions = [];
+                if (dateStart) dateConditions.push({ [Op.gte]: dateStart });
+                if (dateEnd) dateConditions.push({ [Op.lte]: dateEnd });
+                config.where = {
+                    ...config.where,
+                    date: {
+                        [Op.and]: dateConditions
+                    }
+                }
+            }
+
+            const { count, rows } = await Order.findAndCountAll(config);
+
+            return res.status(200).json({ count, rows });
         } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
     }

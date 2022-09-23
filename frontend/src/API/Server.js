@@ -23,12 +23,16 @@ api.interceptors.response.use((response) => {
         localStorage.removeItem('token');
         document.location.assign(document.location.origin);
     }
-    return Promise.reject(error.message);
+    return Promise.reject(error);
 });
 
 export class CityService {
-    static async getCities() {
-        const { data } = await api.get(`/city`);
+    static async getCities(attributes = {}) {
+        Object.entries(attributes).forEach(attribute => {
+            if (!attribute[1] || (Array.isArray(attribute[1]) && attribute[1].length === 0)) delete attributes[attribute[0]];
+        });
+        const searchParams = new URLSearchParams(attributes);
+        const { data } = await api.get(`/city?${searchParams}`);
         return data;
     }
     static async addCity(newCity) {
@@ -46,8 +50,12 @@ export class CityService {
 }
 
 export class MasterService {
-    static async getMasters() {
-        const { data } = await api.get(`/master`);
+    static async getMasters(attributes = {}) {
+        Object.entries(attributes).forEach(attribute => {
+            if (!attribute[1] || (Array.isArray(attribute[1]) && attribute[1].length === 0)) delete attributes[attribute[0]];
+        });
+        const searchParams = new URLSearchParams(attributes);
+        const { data } = await api.get(`/master?${searchParams}`);
         return data;
     }
     static async addMaster(newClient) {
@@ -70,15 +78,23 @@ export class MasterService {
         const { data } = await api.get(`/freemasters?cityId=${cityId}&date=${date}&time=${time}&watchSize=${watchSize}`);
         return data;
     }
-    static async getMasterOrders(id) {
-        const { data } = await api.get(`/master/${id}/orders`);
+    static async getMasterOrders(id, attributes = {}) {
+        Object.entries(attributes).forEach(attribute => {
+            if (!attribute[1] || (Array.isArray(attribute[1]) && attribute[1].length === 0)) delete attributes[attribute[0]];
+        });
+        const searchParams = new URLSearchParams(attributes);
+        const { data } = await api.get(`/master/${id}/orders?${searchParams}`);
         return data;
     }
 }
 
 export class ClientService {
-    static async getClients() {
-        const { data } = await api.get(`/client`);
+    static async getClients(attributes = {}) {
+        Object.entries(attributes).forEach(attribute => {
+            if (!attribute[1] || (Array.isArray(attribute[1]) && attribute[1].length === 0)) delete attributes[attribute[0]];
+        });
+        const searchParams = new URLSearchParams(attributes);
+        const { data } = await api.get(`/client?${searchParams}`);
         return data;
     }
     static async getClientById(id) {
@@ -101,15 +117,23 @@ export class ClientService {
         const { data } = await api.put(`/client/${updClient.id}`, updClient);
         return data;
     }
-    static async getClientOrders(id) {
-        const { data } = await api.get(`/client/${id}/orders`);
+    static async getClientOrders(id, attributes = []) {
+        Object.entries(attributes).forEach(attribute => {
+            if (!attribute[1] || (Array.isArray(attribute[1]) && attribute[1].length === 0)) delete attributes[attribute[0]];
+        });
+        const searchParams = new URLSearchParams(attributes);
+        const { data } = await api.get(`/client/${id}/orders?${searchParams}`);
         return data;
     }
 }
 
 export class OrderService {
-    static async getOrders() {
-        const { data } = await api.get(`/order`);
+    static async getOrders(attributes = []) {
+        Object.entries(attributes).forEach(attribute => {
+            if (!attribute[1] || (Array.isArray(attribute[1]) && attribute[1].length === 0)) delete attributes[attribute[0]];
+        });
+        const searchParams = new URLSearchParams(attributes);
+        const { data } = await api.get(`/order?${searchParams}`);
         return data;
     }
     static async addOrder(newOrder) {

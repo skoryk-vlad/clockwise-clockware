@@ -7,10 +7,11 @@ import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { ClientForm } from '../../components/Forms/ClientForm';
-import { Table } from '../../components/Table/Table';
 import { CLIENT_STATUSES, CLIENT_STATUSES_TRANSLATE, ROLES } from '../../constants';
 import { ConfirmationModal } from '../../components/ConfirmationModal/ConfirmationModal';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
+import { Table } from '../../components/Table/Table';
+import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
 
 const defaultClient = {
     name: '',
@@ -18,24 +19,50 @@ const defaultClient = {
     status: CLIENT_STATUSES.CONFIRMED
 };
 
+const defaultSortByField = {
+    value: 'id',
+    isDirectedASC: true
+};
+const defaultPagination = {
+    page: 1,
+    limit: 10
+};
+const tableHeaders = [
+    { value: 'id', title: 'id', sortable: true },
+    { value: 'name', title: 'Имя', sortable: true },
+    { value: 'price', title: 'Почта', sortable: true },
+    { value: 'status', title: 'Статус', sortable: true },
+    { value: 'change', title: 'Изменение', sortable: false },
+    { value: 'delete', title: 'Удаление', sortable: false },
+    { value: 'reset', title: 'Сброс пароля', sortable: false }
+];
+
 export const Clients = () => {
     const [clients, setClients] = useState([]);
 
     const [currentClient, setCurrentClient] = useState(defaultClient);
     const [isModalOpened, setIsModalOpened] = useState(false);
 
+    const [pagination, setPagination] = useState(defaultPagination);
+    const [totalPages, setTotalPages] = useState(0);
+    const [sortByField, setSortByField] = useState(defaultSortByField);
+
     const [clientEmailToReset, setClientEmailToReset] = useState(null);
 
     const [fetchClients, isClientsLoading, Error] = useFetching(async () => {
-        const clients = await ClientService.getClients();
-
-        setClients(clients);
+        const clients = await ClientService.getClients(pagination);
+        setTotalPages(Math.ceil(clients.count / pagination.limit));
+        sortByColumn(clients.rows, sortByField.value, sortByField.isDirectedASC, setClients);
     });
 
     useEffect(() => {
         document.title = "Клиенты - Clockwise Clockware";
         fetchClients();
     }, []);
+
+    useEffect(() => {
+        fetchClients();
+    }, [pagination]);
 
     useEffect(() => {
         if (!isModalOpened) {
@@ -87,30 +114,6 @@ export const Clients = () => {
         }
     }
 
-    const tableHeaders = ["id", "Имя", "Почта", "Статус", "Изменение", "Удаление", "Сброс пароля"];
-
-    const tableBodies = [
-        `id`,
-        `name`,
-        `email`,
-        `status`,
-        {
-            name: `Изменить`,
-            callback: id => { setIsModalOpened(true); setCurrentClient(clients.find(client => client.id === id)) },
-            param: `id`
-        },
-        {
-            name: `Удалить`,
-            callback: deleteClient,
-            param: `id`
-        },
-        {
-            name: `Сбросить`,
-            callback: email => { setIsModalOpened(true); setClientEmailToReset(email) },
-            param: `email`
-        }
-    ];
-
     return (
         <div className='admin-container'>
             <Navbar role={ROLES.ADMIN} />
@@ -128,11 +131,32 @@ export const Clients = () => {
                     {clientEmailToReset && <ConfirmationModal text='Вы уверены, что хотите сбросить пароль пользователя?' onAccept={() => resetClientPassword(clientEmailToReset)} onReject={() => setIsModalOpened(false)} />}
                 </MyModal>
 
-                <Table
-                    data={clients.map(order => ({ ...order, status: CLIENT_STATUSES_TRANSLATE[order.status] }))}
-                    tableHeaders={tableHeaders}
-                    tableBodies={tableBodies}
-                />
+                <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}
+                    changePage={changeTo => (changeTo > 0 && changeTo <= totalPages) && setPagination({ ...pagination, page: changeTo })}
+                    currentPage={pagination.page} totalPages={totalPages}>
+                    <thead>
+                        <tr>
+                            {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
+                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
+                                    sortByColumn(clients, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setClients);
+                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
+                                })}
+                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {clients.map(client => <tr key={client.id}>
+                            <td>{client.id}</td>
+                            <td>{client.name}</td>
+                            <td>{client.email}</td>
+                            <td>{CLIENT_STATUSES_TRANSLATE[client.status]}</td>
+                            <td className='tableLink' onClick={() => { setIsModalOpened(true); setCurrentClient(clients.find(clientToFind => clientToFind.id === client.id)) }}><span>Изменить</span></td>
+                            <td className='tableLink' onClick={() => deleteClient(client.id)}><span>Удалить</span></td>
+                            <td className='tableLink' onClick={() => { setIsModalOpened(true); setClientEmailToReset(client.email) }}><span>Сбросить</span></td>
+                        </tr>
+                        )}
+                    </tbody>
+                </Table>
 
                 {isClientsLoading &&
                     <Loader />

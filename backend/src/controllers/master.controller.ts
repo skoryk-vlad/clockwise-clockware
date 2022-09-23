@@ -1,14 +1,15 @@
+import { sequelize } from './../sequelize';
+import { CityMaster } from './../models/cityMaster.model';
 import { Client } from './../models/client.model';
 import { sendConfirmationUserMail, sendUserLoginInfoMail, sendMasterApprovedMail } from './../mailer';
 import { generatePassword, encryptPassword } from './../password';
 import { User, ROLES } from './../models/user.model';
 import { City } from './../models/city.model';
-import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, AddMasterByAdminSchema } from './../validationSchemas/master.schema';
+import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, AddMasterByAdminSchema, GetMastersSchema } from './../validationSchemas/master.schema';
 import { Order, WatchSizes } from './../models/order.model';
-import { Master, MASTER_STATUSES } from './../models/master.model';
+import { Master, MASTER_STATUSES, MasterAttributes, MasterCreationAttributes } from './../models/master.model';
 import { Request, Response } from 'express';
-import { Op } from 'sequelize';
-import { sequelize } from '../sequelize';
+import { Attributes, FindAndCountOptions, Op, Model } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export default class MasterController {
@@ -99,21 +100,56 @@ export default class MasterController {
     }
     async getMasters(req: Request, res: Response): Promise<Response> {
         try {
-            const masters = await Master.findAll({
-                attributes: { include: [[sequelize.col('User.email'), 'email'], [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 2), 'rating']] },
-                include: [City, {
-                    model: Order,
-                    as: 'Order',
-                    attributes: []
+            let statusesQuery: string[], citiesQuery: number[];
+            if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
+            if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
+
+            const { limit, page, cities, statuses } = GetMastersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery });
+
+            const config: FindAndCountOptions<Attributes<Model<MasterAttributes, MasterCreationAttributes>>> = {
+                attributes: { include: [[sequelize.col('User.email'), 'email']] },
+                include: [{
+                    model: City,
+                    as: 'Cities',
+                    required: true
                 }, {
-                        model: User,
-                        attributes: []
-                    }],
-                group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id', 'User.email'],
-                order: ['id']
-            });
-            return res.status(200).json(masters);
+                    model: User,
+                    attributes: [],
+                    duplicating: false,
+                    required: true
+                }],
+                where: {},
+                order: ['id'],
+                limit: limit || 25,
+                offset: limit * (page - 1) || 0,
+                distinct: true
+            }
+            if (statuses) {
+                config.where = {
+                    ...config.where,
+                    status: statuses
+                }
+            }
+            if (cities) {
+                const associations = await CityMaster.findAll({
+                    attributes: ['masterId', [sequelize.fn('count', sequelize.col('masterId')), 'cities']],
+                    where: {
+                        cityId: cities
+                    },
+                    group: ['masterId']
+                });
+                const mastersByCities = associations.filter(association => association.getDataValue('cities') >= cities.length).map(as => as.toJSON().masterId);
+                config.where = {
+                    ...config.where,
+                    id: mastersByCities
+                }
+            }
+
+            const { count, rows } = await Master.findAndCountAll(config);
+
+            return res.status(200).json({ count, rows });
         } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
     }
@@ -143,7 +179,9 @@ export default class MasterController {
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
 
-            const orders = await Order.findAll({
+            const { limit, page } = GetMastersSchema.parse(req.query);
+
+            const { count, rows } = await Order.findAndCountAll({
                 where: {
                     masterId: id
                 },
@@ -153,9 +191,11 @@ export default class MasterController {
                 }, {
                     model: Client, attributes: []
                 }],
-                order: ['id']
+                order: [['date', 'DESC']],
+                limit: limit || 25,
+                offset: limit * (page - 1) || 0
             });
-            return res.status(200).json(orders);
+            return res.status(200).json({ count, rows });
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
@@ -228,12 +268,11 @@ export default class MasterController {
 
             await User.update({ email }, { where: { id: master.getDataValue('userId') }, transaction: updateMasterTransaction })
 
-            if(master.getDataValue('status') !== MASTER_STATUSES.APPROVED && status === MASTER_STATUSES.APPROVED) {
+            if (master.getDataValue('status') !== MASTER_STATUSES.APPROVED && status === MASTER_STATUSES.APPROVED) {
                 await sendMasterApprovedMail(email, name);
             }
-            
-            await master.update({ name, status }, { transaction: updateMasterTransaction });
 
+            await master.update({ name, status }, { transaction: updateMasterTransaction });
 
             // @ts-ignore
             await master.setCities(cities, {

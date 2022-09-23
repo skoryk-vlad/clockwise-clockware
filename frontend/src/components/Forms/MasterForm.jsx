@@ -7,22 +7,18 @@ import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { MASTER_STATUSES, MASTER_STATUSES_TRANSLATE } from '../../constants';
+import Select from 'react-select';
 
 const MasterSchema = z.object({
     name: z.string().trim().min(1, { message: 'Требуется имя' })
         .min(3, { message: 'Имя должно быть не короче 3-х букв' }).max(255),
     email: z.string().trim().min(1, { message: 'Требуется почта' }).email({ message: 'Неверный формат почты' }).max(255),
-    cities: z.array(z.number().int().positive()).nonempty({ message: 'Требуется выбрать хотя бы 1 город' }),
+    cities: z.array(z.number().int().positive()).nonempty('Требуется выбрать хотя бы 1 город'),
     status: z.nativeEnum(MASTER_STATUSES)
 });
 
-const deleteValueFromArray = (array, value) => {
-    array.splice(array.indexOf(parseInt(value)), 1);
-    return array;
-}
-
 export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
-    const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
+    const { control, handleSubmit, getValues, watch, formState: { errors, isSubmitted, isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
         defaultValues: master,
@@ -91,15 +87,18 @@ export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
                     control={control}
                     name="cities"
                     render={({
-                        field: { onChange, value, name },
+                        field: { onChange },
                         fieldState: { error },
                     }) => (
-                        <MySelect multiple={true} size="4"
-                            name={name}
-                            onChange={(value) => onChange(getValues().cities.includes(parseInt(value)) ? deleteValueFromArray(getValues().cities, +value) : [...getValues().cities, +value])}
-                            value={value}
+                        <Select
+                            closeMenuOnSelect={false}
+                            defaultValue={master.cities}
+                            value={cities.filter(city => watch('cities').includes(city.id)).map(city => ({ value: city.id, label: city.name }))}
+                            isMulti
                             error={error}
-                            options={cities.map(city => ({ value: city.id, name: city.name }))}
+                            onChange={options => onChange(options.map(option => option.value))}
+                            options={cities.map(city => ({ value: city.id, label: city.name }))}
+                            placeholder='Выбор городов...'
                         />
                     )}
                 />

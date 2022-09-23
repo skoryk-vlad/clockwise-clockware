@@ -12,6 +12,16 @@ export const AddClientByAdminSchema = z.object({
     email: z.string().email().max(255),
     status: z.nativeEnum(CLIENT_STATUSES)
 });
+export const GetClientsSchema = z.object({
+    limit: z.preprocess(
+        (a) => parseInt(z.string().parse(a), 10),
+        z.number().int().positive()
+    ).optional(),
+    page: z.preprocess(
+        (a) => parseInt(z.string().parse(a), 10),
+        z.number().int().positive()
+    ).optional()
+});
 export const GetClientSchema = z.object({
     id: z.number().int().positive()
 });
