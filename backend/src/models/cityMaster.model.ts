@@ -7,6 +7,7 @@ export interface CityMasterAttributes {
     id: number;
     cityId: number;
     masterId: number;
+    cities: number;
 }
 
 type CityMasterCreationAttributes = Optional<CityMasterAttributes, 'id'>;

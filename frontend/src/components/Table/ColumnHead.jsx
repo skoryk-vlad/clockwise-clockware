@@ -10,12 +10,12 @@ export const sortByColumn = (data, value, isDirectedASC, setData) => {
     setData(dataToSet);
 }
 
-export const ColumnHead = ({ value, title, onClick, clickable, sortState }) => {
+export const ColumnHead = ({ value, title, onClick, sortable, sortByField }) => {
     return (
-        <th onClick={clickable ? () => onClick(value) : () => { }} value={sortState.value !== value ? '\u25BC' : ''}
-            className={clickable ? 'colTitle' : ''}>
+        <th onClick={sortable ? () => onClick(value) : () => { }} value={sortByField.value !== value ? '\u25BC' : ''}
+            className={sortable ? 'colTitle' : ''}>
             <p>{title}</p>
-            <p className='colTitle__arrow'>{sortState.value === value && (sortState.isDirectedASC ? '\u25BC' : '\u25B2')}</p>
+            <p className='colTitle__arrow'>{sortByField.value === value && (sortByField.isDirectedASC ? '\u25BC' : '\u25B2')}</p>
         </th>
     )
 }

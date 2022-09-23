@@ -25,7 +25,7 @@ const defaultOrder = {
     status: ORDER_STATUSES.AWAITING_CONFIRMATION
 };
 
-const defaultFilterState = {
+const defaultFilters = {
     masters: [],
     cities: [],
     statuses: [],
@@ -36,23 +36,23 @@ const defaultPagination = {
     page: 1,
     limit: 10
 };
-const defaultsortState = {
+const defaultSortByField = {
     value: 'date',
     isDirectedASC: true
 };
 const tableHeaders = [
-    { value: 'id', title: 'id', clickable: true },
-    { value: 'watchSize', title: 'Размер часов', clickable: true },
-    { value: 'date', title: 'Дата', clickable: true },
-    { value: 'time', title: 'Время', clickable: true },
-    { value: 'rating', title: 'Рейтинг', clickable: true },
-    { value: 'City.name', title: 'Город', clickable: true },
-    { value: 'Client.name', title: 'Клиент', clickable: true },
-    { value: 'Master.name', title: 'Мастер', clickable: true },
-    { value: 'status', title: 'Статус', clickable: true },
-    { value: 'price', title: 'Цена', clickable: true },
-    { value: 'change', title: 'Изменение', clickable: false },
-    { value: 'delete', title: 'Удаление', clickable: false }
+    { value: 'id', title: 'id', sortable: true },
+    { value: 'watchSize', title: 'Размер часов', sortable: true },
+    { value: 'date', title: 'Дата', sortable: true },
+    { value: 'time', title: 'Время', sortable: true },
+    { value: 'rating', title: 'Рейтинг', sortable: true },
+    { value: 'City.name', title: 'Город', sortable: true },
+    { value: 'Client.name', title: 'Клиент', sortable: true },
+    { value: 'Master.name', title: 'Мастер', sortable: true },
+    { value: 'status', title: 'Статус', sortable: true },
+    { value: 'price', title: 'Цена', sortable: true },
+    { value: 'change', title: 'Изменение', sortable: false },
+    { value: 'delete', title: 'Удаление', sortable: false }
 ];
 
 export const Orders = () => {
@@ -65,14 +65,14 @@ export const Orders = () => {
     const [isModalOpened, setIsModalOpened] = useState(false);
 
     const [pagination, setPagination] = useState(defaultPagination);
-    const [filterState, setFilterState] = useState(defaultFilterState);
+    const [filters, setFilters] = useState(defaultFilters);
     const [totalPages, setTotalPages] = useState(0);
-    const [sortState, setSortState] = useState(defaultsortState);
+    const [sortByField, setSortByField] = useState(defaultSortByField);
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        const orders = await OrderService.getOrders({ ...filterState, ...pagination });
+        const orders = await OrderService.getOrders({ ...filters, ...pagination });
         setTotalPages(Math.ceil(orders.count / pagination.limit));
-        sortByColumn(orders.rows, sortState.value, sortState.isDirectedASC, setOrders);
+        sortByColumn(orders.rows, sortByField.value, sortByField.isDirectedASC, setOrders);
     });
     const [fetchAdditionalData, isAdditionalDataLoading] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -92,7 +92,7 @@ export const Orders = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, [filterState, pagination]);
+    }, [filters, pagination]);
 
     useEffect(() => {
         if (Error)
@@ -145,14 +145,14 @@ export const Orders = () => {
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Заказы</h1>
                 <div className='admin-body__top'>
-                    {!isAdditionalDataLoading && <OrderFilterForm filterState={{
-                        ...defaultFilterState,
-                        masters: Array.isArray(defaultFilterState.masters) ? defaultFilterState.masters.map(masterId => ({ value: masterId, label: masters.find(master => masterId === master.id)?.name })) : [],
-                        cities: Array.isArray(defaultFilterState.cities) ? defaultFilterState.cities.map(cityId => ({ value: cityId, label: cities.find(city => cityId === city.id)?.name })) : [],
-                        statuses: Array.isArray(defaultFilterState.statuses) ? defaultFilterState.statuses.map(status => ({ value: status, label: ORDER_STATUSES_TRANSLATE[status] })) : []
+                    {!isAdditionalDataLoading && <OrderFilterForm filters={{
+                        ...defaultFilters,
+                        masters: Array.isArray(defaultFilters.masters) ? defaultFilters.masters.map(masterId => ({ value: masterId, label: masters.find(master => masterId === master.id)?.name })) : [],
+                        cities: Array.isArray(defaultFilters.cities) ? defaultFilters.cities.map(cityId => ({ value: cityId, label: cities.find(city => cityId === city.id)?.name })) : [],
+                        statuses: Array.isArray(defaultFilters.statuses) ? defaultFilters.statuses.map(status => ({ value: status, label: ORDER_STATUSES_TRANSLATE[status] })) : []
                     }}
-                        onClick={newFilterState => { JSON.stringify(filterState) !== JSON.stringify(newFilterState) && setFilterState(newFilterState); }}
-                        cities={cities} masters={masters} setFilterState={setFilterState}></OrderFilterForm>}
+                        onClick={newFilterState => { JSON.stringify(filters) !== JSON.stringify(newFilterState) && setFilters(newFilterState); }}
+                        cities={cities} masters={masters} setFilters={setFilters}></OrderFilterForm>}
 
                     <div className="admin-body__btns">
                         <AdminButton onClick={() => { setIsModalOpened(true); setCurrentOrder(defaultOrder) }}>
@@ -172,11 +172,11 @@ export const Orders = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.clickable && (value => {
-                                    sortByColumn(orders, value, sortState.value === value ? !sortState.isDirectedASC : true, setOrders);
-                                    sortState.value === value ? setSortState({ value, isDirectedASC: !sortState.isDirectedASC }) : setSortState({ value, isDirectedASC: true })
+                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
+                                    sortByColumn(orders, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setOrders);
+                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
                                 })}
-                                clickable={tableHeader.clickable} sortState={sortState} />)}
+                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
                         </tr>
                     </thead>
                     <tbody>

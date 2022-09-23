@@ -20,7 +20,7 @@ const defaultMaster = {
     cities: [],
     status: MASTER_STATUSES.APPROVED
 };
-const defaultFilterState = {
+const defaultFilters = {
     cities: [],
     statuses: []
 };
@@ -28,19 +28,19 @@ const defaultPagination = {
     page: 1,
     limit: 10
 };
-const defaultsortState = {
+const defaultSortByField = {
     value: 'id',
     isDirectedASC: true
 };
 const tableHeaders = [
-    { value: 'id', title: 'id', clickable: true },
-    { value: 'name', title: 'Имя', clickable: true },
-    { value: 'email', title: 'Почта', clickable: true },
-    { value: 'cities', title: 'Города', clickable: true },
-    { value: 'status', title: 'Статус', clickable: true },
-    { value: 'change', title: 'Изменение', clickable: false },
-    { value: 'delete', title: 'Удаление', clickable: false },
-    { value: 'reset', title: 'Сброс пароля', clickable: false }
+    { value: 'id', title: 'id', sortable: true },
+    { value: 'name', title: 'Имя', sortable: true },
+    { value: 'email', title: 'Почта', sortable: true },
+    { value: 'cities', title: 'Города', sortable: true },
+    { value: 'status', title: 'Статус', sortable: true },
+    { value: 'change', title: 'Изменение', sortable: false },
+    { value: 'delete', title: 'Удаление', sortable: false },
+    { value: 'reset', title: 'Сброс пароля', sortable: false }
 ];
 
 export const Masters = () => {
@@ -53,14 +53,14 @@ export const Masters = () => {
     const [masterEmailToReset, setMasterEmailToReset] = useState(null);
 
     const [pagination, setPagination] = useState(defaultPagination);
-    const [filterState, setFilterState] = useState(defaultFilterState);
+    const [filters, setFilters] = useState(defaultFilters);
     const [totalPages, setTotalPages] = useState(0);
-    const [sortState, setSortState] = useState(defaultsortState);
+    const [sortByField, setSortByField] = useState(defaultSortByField);
 
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
-        const masters = await MasterService.getMasters({ ...filterState, ...pagination });
+        const masters = await MasterService.getMasters({ ...filters, ...pagination });
         setTotalPages(Math.ceil(masters.count / pagination.limit));
-        sortByColumn(masters.rows, sortState.value, sortState.isDirectedASC, setMasters);
+        sortByColumn(masters.rows, sortByField.value, sortByField.isDirectedASC, setMasters);
     });
 
     const [fetchAdditionalData, isCitiesLoading] = useFetching(async () => {
@@ -76,7 +76,7 @@ export const Masters = () => {
 
     useEffect(() => {
         fetchMasters();
-    }, [filterState, pagination]);
+    }, [filters, pagination]);
 
     useEffect(() => {
         if (Error)
@@ -139,13 +139,13 @@ export const Masters = () => {
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Мастера</h1>
                 <div className='admin-body__top'>
-                    {!isCitiesLoading && <MasterFilterForm filterState={{
-                        ...defaultFilterState,
-                        cities: Array.isArray(defaultFilterState.cities) ? defaultFilterState.cities.map(cityId => ({ value: cityId, label: cities.find(city => cityId === city.id)?.name })) : [],
-                        statuses: Array.isArray(defaultFilterState.statuses) ? defaultFilterState.statuses.map(status => ({ value: status, label: MASTER_STATUSES_TRANSLATE[status] })) : []
+                    {!isCitiesLoading && <MasterFilterForm filters={{
+                        ...defaultFilters,
+                        cities: Array.isArray(defaultFilters.cities) ? defaultFilters.cities.map(cityId => ({ value: cityId, label: cities.find(city => cityId === city.id)?.name })) : [],
+                        statuses: Array.isArray(defaultFilters.statuses) ? defaultFilters.statuses.map(status => ({ value: status, label: MASTER_STATUSES_TRANSLATE[status] })) : []
                     }}
-                        onClick={newFilterState => { JSON.stringify(filterState) !== JSON.stringify(newFilterState) && setFilterState(newFilterState); }}
-                        cities={cities} setFilterState={setFilterState}></MasterFilterForm>}
+                        onClick={newFilterState => { JSON.stringify(filters) !== JSON.stringify(newFilterState) && setFilters(newFilterState); }}
+                        cities={cities} setFilters={setFilters}></MasterFilterForm>}
 
                     <div className="admin-body__btns">
                         <AdminButton onClick={() => { setIsModalOpened(true); setCurrentMaster(defaultMaster) }}>
@@ -165,11 +165,11 @@ export const Masters = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.clickable && (value => {
-                                    sortByColumn(masters, value, sortState.value === value ? !sortState.isDirectedASC : true, setMasters);
-                                    sortState.value === value ? setSortState({ value, isDirectedASC: !sortState.isDirectedASC }) : setSortState({ value, isDirectedASC: true })
+                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
+                                    sortByColumn(masters, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setMasters);
+                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
                                 })}
-                                clickable={tableHeader.clickable} sortState={sortState} />)}
+                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
                         </tr>
                     </thead>
                     <tbody>

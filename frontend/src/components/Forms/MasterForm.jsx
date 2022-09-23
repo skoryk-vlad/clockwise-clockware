@@ -13,20 +13,18 @@ const MasterSchema = z.object({
     name: z.string().trim().min(1, { message: 'Требуется имя' })
         .min(3, { message: 'Имя должно быть не короче 3-х букв' }).max(255),
     email: z.string().trim().min(1, { message: 'Требуется почта' }).email({ message: 'Неверный формат почты' }).max(255),
-    cities: z.array(z.object({
-        value: z.number().int().positive()
-    })).nonempty('Требуется выбрать хотя бы 1 город'),
+    cities: z.array(z.number().int().positive()).nonempty('Требуется выбрать хотя бы 1 город'),
     status: z.nativeEnum(MASTER_STATUSES)
 });
 
 export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
-    const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
+    const { control, handleSubmit, getValues, watch, formState: { errors, isSubmitted, isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
         defaultValues: master,
         resolver: zodResolver(MasterSchema)
     });
-    const onSubmit = () => onClick({ ...getValues(), cities: getValues().cities.map(city => city.value) });
+    const onSubmit = () => onClick(getValues());
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
@@ -89,15 +87,16 @@ export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
                     control={control}
                     name="cities"
                     render={({
-                        field: { onChange, value, name },
+                        field: { onChange },
                         fieldState: { error },
                     }) => (
                         <Select
                             closeMenuOnSelect={false}
                             defaultValue={master.cities}
-                            value={value}
+                            value={cities.filter(city => watch('cities').includes(city.id)).map(city => ({ value: city.id, label: city.name }))}
                             isMulti
-                            onChange={onChange}
+                            error={error}
+                            onChange={options => onChange(options.map(option => option.value))}
                             options={cities.map(city => ({ value: city.id, label: city.name }))}
                             placeholder='Выбор городов...'
                         />

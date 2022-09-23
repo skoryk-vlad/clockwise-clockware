@@ -19,7 +19,7 @@ const defaultClient = {
     status: CLIENT_STATUSES.CONFIRMED
 };
 
-const defaultsortState = {
+const defaultSortByField = {
     value: 'id',
     isDirectedASC: true
 };
@@ -28,13 +28,13 @@ const defaultPagination = {
     limit: 10
 };
 const tableHeaders = [
-    { value: 'id', title: 'id', clickable: true },
-    { value: 'name', title: 'Имя', clickable: true },
-    { value: 'price', title: 'Почта', clickable: true },
-    { value: 'status', title: 'Статус', clickable: true },
-    { value: 'change', title: 'Изменение', clickable: false },
-    { value: 'delete', title: 'Удаление', clickable: false },
-    { value: 'reset', title: 'Сброс пароля', clickable: false }
+    { value: 'id', title: 'id', sortable: true },
+    { value: 'name', title: 'Имя', sortable: true },
+    { value: 'price', title: 'Почта', sortable: true },
+    { value: 'status', title: 'Статус', sortable: true },
+    { value: 'change', title: 'Изменение', sortable: false },
+    { value: 'delete', title: 'Удаление', sortable: false },
+    { value: 'reset', title: 'Сброс пароля', sortable: false }
 ];
 
 export const Clients = () => {
@@ -45,14 +45,14 @@ export const Clients = () => {
 
     const [pagination, setPagination] = useState(defaultPagination);
     const [totalPages, setTotalPages] = useState(0);
-    const [sortState, setSortState] = useState(defaultsortState);
+    const [sortByField, setSortByField] = useState(defaultSortByField);
 
     const [clientEmailToReset, setClientEmailToReset] = useState(null);
 
     const [fetchClients, isClientsLoading, Error] = useFetching(async () => {
         const clients = await ClientService.getClients(pagination);
         setTotalPages(Math.ceil(clients.count / pagination.limit));
-        sortByColumn(clients.rows, sortState.value, sortState.isDirectedASC, setClients);
+        sortByColumn(clients.rows, sortByField.value, sortByField.isDirectedASC, setClients);
     });
 
     useEffect(() => {
@@ -137,11 +137,11 @@ export const Clients = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.clickable && (value => {
-                                    sortByColumn(clients, value, sortState.value === value ? !sortState.isDirectedASC : true, setClients);
-                                    sortState.value === value ? setSortState({ value, isDirectedASC: !sortState.isDirectedASC }) : setSortState({ value, isDirectedASC: true })
+                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
+                                    sortByColumn(clients, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setClients);
+                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
                                 })}
-                                clickable={tableHeader.clickable} sortState={sortState} />)}
+                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
                         </tr>
                     </thead>
                     <tbody>

@@ -87,7 +87,7 @@ export default class ClientController {
                     attributes: []
                 },
                 order: ['id'],
-                limit: limit || 100,
+                limit: limit || 25,
                 offset: limit * (page - 1) || 0,
                 distinct: true
             });
@@ -131,7 +131,7 @@ export default class ClientController {
                     model: Master, attributes: []
                 }],
                 order: [['date', 'DESC']],
-                limit: limit || 100,
+                limit: limit || 25,
                 offset: limit * (page - 1) || 0
             });
             return res.status(200).json({ count, rows });

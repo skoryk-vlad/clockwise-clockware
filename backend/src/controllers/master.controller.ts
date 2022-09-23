@@ -100,7 +100,11 @@ export default class MasterController {
     }
     async getMasters(req: Request, res: Response): Promise<Response> {
         try {
-            const { limit, page, cities, statuses } = GetMastersSchema.parse(req.query);
+            let statusesQuery: string[], citiesQuery: number[];
+            if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
+            if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
+
+            const { limit, page, cities, statuses } = GetMastersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery });
 
             const config: FindAndCountOptions<Attributes<Model<MasterAttributes, MasterCreationAttributes>>> = {
                 attributes: { include: [[sequelize.col('User.email'), 'email']] },
@@ -116,7 +120,7 @@ export default class MasterController {
                 }],
                 where: {},
                 order: ['id'],
-                limit: limit || 100,
+                limit: limit || 25,
                 offset: limit * (page - 1) || 0,
                 distinct: true
             }
@@ -134,7 +138,6 @@ export default class MasterController {
                     },
                     group: ['masterId']
                 });
-                //@ts-ignore
                 const mastersByCities = associations.filter(association => association.getDataValue('cities') >= cities.length).map(as => as.toJSON().masterId);
                 config.where = {
                     ...config.where,
@@ -189,7 +192,7 @@ export default class MasterController {
                     model: Client, attributes: []
                 }],
                 order: [['date', 'DESC']],
-                limit: limit || 100,
+                limit: limit || 25,
                 offset: limit * (page - 1) || 0
             });
             return res.status(200).json({ count, rows });

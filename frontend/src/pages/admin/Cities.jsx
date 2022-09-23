@@ -17,7 +17,7 @@ const defaultCity = {
     price: 0
 };
 
-const defaultsortState = {
+const defaultSortByField = {
     value: 'id',
     isDirectedASC: true
 };
@@ -26,11 +26,11 @@ const defaultPagination = {
     limit: 10
 };
 const tableHeaders = [
-    { value: 'id', title: 'id', clickable: true },
-    { value: 'name', title: 'Имя', clickable: true },
-    { value: 'price', title: 'Цена', clickable: true },
-    { value: 'change', title: 'Изменение', clickable: false },
-    { value: 'delete', title: 'Удаление', clickable: false }
+    { value: 'id', title: 'id', sortable: true },
+    { value: 'name', title: 'Имя', sortable: true },
+    { value: 'price', title: 'Цена', sortable: true },
+    { value: 'change', title: 'Изменение', sortable: false },
+    { value: 'delete', title: 'Удаление', sortable: false }
 ];
 
 export const Cities = () => {
@@ -41,12 +41,12 @@ export const Cities = () => {
 
     const [pagination, setPagination] = useState(defaultPagination);
     const [totalPages, setTotalPages] = useState(0);
-    const [sortState, setSortState] = useState(defaultsortState);
+    const [sortByField, setSortByField] = useState(defaultSortByField);
 
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         const cities = await CityService.getCities(pagination);
         setTotalPages(Math.ceil(cities.count / pagination.limit));
-        sortByColumn(cities.rows, sortState.value, sortState.isDirectedASC, setCities);
+        sortByColumn(cities.rows, sortByField.value, sortByField.isDirectedASC, setCities);
     });
 
     useEffect(() => {
@@ -118,11 +118,11 @@ export const Cities = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.clickable && (value => {
-                                    sortByColumn(cities, value, sortState.value === value ? !sortState.isDirectedASC : true, setCities);
-                                    sortState.value === value ? setSortState({ value, isDirectedASC: !sortState.isDirectedASC }) : setSortState({ value, isDirectedASC: true })
+                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
+                                    sortByColumn(cities, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setCities);
+                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
                                 })}
-                                clickable={tableHeader.clickable} sortState={sortState} />)}
+                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
                         </tr>
                     </thead>
                     <tbody>

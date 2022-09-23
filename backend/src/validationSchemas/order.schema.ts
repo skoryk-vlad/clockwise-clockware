@@ -14,20 +14,15 @@ export const AddOrderSchema = z.object({
 export const GetOrdersSchema = z.object({
     limit: z.preprocess(
         (a) => parseInt(z.string().parse(a), 10),
-        z.number().positive()
+        z.number().int().positive()
     ).optional(),
     page: z.preprocess(
         (a) => parseInt(z.string().parse(a), 10),
-        z.number().positive()
+        z.number().int().positive()
     ).optional(),
-    cities: z.string().regex(/^(?:\d\,?)+\d?$/).transform(string => string.split(',').map(cityId => +cityId)).optional(),
-    masters: z.string().regex(/^(?:\d\,?)+\d?$/).transform(string => string.split(',').map(masterId => +masterId)).optional(),
-    statuses: z.string().refine(string => {
-        const statuses = string.split(',');
-        const filteredStatuses = statuses.filter(status => Object.values(ORDER_STATUSES).includes(status as ORDER_STATUSES));
-        if (statuses.length !== filteredStatuses.length) return false;
-        return true;
-    }).transform(string => string.split(',')).optional(),
+    masters: z.array(z.number().int().positive()).optional(),
+    cities: z.array(z.number().int().positive()).optional(),
+    statuses: z.array(z.nativeEnum(ORDER_STATUSES)).optional(),
     dateStart: z.string().regex(/([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))/).optional(),
     dateEnd: z.string().regex(/([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))/).optional()
 });

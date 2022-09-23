@@ -15,11 +15,11 @@ export const AddClientByAdminSchema = z.object({
 export const GetClientsSchema = z.object({
     limit: z.preprocess(
         (a) => parseInt(z.string().parse(a), 10),
-        z.number().positive()
+        z.number().int().positive()
     ).optional(),
     page: z.preprocess(
         (a) => parseInt(z.string().parse(a), 10),
-        z.number().positive()
+        z.number().int().positive()
     ).optional()
 });
 export const GetClientSchema = z.object({

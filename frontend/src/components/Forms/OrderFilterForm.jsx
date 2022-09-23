@@ -1,24 +1,30 @@
 import React from 'react';
 import { Controller, useForm } from "react-hook-form";
 import classes from './Form.module.css';
+import { z } from 'zod';
 import { AdminButton } from '../AdminButton/AdminButton';
-import { ORDER_STATUSES_TRANSLATE } from '../../constants';
+import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE } from '../../constants';
 import Select from 'react-select';
 import { MyInput } from '../input/MyInput';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-export const OrderFilterForm = ({ filterState, onClick, cities, masters, setFilterState }) => {
-    const { control, reset, handleSubmit, getValues, formState: { isSubmitted, isValid } } = useForm({
+const OrderFilterSchema = z.object({
+    masters: z.array(z.number().int().positive()).optional(),
+    cities: z.array(z.number().int().positive()).optional(),
+    statuses: z.array(z.nativeEnum(ORDER_STATUSES)).optional(),
+    dateStart: z.string().regex(/([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))/).optional().or(z.literal('')),
+    dateEnd: z.string().regex(/([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))/).optional().or(z.literal('')),
+});
+
+export const OrderFilterForm = ({ filters, onClick, cities, masters, setFilters }) => {
+    const { control, reset, handleSubmit, watch, getValues, formState: { isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
-        defaultValues: filterState
+        defaultValues: filters,
+        resolver: zodResolver(OrderFilterSchema)
     });
-    const onSubmit = () => onClick({
-        ...getValues(),
-        masters: getValues()?.masters.map(master => master.value),
-        cities: getValues()?.cities.map(city => city.value),
-        statuses: getValues()?.statuses.map(status => status.value)
-    });
-
+    const onSubmit = () => onClick(getValues());
+    
     return (
         <form onSubmit={handleSubmit(onSubmit)} className={classes.filterForm}>
             <div className={classes.filterFormRow}>
@@ -30,14 +36,14 @@ export const OrderFilterForm = ({ filterState, onClick, cities, masters, setFilt
                         control={control}
                         name="masters"
                         render={({
-                            field: { onChange, value }
+                            field: { onChange }
                         }) => (
                             <Select
                                 closeMenuOnSelect={false}
-                                defaultValue={filterState.masters}
-                                value={value}
+                                defaultValue={filters.masters}
+                                value={masters.filter(master => watch('masters').includes(master.id)).map(master => ({ value: master.id, label: master.name }))}
                                 isMulti
-                                onChange={onChange}
+                                onChange={options => onChange(options.map(option => option.value))}
                                 options={masters.map(master => ({ value: master.id, label: master.name }))}
                                 placeholder='Выбор мастеров...'
                             />
@@ -52,14 +58,14 @@ export const OrderFilterForm = ({ filterState, onClick, cities, masters, setFilt
                         control={control}
                         name="cities"
                         render={({
-                            field: { onChange, value }
+                            field: { onChange }
                         }) => (
                             <Select
                                 closeMenuOnSelect={false}
-                                defaultValue={filterState.cities}
-                                value={value}
+                                defaultValue={filters.cities}
+                                value={cities.filter(city => watch('cities').includes(city.id)).map(city => ({ value: city.id, label: city.name }))}
                                 isMulti
-                                onChange={onChange}
+                                onChange={options => onChange(options.map(option => option.value))}
                                 options={cities.map(city => ({ value: city.id, label: city.name }))}
                                 placeholder='Выбор городов...'
                             />
@@ -74,14 +80,14 @@ export const OrderFilterForm = ({ filterState, onClick, cities, masters, setFilt
                         control={control}
                         name="statuses"
                         render={({
-                            field: { onChange, value }
+                            field: { onChange }
                         }) => (
                             <Select
                                 closeMenuOnSelect={false}
-                                defaultValue={filterState.statuses}
-                                value={value}
+                                defaultValue={filters.statuses}
+                                value={Object.entries(ORDER_STATUSES_TRANSLATE).filter(status => watch('statuses').includes(status[0])).map(([value, label]) => ({ value, label }))}
                                 isMulti
-                                onChange={onChange}
+                                onChange={options => onChange(options.map(option => option.value))}
                                 options={Object.entries(ORDER_STATUSES_TRANSLATE).map(([value, label]) => ({ value, label }))}
                                 placeholder='Выбор статусов...'
                             />
@@ -132,10 +138,10 @@ export const OrderFilterForm = ({ filterState, onClick, cities, masters, setFilt
                         />
                     </div>
                 </div>
+                
                 <div className={classes.filterButton}>
-                    <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
-                        disabled={(isSubmitted && !isValid)}>Фильтровать</AdminButton>
-                    <AdminButton type="button" onClick={() => { reset(); setFilterState(filterState); }}>Сбросить</AdminButton>
+                    <AdminButton type="submit" disabled={!isValid}>Фильтровать</AdminButton>
+                    <AdminButton type="button" onClick={() => { reset(); setFilters(filters); }}>Сбросить</AdminButton>
                 </div>
             </div>
         </form>

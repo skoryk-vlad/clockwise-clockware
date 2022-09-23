@@ -85,7 +85,12 @@ export default class OrderController {
     }
     async getOrders(req: Request, res: Response): Promise<Response> {
         try {
-            const { limit, page, cities, masters, statuses, dateStart, dateEnd } = GetOrdersSchema.parse(req.query);
+            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[];
+            if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
+            if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
+            if (req.query.masters) mastersQuery = req.query.masters.toString().split(',').map(masterId => +masterId);
+
+            const { limit, page, cities, masters, statuses, dateStart, dateEnd } = GetOrdersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, masters: mastersQuery });
 
             let include = [
                 { model: City, as: 'City', where: {} },
@@ -117,7 +122,7 @@ export default class OrderController {
             const config: FindAndCountOptions<Attributes<Model<OrderAttributes, OrderCreationAttributes>>> = {
                 include,
                 order: [['date', 'DESC']],
-                limit: limit || 100,
+                limit: limit || 25,
                 offset: limit * (page - 1) || 0,
                 distinct: true
             }

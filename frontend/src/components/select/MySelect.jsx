@@ -1,7 +1,7 @@
 import React from 'react';
 import classes from './MySelect.module.css';
 
-export const MySelect = ({options, value, onChange = ()=>{}, ...props}) => {
+export const MySelect = ({options, value, onChange, ...props}) => {
   return (
     <select className={classes.mySelect}
         value={value}

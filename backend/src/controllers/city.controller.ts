@@ -21,7 +21,7 @@ export default class CityController {
             const { count, rows } = await City.findAndCountAll({
                 include: Master,
                 order: ['id'],
-                limit: limit || 100,
+                limit: limit || 25,
                 offset: limit * (page - 1) || 0,
                 distinct: true
             });

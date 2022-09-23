@@ -29,19 +29,19 @@ const defaultPagination = {
     page: 1,
     limit: 10
 };
-const defaultsortState = {
+const defaultSortByField = {
     value: 'date',
     isDirectedASC: false
 };
 const tableHeaders = [
-    { value: 'master', title: 'Мастер', clickable: true },
-    { value: 'watchSize', title: 'Размер часов', clickable: true },
-    { value: 'date', title: 'Дата', clickable: true },
-    { value: 'time', title: 'Время начала', clickable: true },
-    { value: 'endTime', title: 'Время конца', clickable: true },
-    { value: 'price', title: 'Цена', clickable: true },
-    { value: 'status', title: 'Статус', clickable: true },
-    { value: 'rating', title: 'Рейтинг', clickable: true }
+    { value: 'master', title: 'Мастер', sortable: true },
+    { value: 'watchSize', title: 'Размер часов', sortable: true },
+    { value: 'date', title: 'Дата', sortable: true },
+    { value: 'time', title: 'Время начала', sortable: true },
+    { value: 'endTime', title: 'Время конца', sortable: true },
+    { value: 'price', title: 'Цена', sortable: true },
+    { value: 'status', title: 'Статус', sortable: true },
+    { value: 'rating', title: 'Рейтинг', sortable: true }
 ];
 
 export const ClientOrders = () => {
@@ -55,7 +55,7 @@ export const ClientOrders = () => {
 
     const [pagination, setPagination] = useState(defaultPagination);
     const [totalPages, setTotalPages] = useState(0);
-    const [sortState, setSortState] = useState(defaultsortState);
+    const [sortByField, setSortByField] = useState(defaultSortByField);
 
     const [client, setClient] = useState({});
     const [orders, setOrders] = useState([]);
@@ -66,7 +66,7 @@ export const ClientOrders = () => {
         const payload = jwtPayload(localStorage.getItem('token'));
         const orders = await ClientService.getClientOrders(payload.id, pagination);
         setTotalPages(Math.ceil(orders.count / pagination.limit));
-        sortByColumn(orders.rows, sortState.value, sortState.isDirectedASC, setOrders);
+        sortByColumn(orders.rows, sortByField.value, sortByField.isDirectedASC, setOrders);
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'));
@@ -193,11 +193,11 @@ export const ClientOrders = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.clickable && (value => {
-                                    sortByColumn(orders, value, sortState.value === value ? !sortState.isDirectedASC : true, setOrders);
-                                    sortState.value === value ? setSortState({ value, isDirectedASC: !sortState.isDirectedASC }) : setSortState({ value, isDirectedASC: true })
+                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
+                                    sortByColumn(orders, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setOrders);
+                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
                                 })}
-                                clickable={tableHeader.clickable} sortState={sortState} />)}
+                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
                         </tr>
                     </thead>
                     <tbody>

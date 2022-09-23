@@ -14,29 +14,29 @@ const defaultOrder = {
     status: ''
 };
 
-const defaultFilterState = {
+const defaultFilters = {
     statuses: [ORDER_STATUSES.AWAITING_CONFIRMATION, ORDER_STATUSES.CONFIRMED],
 };
 const defaultPagination = {
     page: 1,
     limit: 10
 };
-const defaultsortState = {
+const defaultSortByField = {
     value: 'date',
     isDirectedASC: true
 };
 const tableHeaders = [
-    { value: 'id', title: 'id', clickable: true },
-    { value: 'watchSize', title: 'Размер часов', clickable: true },
-    { value: 'date', title: 'Дата', clickable: true },
-    { value: 'time', title: 'Время', clickable: true },
-    { value: 'rating', title: 'Рейтинг', clickable: true },
-    { value: 'City.name', title: 'Город', clickable: true },
-    { value: 'Client.name', title: 'Клиент', clickable: true },
-    { value: 'Master.name', title: 'Мастер', clickable: true },
-    { value: 'status', title: 'Статус', clickable: true },
-    { value: 'price', title: 'Цена', clickable: true },
-    { value: 'change', title: 'Изменение', clickable: false }
+    { value: 'id', title: 'id', sortable: true },
+    { value: 'watchSize', title: 'Размер часов', sortable: true },
+    { value: 'date', title: 'Дата', sortable: true },
+    { value: 'time', title: 'Время', sortable: true },
+    { value: 'rating', title: 'Рейтинг', sortable: true },
+    { value: 'City.name', title: 'Город', sortable: true },
+    { value: 'Client.name', title: 'Клиент', sortable: true },
+    { value: 'Master.name', title: 'Мастер', sortable: true },
+    { value: 'status', title: 'Статус', sortable: true },
+    { value: 'price', title: 'Цена', sortable: true },
+    { value: 'change', title: 'Изменение', sortable: false }
 ];
 
 export const Admin = () => {
@@ -48,18 +48,18 @@ export const Admin = () => {
     const [currentOrder, setCurrentOrder] = useState(defaultOrder);
     const [isModalOpened, setIsModalOpened] = useState(false);
 
-    const [filterState, setFilterState] = useState(defaultFilterState);
+    const [filters, setFilters] = useState(defaultFilters);
     const [pagination, setPagination] = useState(defaultPagination);
     const [totalPages, setTotalPages] = useState(0);
-    const [sortState, setSortState] = useState(defaultsortState);
+    const [sortByField, setSortByField] = useState(defaultSortByField);
 
     const [ordersCount, setOrdersCount] = useState(0);
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        const orders = await OrderService.getOrders({ ...filterState, ...pagination });
+        const orders = await OrderService.getOrders({ ...filters, ...pagination });
         setTotalPages(Math.ceil(orders.count / pagination.limit));
         setOrdersCount(orders.count);
-        sortByColumn(orders.rows, sortState.value, sortState.isDirectedASC, setOrders);
+        sortByColumn(orders.rows, sortByField.value, sortByField.isDirectedASC, setOrders);
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -130,11 +130,11 @@ export const Admin = () => {
                         <thead>
                             <tr>
                                 {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                    key={tableHeader.value} onClick={tableHeader.clickable && (value => {
-                                        sortByColumn(orders, value, sortState.value === value ? !sortState.isDirectedASC : true, setOrders);
-                                        sortState.value === value ? setSortState({ value, isDirectedASC: !sortState.isDirectedASC }) : setSortState({ value, isDirectedASC: true })
+                                    key={tableHeader.value} onClick={tableHeader.sortable && (value => {
+                                        sortByColumn(orders, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setOrders);
+                                        sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
                                     })}
-                                    clickable={tableHeader.clickable} sortState={sortState} />)}
+                                    sortable={tableHeader.sortable} sortByField={sortByField} />)}
                             </tr>
                         </thead>
                         <tbody>

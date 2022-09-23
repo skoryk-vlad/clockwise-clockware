@@ -13,21 +13,21 @@ import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 
 const tableHeaders = [
-    { value: 'client', title: 'Клиент', clickable: true },
-    { value: 'watchSize', title: 'Размер часов', clickable: true },
-    { value: 'city', title: 'Город', clickable: true },
-    { value: 'date', title: 'Дата', clickable: true },
-    { value: 'time', title: 'Время начала', clickable: true },
-    { value: 'endTime', title: 'Время конца', clickable: true },
-    { value: 'price', title: 'Цена', clickable: true },
-    { value: 'status', title: 'Статус', clickable: false },
-    { value: 'change', title: 'Статус', clickable: false }
+    { value: 'client', title: 'Клиент', sortable: true },
+    { value: 'watchSize', title: 'Размер часов', sortable: true },
+    { value: 'city', title: 'Город', sortable: true },
+    { value: 'date', title: 'Дата', sortable: true },
+    { value: 'time', title: 'Время начала', sortable: true },
+    { value: 'endTime', title: 'Время конца', sortable: true },
+    { value: 'price', title: 'Цена', sortable: true },
+    { value: 'status', title: 'Статус', sortable: false },
+    { value: 'change', title: 'Статус', sortable: false }
 ];
 const defaultPagination = {
     page: 1,
     limit: 10
 };
-const defaultsortState = {
+const defaultSortByField = {
     value: 'date',
     isDirectedASC: false
 };
@@ -40,13 +40,13 @@ export const MasterOrders = () => {
 
     const [pagination, setPagination] = useState(defaultPagination);
     const [totalPages, setTotalPages] = useState(0);
-    const [sortState, setSortState] = useState(defaultsortState);
+    const [sortByField, setSortByField] = useState(defaultSortByField);
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'));
         const orders = await MasterService.getMasterOrders(payload.id, pagination);
         setTotalPages(Math.ceil(orders.count / pagination.limit));
-        sortByColumn(orders.rows, sortState.value, sortState.isDirectedASC, setOrders);
+        sortByColumn(orders.rows, sortByField.value, sortByField.isDirectedASC, setOrders);
     });
 
     useEffect(() => {
@@ -79,11 +79,11 @@ export const MasterOrders = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.clickable && (value => {
-                                    sortByColumn(orders, value, sortState.value === value ? !sortState.isDirectedASC : true, setOrders);
-                                    sortState.value === value ? setSortState({ value, isDirectedASC: !sortState.isDirectedASC }) : setSortState({ value, isDirectedASC: true })
+                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
+                                    sortByColumn(orders, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setOrders);
+                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
                                 })}
-                                clickable={tableHeader.clickable} sortState={sortState} />)}
+                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
                         </tr>
                     </thead>
                     <tbody>
