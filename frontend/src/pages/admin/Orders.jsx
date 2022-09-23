@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CityService, ClientService, OrderService } from '../../API/Server';
+import { CityService, ClientService, MasterService, OrderService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
 import { useFetching } from '../../hooks/useFetching';
@@ -7,9 +7,12 @@ import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { OrderForm } from '../../components/Forms/OrderForm';
-import { Table } from '../../components/Table/Table';
 import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE, ROLES, WATCH_SIZES, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
+import { Table } from '../../components/Table/Table';
+import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
+import { OrderFilterForm } from '../../components/Forms/OrderFilterForm';
+import { addDays, formatISO } from 'date-fns';
 
 const defaultOrder = {
     clientId: null,
@@ -22,24 +25,63 @@ const defaultOrder = {
     status: ORDER_STATUSES.AWAITING_CONFIRMATION
 };
 
+const defaultFilterState = {
+    masters: [],
+    cities: [],
+    statuses: [],
+    dateStart: formatISO(addDays(new Date(), -30), { representation: 'date' }),
+    dateEnd: ''
+};
+const defaultPagination = {
+    page: 1,
+    limit: 10
+};
+const defaultsortState = {
+    value: 'date',
+    isDirectedASC: true
+};
+const tableHeaders = [
+    { value: 'id', title: 'id', clickable: true },
+    { value: 'watchSize', title: 'Размер часов', clickable: true },
+    { value: 'date', title: 'Дата', clickable: true },
+    { value: 'time', title: 'Время', clickable: true },
+    { value: 'rating', title: 'Рейтинг', clickable: true },
+    { value: 'City.name', title: 'Город', clickable: true },
+    { value: 'Client.name', title: 'Клиент', clickable: true },
+    { value: 'Master.name', title: 'Мастер', clickable: true },
+    { value: 'status', title: 'Статус', clickable: true },
+    { value: 'price', title: 'Цена', clickable: true },
+    { value: 'change', title: 'Изменение', clickable: false },
+    { value: 'delete', title: 'Удаление', clickable: false }
+];
+
 export const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
     const [clients, setClients] = useState([]);
+    const [masters, setMasters] = useState([]);
 
     const [currentOrder, setCurrentOrder] = useState(defaultOrder);
     const [isModalOpened, setIsModalOpened] = useState(false);
 
+    const [pagination, setPagination] = useState(defaultPagination);
+    const [filterState, setFilterState] = useState(defaultFilterState);
+    const [totalPages, setTotalPages] = useState(0);
+    const [sortState, setSortState] = useState(defaultsortState);
+
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        let orders = await OrderService.getOrders();
-        setOrders(orders);
+        const orders = await OrderService.getOrders({ ...filterState, ...pagination });
+        setTotalPages(Math.ceil(orders.count / pagination.limit));
+        sortByColumn(orders.rows, sortState.value, sortState.isDirectedASC, setOrders);
     });
-    const [fetchAdditionalData] = useFetching(async () => {
+    const [fetchAdditionalData, isAdditionalDataLoading] = useFetching(async () => {
         const cities = await CityService.getCities();
         const clients = await ClientService.getClients();
+        const masters = await MasterService.getMasters();
 
-        setCities(cities);
-        setClients(clients);
+        setCities(cities.rows);
+        setClients(clients.rows);
+        setMasters(masters.rows);
     });
 
     useEffect(() => {
@@ -47,6 +89,15 @@ export const Orders = () => {
         fetchAdditionalData();
         fetchOrders();
     }, []);
+
+    useEffect(() => {
+        fetchOrders();
+    }, [filterState, pagination]);
+
+    useEffect(() => {
+        if (Error)
+            setOrders([]);
+    }, [Error]);
 
     useEffect(() => {
         if (!isModalOpened)
@@ -88,41 +139,26 @@ export const Orders = () => {
         }
     }
 
-    const tableHeaders = ["id", "Размер часов", "Дата", "Время", "Рейтинг", "Город", "Клиент", "Мастер", "Статус", "Цена", "Изменение", "Удаление"];
-
-    const tableBodies = [
-        `id`,
-        `watchSize`,
-        `date`,
-        `time`,
-        `rating`,
-        `City.name`,
-        `Client.name`,
-        `Master.name`,
-        `status`,
-        `price`,
-        {
-            name: `Изменить`,
-            callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(order => order.id === id)); },
-            param: `id`
-        },
-        {
-            name: `Удалить`,
-            callback: deleteOrder,
-            param: `id`
-        }
-    ];
-
     return (
         <div className='admin-container'>
             <Navbar role={ROLES.ADMIN} />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Заказы</h1>
+                <div className='admin-body__top'>
+                    {!isAdditionalDataLoading && <OrderFilterForm filterState={{
+                        ...defaultFilterState,
+                        masters: Array.isArray(defaultFilterState.masters) ? defaultFilterState.masters.map(masterId => ({ value: masterId, label: masters.find(master => masterId === master.id)?.name })) : [],
+                        cities: Array.isArray(defaultFilterState.cities) ? defaultFilterState.cities.map(cityId => ({ value: cityId, label: cities.find(city => cityId === city.id)?.name })) : [],
+                        statuses: Array.isArray(defaultFilterState.statuses) ? defaultFilterState.statuses.map(status => ({ value: status, label: ORDER_STATUSES_TRANSLATE[status] })) : []
+                    }}
+                        onClick={newFilterState => { JSON.stringify(filterState) !== JSON.stringify(newFilterState) && setFilterState(newFilterState); }}
+                        cities={cities} masters={masters} setFilterState={setFilterState}></OrderFilterForm>}
 
-                <div className="admin-body__btns">
-                    <AdminButton onClick={() => { setIsModalOpened(true); setCurrentOrder(defaultOrder) }}>
-                        Добавить
-                    </AdminButton>
+                    <div className="admin-body__btns">
+                        <AdminButton onClick={() => { setIsModalOpened(true); setCurrentOrder(defaultOrder) }}>
+                            Добавить
+                        </AdminButton>
+                    </div>
                 </div>
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
@@ -130,11 +166,37 @@ export const Orders = () => {
                         clients={clients} cities={cities} btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
                 </MyModal>
 
-                <Table
-                    data={orders.map(order => ({...order, status: ORDER_STATUSES_TRANSLATE[order.status], watchSize: WATCH_SIZES_TRANSLATE[order.watchSize]}))}
-                    tableHeaders={tableHeaders}
-                    tableBodies={tableBodies}
-                />
+                <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}
+                    changePage={changeTo => (changeTo > 0 && changeTo <= totalPages) && setPagination({ ...pagination, page: changeTo })}
+                    currentPage={pagination.page} totalPages={totalPages}>
+                    <thead>
+                        <tr>
+                            {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
+                                key={tableHeader.value} onClick={tableHeader.clickable && (value => {
+                                    sortByColumn(orders, value, sortState.value === value ? !sortState.isDirectedASC : true, setOrders);
+                                    sortState.value === value ? setSortState({ value, isDirectedASC: !sortState.isDirectedASC }) : setSortState({ value, isDirectedASC: true })
+                                })}
+                                clickable={tableHeader.clickable} sortState={sortState} />)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {orders.map(order => <tr key={order.id}>
+                            <td>{order.id}</td>
+                            <td>{WATCH_SIZES_TRANSLATE[order.watchSize]}</td>
+                            <td>{order.date}</td>
+                            <td>{order.time}</td>
+                            <td>{order.rating}</td>
+                            <td>{order.City.name}</td>
+                            <td>{order.Client.name}</td>
+                            <td>{order.Master.name}</td>
+                            <td>{ORDER_STATUSES_TRANSLATE[order.status]}</td>
+                            <td>{order.price}</td>
+                            <td className='tableLink' onClick={() => { setIsModalOpened(true); setCurrentOrder(orders.find(orderToFind => orderToFind.id === order.id)) }}><span>Изменить</span></td>
+                            <td className='tableLink' onClick={() => deleteOrder(order.id)}><span>Удалить</span></td>
+                        </tr>
+                        )}
+                    </tbody>
+                </Table>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка {Error}</h2>

@@ -5,7 +5,7 @@ import { sendConfirmationUserMail, sendUserLoginInfoMail } from './../mailer';
 import { sequelize } from './../sequelize';
 import { Op } from 'sequelize';
 import { ROLES, User } from './../models/user.model';
-import { AddClientSchema, DeleteClientSchema, GetClientSchema, UpdateClientSchema, AddClientByAdminSchema } from './../validationSchemas/client.schema';
+import { AddClientSchema, DeleteClientSchema, GetClientSchema, UpdateClientSchema, AddClientByAdminSchema, GetClientsSchema } from './../validationSchemas/client.schema';
 import { Client, CLIENT_STATUSES } from './../models/client.model';
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
@@ -78,17 +78,20 @@ export default class ClientController {
     }
     async getClients(req: Request, res: Response): Promise<Response> {
         try {
-            const clients = await Client.findAll({
+            const { limit, page } = GetClientsSchema.parse(req.query);
+
+            const { count, rows } = await Client.findAndCountAll({
                 attributes: { include: [[sequelize.col('User.email'), 'email']] },
                 include: {
                     model: User,
                     attributes: []
                 },
-                order: [
-                    ['id', 'ASC']
-                ]
+                order: ['id'],
+                limit: limit || 100,
+                offset: limit * (page - 1) || 0,
+                distinct: true
             });
-            return res.status(200).json(clients);
+            return res.status(200).json({ count, rows });
         } catch (error) {
             return res.sendStatus(500);
         }
@@ -117,7 +120,9 @@ export default class ClientController {
             const client = await Client.findByPk(id);
             if (!client) return res.status(404).json('No such client');
 
-            const orders = await Order.findAll({
+            const { limit, page } = GetClientsSchema.parse(req.query);
+
+            const { count, rows } = await Order.findAndCountAll({
                 where: {
                     clientId: id
                 },
@@ -125,9 +130,11 @@ export default class ClientController {
                 include: [{
                     model: Master, attributes: []
                 }],
-                order: ['id']
+                order: [['date', 'DESC']],
+                limit: limit || 100,
+                offset: limit * (page - 1) || 0
             });
-            return res.status(200).json(orders);
+            return res.status(200).json({ count, rows });
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);

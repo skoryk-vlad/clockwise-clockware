@@ -37,7 +37,7 @@ export interface OrderAttributes {
     price: number;
 }
 
-type OrderCreationAttributes = Optional<OrderAttributes, 'id'>;
+export type OrderCreationAttributes = Optional<OrderAttributes, 'id'>;
 
 export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = sequelize.define(
     'Order',

@@ -15,6 +15,23 @@ export const AddMasterByAdminSchema = z.object({
     cities: z.array(z.number().int().positive()).nonempty(),
     status: z.nativeEnum(MASTER_STATUSES)
 });
+export const GetMastersSchema = z.object({
+    limit: z.preprocess(
+        (a) => parseInt(z.string().parse(a), 10),
+        z.number().positive()
+    ).optional(),
+    page: z.preprocess(
+        (a) => parseInt(z.string().parse(a), 10),
+        z.number().positive()
+    ).optional(),
+    cities: z.string().regex(/^(?:\d\,?)+\d?$/).transform(string => string.split(',').map(cityId => +cityId)).optional(),
+    statuses: z.string().refine(string => {
+        const statuses = string.split(',');
+        const filteredStatuses = statuses.filter(status => Object.values(MASTER_STATUSES).includes(status as MASTER_STATUSES));
+        if(statuses.length !== filteredStatuses.length) return false;
+        return true;
+    }).transform(string => string.split(',')).optional()
+});
 export const GetMasterSchema = z.object({
     id: z.number().int().positive()
 });

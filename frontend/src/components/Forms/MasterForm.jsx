@@ -7,19 +7,17 @@ import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { MASTER_STATUSES, MASTER_STATUSES_TRANSLATE } from '../../constants';
+import Select from 'react-select';
 
 const MasterSchema = z.object({
     name: z.string().trim().min(1, { message: 'Требуется имя' })
         .min(3, { message: 'Имя должно быть не короче 3-х букв' }).max(255),
     email: z.string().trim().min(1, { message: 'Требуется почта' }).email({ message: 'Неверный формат почты' }).max(255),
-    cities: z.array(z.number().int().positive()).nonempty({ message: 'Требуется выбрать хотя бы 1 город' }),
+    cities: z.array(z.object({
+        value: z.number().int().positive()
+    })).nonempty('Требуется выбрать хотя бы 1 город'),
     status: z.nativeEnum(MASTER_STATUSES)
 });
-
-const deleteValueFromArray = (array, value) => {
-    array.splice(array.indexOf(parseInt(value)), 1);
-    return array;
-}
 
 export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
     const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
@@ -28,7 +26,7 @@ export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
         defaultValues: master,
         resolver: zodResolver(MasterSchema)
     });
-    const onSubmit = () => onClick(getValues());
+    const onSubmit = () => onClick({ ...getValues(), cities: getValues().cities.map(city => city.value) });
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
@@ -94,12 +92,14 @@ export const MasterForm = ({ master, onClick, btnTitle, cities }) => {
                         field: { onChange, value, name },
                         fieldState: { error },
                     }) => (
-                        <MySelect multiple={true} size="4"
-                            name={name}
-                            onChange={(value) => onChange(getValues().cities.includes(parseInt(value)) ? deleteValueFromArray(getValues().cities, +value) : [...getValues().cities, +value])}
+                        <Select
+                            closeMenuOnSelect={false}
+                            defaultValue={master.cities}
                             value={value}
-                            error={error}
-                            options={cities.map(city => ({ value: city.id, name: city.name }))}
+                            isMulti
+                            onChange={onChange}
+                            options={cities.map(city => ({ value: city.id, label: city.name }))}
+                            placeholder='Выбор городов...'
                         />
                     )}
                 />

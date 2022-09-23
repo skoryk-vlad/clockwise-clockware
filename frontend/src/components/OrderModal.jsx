@@ -35,7 +35,7 @@ export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
     const [cities, setCities] = useState([]);
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         const cities = await CityService.getCities();
-        setCities(cities);
+        setCities(cities.rows);
     });
     useEffect(() => {
         fetchCities();

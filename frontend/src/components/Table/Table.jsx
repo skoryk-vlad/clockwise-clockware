@@ -1,62 +1,45 @@
 import React from 'react';
 import classes from './Table.module.css';
 
-const getDeepObject = (obj, parts) => {
-    let current = parts[0];
-    if (!obj[current] || parts.length < 1) {
-        return obj;
-    }
-    obj = obj[current];
-    current = parts[0];
-    parts.shift();
-    return getDeepObject(obj, parts);
-};
+const availableLimit = [10, 25, 50];
+const defaultValue = availableLimit[0];
 
-const getProperty = (obj, prop) => {
-    const parts = prop.split(".");
+export const Table = ({ children, changeLimit, changePage, currentPage, totalPages }) => {
+    const pages = [0, 0, 0, currentPage, 0, 0, 0].map((num, index) => {
+        if (currentPage - 3 + index > 0 && currentPage - 3 + index <= totalPages)
+            return currentPage - 3 + index;
+    });
 
-    if (Array.isArray(parts)) {
-        const last = parts.length > 1 ? parts.pop() : parts;
-
-        obj = getDeepObject(obj, parts);
-
-        if (typeof obj === "object" && obj !== null) {
-            return obj[last];
-        }
-        return obj || '-';
-    } else {
-        throw new Error("parts is not valid array");
-    }
-};
-
-export const Table = ({ data, tableHeaders, tableBodies }) => {
     return (
-        <table className={classes.table}>
-            <thead>
-                <tr>
-                    {tableHeaders.map((header, index) => (
-                        <th key={index}>{header}</th>
-                    ))}
-                </tr>
-            </thead>
-            <tbody>
-                {data.map(data => (
-                    <tr key={data.id}>
-                        {tableBodies.map(body =>
-                            typeof body === "string" ? (
-                                <td key={body}>{getProperty(data, body)}</td>
-                            ) : (
-                                body.mixed && getProperty(data, body?.field) ?
-                                    <td key={body}>{getProperty(data, body.field)}</td>
-                                    :
-                                    <td key={body.name} className={classes.adminBody__link}>
-                                        <span onClick={() => body.callback(getProperty(data, body.param))} >{body.name}</span>
-                                    </td>
-                            )
-                        )}
-                    </tr>
-                ))}
-            </tbody>
-        </table>
+        <div>
+            <table className={classes.table}>
+                {children}
+            </table>
+            <div className={classes.paginationBtns}>
+                <div></div>
+                <div className={classes.paginationBtns_page}>
+                    {pages.map((num, index) => {
+                        if (num !== currentPage) {
+                            return <div key={index} className={classes.changePage} onClick={() => changePage(num)}>{num || ''}</div>
+                        } else {
+                            return <React.Fragment key={index}>
+                                <button className={classes.paginationBtns__btn} onClick={() => changePage(currentPage - 1)} key={-num}></button>
+                                <div className={classes.currentPage} key={num}>{currentPage || 0}</div>
+                                <button className={classes.paginationBtns__btn} onClick={() => changePage(currentPage + 1)} key={-num - 1}></button>
+                            </React.Fragment>
+                        }
+                    })}
+                    <div className={classes.lastPage}>
+                        {totalPages - 3 > currentPage && <>
+                            <div className={classes.currentPage}>...</div>
+                            <div className={classes.changePage} onClick={() => changePage(totalPages)}>{totalPages}</div>
+                        </>}
+                    </div>
+                </div>
+                <select name="limit" defaultValue={defaultValue} className={classes.paginationBtns_select} onChange={event => changeLimit(+event.target.value)}>
+                    {availableLimit.map(limit => <option value={limit} key={limit}>{limit}</option>)}
+                </select>
+            </div>
+        </div>
     )
 }

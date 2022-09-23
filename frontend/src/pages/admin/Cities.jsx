@@ -7,14 +7,31 @@ import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { CityForm } from '../../components/Forms/CityForm';
-import { Table } from '../../components/Table/Table';
 import { ROLES } from '../../constants';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
+import { Table } from '../../components/Table/Table';
+import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
 
 const defaultCity = {
     name: '',
     price: 0
 };
+
+const defaultsortState = {
+    value: 'id',
+    isDirectedASC: true
+};
+const defaultPagination = {
+    page: 1,
+    limit: 10
+};
+const tableHeaders = [
+    { value: 'id', title: 'id', clickable: true },
+    { value: 'name', title: 'Имя', clickable: true },
+    { value: 'price', title: 'Цена', clickable: true },
+    { value: 'change', title: 'Изменение', clickable: false },
+    { value: 'delete', title: 'Удаление', clickable: false }
+];
 
 export const Cities = () => {
     const [cities, setCities] = useState([]);
@@ -22,16 +39,24 @@ export const Cities = () => {
     const [currentCity, setCurrentCity] = useState(defaultCity);
     const [isModalOpened, setIsModalOpened] = useState(false);
 
-    const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
-        const cities = await CityService.getCities();
+    const [pagination, setPagination] = useState(defaultPagination);
+    const [totalPages, setTotalPages] = useState(0);
+    const [sortState, setSortState] = useState(defaultsortState);
 
-        setCities(cities);
+    const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
+        const cities = await CityService.getCities(pagination);
+        setTotalPages(Math.ceil(cities.count / pagination.limit));
+        sortByColumn(cities.rows, sortState.value, sortState.isDirectedASC, setCities);
     });
 
     useEffect(() => {
         document.title = "Города - Clockwise Clockware";
         fetchCities();
     }, []);
+
+    useEffect(() => {
+        fetchCities();
+    }, [pagination]);
 
     useEffect(() => {
         if (!isModalOpened)
@@ -71,24 +96,6 @@ export const Cities = () => {
         }
     }
 
-    const tableHeaders = ["id", "Имя", "Цена", "Изменение", "Удаление"];
-
-    const tableBodies = [
-        `id`,
-        `name`,
-        `price`,
-        {
-            name: `Изменить`,
-            callback: id => { setIsModalOpened(true); setCurrentCity(cities.find(city => city.id === id)) },
-            param: `id`
-        },
-        {
-            name: `Удалить`,
-            callback: deleteCity,
-            param: `id`
-        }
-    ];
-
     return (
         <div className='admin-container'>
             <Navbar role={ROLES.ADMIN} />
@@ -105,11 +112,30 @@ export const Cities = () => {
                     {currentCity && <CityForm city={currentCity} onClick={currentCity.id ? updateCity : addCity} btnTitle={currentCity.id ? 'Изменить' : 'Добавить'}></CityForm>}
                 </MyModal>
 
-                <Table
-                    data={cities}
-                    tableHeaders={tableHeaders}
-                    tableBodies={tableBodies}
-                />
+                <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}
+                    changePage={changeTo => (changeTo > 0 && changeTo <= totalPages) && setPagination({ ...pagination, page: changeTo })}
+                    currentPage={pagination.page} totalPages={totalPages}>
+                    <thead>
+                        <tr>
+                            {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
+                                key={tableHeader.value} onClick={tableHeader.clickable && (value => {
+                                    sortByColumn(cities, value, sortState.value === value ? !sortState.isDirectedASC : true, setCities);
+                                    sortState.value === value ? setSortState({ value, isDirectedASC: !sortState.isDirectedASC }) : setSortState({ value, isDirectedASC: true })
+                                })}
+                                clickable={tableHeader.clickable} sortState={sortState} />)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {cities.map(city => <tr key={city.id}>
+                            <td>{city.id}</td>
+                            <td>{city.name}</td>
+                            <td>{city.price}</td>
+                            <td className='tableLink' onClick={() => { setIsModalOpened(true); setCurrentCity(cities.find(cityToFind => cityToFind.id === city.id)) }}><span>Изменить</span></td>
+                            <td className='tableLink' onClick={() => deleteCity(city.id)}><span>Удалить</span></td>
+                        </tr>
+                        )}
+                    </tbody>
+                </Table>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>

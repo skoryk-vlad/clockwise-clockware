@@ -6,10 +6,31 @@ import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { jwtPayload } from '../../components/PrivateRoute';
+import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
 import { Table } from '../../components/Table/Table';
 import { ORDER_MASTER_STATUSES_TRANSLATE, ROLES, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
+
+const tableHeaders = [
+    { value: 'client', title: 'Клиент', clickable: true },
+    { value: 'watchSize', title: 'Размер часов', clickable: true },
+    { value: 'city', title: 'Город', clickable: true },
+    { value: 'date', title: 'Дата', clickable: true },
+    { value: 'time', title: 'Время начала', clickable: true },
+    { value: 'endTime', title: 'Время конца', clickable: true },
+    { value: 'price', title: 'Цена', clickable: true },
+    { value: 'status', title: 'Статус', clickable: false },
+    { value: 'change', title: 'Статус', clickable: false }
+];
+const defaultPagination = {
+    page: 1,
+    limit: 10
+};
+const defaultsortState = {
+    value: 'date',
+    isDirectedASC: false
+};
 
 export const MasterOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -17,11 +38,15 @@ export const MasterOrders = () => {
     const [currentOrder, setCurrentOrder] = useState(null);
     const [isModalOpened, setIsModalOpened] = useState(false);
 
-    const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        const payload = jwtPayload(localStorage.getItem('token'))
-        const orders = await MasterService.getMasterOrders(payload.id);
+    const [pagination, setPagination] = useState(defaultPagination);
+    const [totalPages, setTotalPages] = useState(0);
+    const [sortState, setSortState] = useState(defaultsortState);
 
-        setOrders(orders);
+    const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
+        const payload = jwtPayload(localStorage.getItem('token'));
+        const orders = await MasterService.getMasterOrders(payload.id, pagination);
+        setTotalPages(Math.ceil(orders.count / pagination.limit));
+        sortByColumn(orders.rows, sortState.value, sortState.isDirectedASC, setOrders);
     });
 
     useEffect(() => {
@@ -29,8 +54,12 @@ export const MasterOrders = () => {
         fetchOrders();
     }, []);
 
+    useEffect(() => {
+        fetchOrders();
+    }, [pagination]);
+
     const changeStatus = async (order) => {
-        if(order.status === 'completed') {
+        if (order.status === 'completed') {
             await OrderService.changeStatusById(order.id, order.status);
             fetchOrders();
         }
@@ -38,35 +67,40 @@ export const MasterOrders = () => {
         setIsModalOpened(false);
     };
 
-    const tableHeaders = ["Клиент", "Размер часов", "Город", "Дата", "Время начала", "Время конца", "Цена", "Статус", "Статус"];
-
-    const tableBodies = [
-        `client`,
-        `watchSize`,
-        `city`,
-        `date`,
-        `time`,
-        `endTime`,
-        `price`,
-        `status`,
-        {
-            name: `Изменить`,
-            callback: id => { setIsModalOpened(true); setCurrentOrder(orders.find(order => order.id === id)); },
-            param: `id`
-        }
-    ];
-
     return (
         <div className='admin-container'>
             <Navbar role={ROLES.MASTER} />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Заказы</h1>
 
-                <Table
-                    data={orders.map(order => ({ ...order, watchSize: WATCH_SIZES_TRANSLATE[order.watchSize], status: ORDER_MASTER_STATUSES_TRANSLATE[order.status === 'completed' ? 'completed' : 'not completed'] }))}
-                    tableHeaders={tableHeaders}
-                    tableBodies={tableBodies}
-                />
+                <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}
+                    changePage={changeTo => (changeTo > 0 && changeTo <= totalPages) && setPagination({ ...pagination, page: changeTo })}
+                    currentPage={pagination.page} totalPages={totalPages}>
+                    <thead>
+                        <tr>
+                            {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
+                                key={tableHeader.value} onClick={tableHeader.clickable && (value => {
+                                    sortByColumn(orders, value, sortState.value === value ? !sortState.isDirectedASC : true, setOrders);
+                                    sortState.value === value ? setSortState({ value, isDirectedASC: !sortState.isDirectedASC }) : setSortState({ value, isDirectedASC: true })
+                                })}
+                                clickable={tableHeader.clickable} sortState={sortState} />)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {orders.map(order => <tr key={order.id}>
+                            <td>{order.client}</td>
+                            <td>{WATCH_SIZES_TRANSLATE[order.watchSize]}</td>
+                            <td>{order.city}</td>
+                            <td>{order.date}</td>
+                            <td>{order.time}</td>
+                            <td>{order.endTime}</td>
+                            <td>{order.price}</td>
+                            <td>{ORDER_MASTER_STATUSES_TRANSLATE[order.status === 'completed' ? 'completed' : 'not completed']}</td>
+                            <td className='tableLink' onClick={() => { setIsModalOpened(true); setCurrentOrder(orders.find(orderToFind => orderToFind.id === order.id)); }}><span>Выставить</span></td>
+                        </tr>
+                        )}
+                    </tbody>
+                </Table>
 
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>

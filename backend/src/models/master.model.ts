@@ -14,7 +14,7 @@ export interface MasterAttributes {
     status: MASTER_STATUSES;
 }
 
-type MasterCreationAttributes = Optional<MasterAttributes, 'id'>;
+export type MasterCreationAttributes = Optional<MasterAttributes, 'id'>;
 
 export const Master: ModelDefined<MasterAttributes, MasterCreationAttributes> = sequelize.define(
     'Master',
