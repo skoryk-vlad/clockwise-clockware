@@ -22,7 +22,7 @@ const defaultOrder = {
     date: '',
     time: null,
     rating: 0,
-    status: ORDER_STATUSES.AWAITING_CONFIRMATION
+    status: ORDER_STATUSES.CONFIRMED
 };
 
 const defaultPagination = {
@@ -116,7 +116,7 @@ export const ClientOrders = () => {
             await OrderService.addOrder({ ...order, name: client.name, email: client.email });
             setIsModalOpened(false);
             setIsFormOpened(true);
-            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!');
+            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен!');
             setOrder(defaultOrder);
             setIsFormOpened(true);
             fetchOrders();

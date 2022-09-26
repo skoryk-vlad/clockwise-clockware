@@ -75,3 +75,7 @@ label {
     border-radius: 4px;
     border-color: #ccc;
 }
+.isAgreeMessage {
+    color: rgb(19, 169, 19);
+    font-weight: bold;
+}

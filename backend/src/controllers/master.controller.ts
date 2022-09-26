@@ -1,8 +1,8 @@
 import { sequelize } from './../sequelize';
 import { CityMaster } from './../models/cityMaster.model';
 import { Client } from './../models/client.model';
-import { sendConfirmationUserMail, sendUserLoginInfoMail, sendMasterApprovedMail } from './../mailer';
-import { generatePassword, encryptPassword } from './../password';
+import { sendConfirmationUserMail, sendMasterApprovedMail } from './../mailer';
+import { encryptPassword } from './../password';
 import { User, ROLES } from './../models/user.model';
 import { City } from './../models/city.model';
 import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, AddMasterByAdminSchema, GetMastersSchema } from './../validationSchemas/master.schema';
@@ -43,7 +43,7 @@ export default class MasterController {
                 transaction: addMasterTransaction
             });
 
-            await sendConfirmationUserMail(email, password, confirmationToken, name);
+            await sendConfirmationUserMail(email, confirmationToken, name);
 
             await addMasterTransaction.commit();
             return res.status(201).json(master);
@@ -61,8 +61,6 @@ export default class MasterController {
             const existUser = await User.findOne({ where: { email } });
             if (existUser) return res.status(409).json('User with this email exist');
 
-            const password = generatePassword();
-            const hash = encryptPassword(password);
             const confirmationToken = uuidv4();
 
             const existCities = await City.findAll({
@@ -71,7 +69,7 @@ export default class MasterController {
             if (existCities.length !== cities.length) return res.status(404).json('Some of the cities does not exist');
 
             const user = await User.create({
-                email, password: hash, role: ROLES.MASTER, confirmationToken
+                email, role: ROLES.MASTER, confirmationToken
             }, {
                 transaction: addMasterTransaction
             });
@@ -84,11 +82,7 @@ export default class MasterController {
                 transaction: addMasterTransaction
             });
 
-            if (status === MASTER_STATUSES.NOT_CONFIRMED) {
-                await sendConfirmationUserMail(email, password, confirmationToken, name);
-            } else if (status === MASTER_STATUSES.CONFIRMED || status === MASTER_STATUSES.APPROVED) {
-                await sendUserLoginInfoMail(email, password, name);
-            }
+            await sendConfirmationUserMail(email, confirmationToken, name);
 
             await addMasterTransaction.commit();
             return res.status(201).json(master);
@@ -294,7 +288,12 @@ export default class MasterController {
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
 
+            const order = await Order.findOne({ where: { masterId: id } });
+            if (order) return res.status(409).json('Master has orders');
+
             const user = await User.findByPk(master.getDataValue('userId'));
+
+            await CityMaster.destroy({ where: {masterId: id}, transaction: deleteMasterTransaction });
 
             await master.destroy({ transaction: deleteMasterTransaction });
             await user.destroy({ transaction: deleteMasterTransaction });

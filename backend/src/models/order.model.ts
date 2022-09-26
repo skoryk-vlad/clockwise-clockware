@@ -5,7 +5,6 @@ import { sequelize } from '../sequelize';
 import { DataTypes, Optional, ModelDefined } from 'sequelize';
 
 export enum ORDER_STATUSES {
-    AWAITING_CONFIRMATION = 'awaiting confirmation',
     CONFIRMED = 'confirmed',
     COMPLETED = 'completed',
     CANCELED = 'canceled'
@@ -19,7 +18,13 @@ type WatchSizesType = Partial<Record<WATCH_SIZES, number>>;
 export const WatchSizes: WatchSizesType = {
     [WATCH_SIZES.SMALL]: 1,
     [WATCH_SIZES.MEDIUM]: 2,
-    [WATCH_SIZES.BIG]: 3,
+    [WATCH_SIZES.BIG]: 3
+}
+type WatchSizesTranslateType = Partial<Record<WATCH_SIZES, string>>;
+export const WatchSizesTranslate: WatchSizesTranslateType = {
+    [WATCH_SIZES.SMALL]: 'Маленькие',
+    [WATCH_SIZES.MEDIUM]: 'Средние',
+    [WATCH_SIZES.BIG]: 'Большие'
 }
 
 export interface OrderAttributes {
@@ -33,7 +38,6 @@ export interface OrderAttributes {
     cityId: number;
     masterId: number;
     status: ORDER_STATUSES;
-    confirmationToken: string;
     price: number;
 }
 
@@ -72,10 +76,6 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
-        },
-        confirmationToken: {
-            type: DataTypes.UUID,
-            allowNull: false
         },
         price: {
             type: DataTypes.INTEGER,

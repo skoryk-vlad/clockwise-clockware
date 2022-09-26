@@ -200,9 +200,9 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
                     )}
                 />
             </div>
-
-            <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
-                disabled={(isSubmitted && !isValid)}>Оформить заказ</AdminButton>
+            
+            <AdminButton type="submit" className={((isSubmitted && Object.keys(errors).length)) ? "disabledBtn" : ""}
+                disabled={((isSubmitted && Object.keys(errors).length))}>Оформить заказ</AdminButton>
         </form>
     )
 }
