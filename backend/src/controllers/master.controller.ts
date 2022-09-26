@@ -289,7 +289,7 @@ export default class MasterController {
             if (!master) return res.status(404).json('No such master');
 
             const order = await Order.findOne({ where: { masterId: id } });
-            if (order) return res.status(409).json('Master has orders');
+            if (order) return res.status(409).json('The master has orders');
 
             const user = await User.findByPk(master.getDataValue('userId'));
 

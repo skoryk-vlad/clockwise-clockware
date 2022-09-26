@@ -96,7 +96,7 @@ export const Masters = () => {
             notify(NOTIFY_TYPES.SUCCESS, 'Мастер успешно удален');
             fetchMasters();
         } catch (error) {
-            if (error.response.data === 'Master has orders')
+            if (error.response.data === 'The master has orders')
                 notify(NOTIFY_TYPES.ERROR, 'У данного мастера есть заказы. Его удаление невозможно!');
             else
                 notify(NOTIFY_TYPES.ERROR);
