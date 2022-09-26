@@ -60,7 +60,7 @@ export const Masters = () => {
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
         const masters = await MasterService.getMasters({ ...filters, ...pagination });
         setTotalPages(Math.ceil(masters.count / pagination.limit));
-        sortByColumn(masters.rows, sortByField.value, sortByField.isDirectedASC, setMasters);
+        sortByColumn(masters.rows.map(master => ({...master, cities: master.Cities.map(city => city.id)})), sortByField.value, sortByField.isDirectedASC, setMasters);
     });
 
     const [fetchAdditionalData, isCitiesLoading] = useFetching(async () => {
@@ -96,7 +96,10 @@ export const Masters = () => {
             notify(NOTIFY_TYPES.SUCCESS, 'Мастер успешно удален');
             fetchMasters();
         } catch (error) {
-            notify(NOTIFY_TYPES.ERROR);
+            if (error.response.data === 'The master has orders')
+                notify(NOTIFY_TYPES.ERROR, 'У данного мастера есть заказы. Его удаление невозможно!');
+            else
+                notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
         }
     }
@@ -153,7 +156,7 @@ export const Masters = () => {
                         </AdminButton>
                     </div>
                 </div>
-
+                
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
                     {masterEmailToReset && <ConfirmationModal text='Вы уверены, что хотите сбросить пароль пользователя?' onAccept={() => resetMasterPassword(masterEmailToReset)} onReject={() => setIsModalOpened(false)} />}
                     {currentMaster && <MasterForm master={currentMaster} onClick={currentMaster.id ? updateMaster : addMaster} cities={cities} btnTitle={currentMaster.id ? 'Изменить' : 'Добавить'}></MasterForm>}

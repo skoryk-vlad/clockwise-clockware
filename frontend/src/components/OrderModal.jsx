@@ -16,7 +16,7 @@ const defaultOrder = {
     cityId: null,
     date: "",
     time: null,
-    status: ORDER_STATUSES.AWAITING_CONFIRMATION
+    status: ORDER_STATUSES.CONFIRMED
 };
 
 export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
@@ -51,7 +51,7 @@ export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
         await OrderService.addOrder(order);
         setIsFormOpened(true);
         setIsOrderModalOpened(false);
-        notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!');
+        notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен!');
         setOrder(defaultOrder);
         setIsFormOpened(true);
     }

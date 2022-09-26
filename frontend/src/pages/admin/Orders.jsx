@@ -22,7 +22,7 @@ const defaultOrder = {
     date: '',
     time: null,
     rating: 0,
-    status: ORDER_STATUSES.AWAITING_CONFIRMATION
+    status: ORDER_STATUSES.CONFIRMED
 };
 
 const defaultFilters = {

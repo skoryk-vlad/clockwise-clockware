@@ -1,11 +1,9 @@
 export const ORDER_STATUSES = {
-    AWAITING_CONFIRMATION: 'awaiting confirmation',
     CONFIRMED: 'confirmed',
     COMPLETED: 'completed',
     CANCELED: 'canceled'
 }
 export const ORDER_STATUSES_TRANSLATE = {
-    [ORDER_STATUSES.AWAITING_CONFIRMATION]: 'Ожидает подтверждения',
     [ORDER_STATUSES.CONFIRMED]: 'Подтвержден',
     [ORDER_STATUSES.COMPLETED]: 'Выполнен',
     [ORDER_STATUSES.CANCELED]: 'Отменен'

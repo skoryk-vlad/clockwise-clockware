@@ -1,6 +1,7 @@
+import { CLIENT_STATUSES } from './../models/client.model';
 import { sequelize } from './../sequelize';
-import { sendConfirmationUserMail } from './../mailer';
-import { Master } from './../models/master.model';
+import { sendUserLoginInfoMail, sendConfirmationUserMail } from './../mailer';
+import { Master, MASTER_STATUSES } from './../models/master.model';
 import { GetUserSchema } from './../validationSchemas/user.schema';
 import { generatePassword, encryptPassword } from '../password';
 import { sendResetedPasswordMail } from '../mailer';
@@ -46,16 +47,19 @@ export default class UserController {
             const hash = encryptPassword(password);
             user.update({ password: hash });
 
-            let name = '';
+            let name = '', confirmed = false;
             if (user.getDataValue('role') === ROLES.CLIENT) {
                 const client = await Client.findOne({ where: { userId: user.getDataValue('id') } });
+                if (client.getDataValue('status') !== CLIENT_STATUSES.NOT_CONFIRMED) confirmed = true;
                 name = client.getDataValue('name');
             } else if (user.getDataValue('role') === ROLES.MASTER) {
                 const master = await Master.findOne({ where: { userId: user.getDataValue('id') } });
+                if (master.getDataValue('status') !== MASTER_STATUSES.NOT_CONFIRMED) confirmed = true;
                 name = master.getDataValue('name');
             }
 
-            await sendConfirmationUserMail(user.getDataValue('email'), password, user.getDataValue('confirmationToken'), name);
+            if (!confirmed) await sendConfirmationUserMail(user.getDataValue('email'), user.getDataValue('confirmationToken'), name);
+            await sendUserLoginInfoMail(user.getDataValue('email'), password, name);
             return res.status(200).json(user);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
