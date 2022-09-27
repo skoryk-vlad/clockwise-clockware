@@ -10,7 +10,8 @@ import { CityForm } from '../../components/Forms/CityForm';
 import { ROLES } from '../../constants';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { Table } from '../../components/Table/Table';
-import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
+import { ColumnHead } from '../../components/Table/ColumnHead';
+import { CityFilterForm } from '../../components/Forms/CityFilterForm';
 
 const defaultCity = {
     name: '',
@@ -18,8 +19,11 @@ const defaultCity = {
 };
 
 const defaultSortByField = {
-    value: 'id',
+    sortedField: 'id',
     isDirectedASC: true
+};
+const defaultFilters = {
+    name: ''
 };
 const defaultPagination = {
     page: 1,
@@ -40,13 +44,14 @@ export const Cities = () => {
     const [isModalOpened, setIsModalOpened] = useState(false);
 
     const [pagination, setPagination] = useState(defaultPagination);
+    const [filters, setFilters] = useState(defaultFilters);
     const [totalPages, setTotalPages] = useState(0);
     const [sortByField, setSortByField] = useState(defaultSortByField);
 
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
-        const cities = await CityService.getCities(pagination);
+        const cities = await CityService.getCities({ ...pagination, ...sortByField, ...filters });
         setTotalPages(Math.ceil(cities.count / pagination.limit));
-        sortByColumn(cities.rows, sortByField.value, sortByField.isDirectedASC, setCities);
+        setCities(cities.rows);
     });
 
     useEffect(() => {
@@ -56,7 +61,7 @@ export const Cities = () => {
 
     useEffect(() => {
         fetchCities();
-    }, [pagination]);
+    }, [pagination, sortByField, filters]);
 
     useEffect(() => {
         if (!isModalOpened)
@@ -101,11 +106,14 @@ export const Cities = () => {
             <Navbar role={ROLES.ADMIN} />
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Города</h1>
-
-                <div className="admin-body__btns">
-                    <AdminButton onClick={() => { setIsModalOpened(true); setCurrentCity(defaultCity) }}>
-                        Добавить
-                    </AdminButton>
+                <div className='admin-body__top'>
+                    <CityFilterForm filters={defaultFilters} setFilters={setFilters}
+                        onClick={newFilterState => { JSON.stringify(filters) !== JSON.stringify(newFilterState) && setFilters(newFilterState); }} ></CityFilterForm>
+                    <div className="admin-body__btns">
+                        <AdminButton onClick={() => { setIsModalOpened(true); setCurrentCity(defaultCity) }}>
+                            Добавить
+                        </AdminButton>
+                    </div>
                 </div>
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
@@ -118,11 +126,11 @@ export const Cities = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
-                                    sortByColumn(cities, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setCities);
-                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
-                                })}
-                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
+                                key={tableHeader.value} sortable={tableHeader.sortable} sortByField={sortByField}
+                                onClick={tableHeader.sortable &&
+                                    (sortedField => sortByField.sortedField === sortedField
+                                        ? setSortByField({ sortedField: sortedField, isDirectedASC: !sortByField.isDirectedASC })
+                                        : setSortByField({ sortedField: sortedField, isDirectedASC: true }))} />)}
                         </tr>
                     </thead>
                     <tbody>

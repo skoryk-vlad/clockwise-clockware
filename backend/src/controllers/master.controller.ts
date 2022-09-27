@@ -5,7 +5,7 @@ import { sendConfirmationUserMail, sendMasterApprovedMail } from './../mailer';
 import { encryptPassword } from './../password';
 import { User, ROLES } from './../models/user.model';
 import { City } from './../models/city.model';
-import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, AddMasterByAdminSchema, GetMastersSchema } from './../validationSchemas/master.schema';
+import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, AddMasterByAdminSchema, GetMastersSchema, GetMasterOrdersSchema } from './../validationSchemas/master.schema';
 import { Order, WatchSizes } from './../models/order.model';
 import { Master, MASTER_STATUSES, MasterAttributes, MasterCreationAttributes } from './../models/master.model';
 import { Request, Response } from 'express';
@@ -98,7 +98,7 @@ export default class MasterController {
             if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
             if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
 
-            const { limit, page, cities, statuses } = GetMastersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery });
+            const { limit, page, cities, statuses, sortedField, isDirectedASC } = GetMastersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
 
             const config: FindAndCountOptions<Attributes<Model<MasterAttributes, MasterCreationAttributes>>> = {
                 attributes: { include: [[sequelize.col('User.email'), 'email']] },
@@ -109,11 +109,10 @@ export default class MasterController {
                 }, {
                     model: User,
                     attributes: [],
-                    duplicating: false,
                     required: true
                 }],
-                where: {},
-                order: ['id'],
+                order: sortedField === 'Cities' ? [[City, 'name', isDirectedASC ? 'ASC' : 'DESC']]
+                    : sequelize.literal(`"${sortedField || 'id'}" ${isDirectedASC ? 'ASC' : 'DESC'}`),
                 limit: limit || 25,
                 offset: limit * (page - 1) || 0,
                 distinct: true
@@ -172,9 +171,9 @@ export default class MasterController {
 
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
-
-            const { limit, page } = GetMastersSchema.parse(req.query);
-
+            
+            const { limit, page, sortedField, isDirectedASC } = GetMasterOrdersSchema.parse({ ...req.query, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
+            
             const { count, rows } = await Order.findAndCountAll({
                 where: {
                     masterId: id
@@ -185,7 +184,9 @@ export default class MasterController {
                 }, {
                     model: Client, attributes: []
                 }],
-                order: [['date', 'DESC']],
+                order: [[
+                    sortedField || 'date',
+                    isDirectedASC ? 'ASC' : 'DESC']],
                 limit: limit || 25,
                 offset: limit * (page - 1) || 0
             });

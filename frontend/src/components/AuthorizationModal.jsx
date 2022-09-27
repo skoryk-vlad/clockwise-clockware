@@ -45,10 +45,13 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
             } else {
                 await ClientService.addClient(user);
             }
-            notify(NOTIFY_TYPES.SUCCESS, 'Аккаунт успешно создан!');
+            notify(NOTIFY_TYPES.SUCCESS, 'Регистрация прошла успешно! Для авторизации необходимо подтвердить почту!');
             setIsAuthorizationModalOpened(false);
         } catch (error) {
-            notify(NOTIFY_TYPES.ERROR);
+            if (error.response.data === 'User with this email exist')
+                notify(NOTIFY_TYPES.ERROR, 'Пользователь с таким электронным адресом уже существует!');
+            else
+                notify(NOTIFY_TYPES.ERROR);
             console.log(error.response.data);
         }
     }
@@ -62,8 +65,11 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
                 }
                 setIsAuthorizationModalOpened(false);
             } else {
-                notify(NOTIFY_TYPES.ERROR);
-                if (loginResponse?.response?.data === "User don't have a password") {
+                if(loginResponse?.response?.data === 'Email or password is incorrect')
+                    notify(NOTIFY_TYPES.ERROR, 'Электронный адрес или пароль введены неверно!');
+                else if(loginResponse?.response?.data === 'Master not yet approved')
+                    notify(NOTIFY_TYPES.ERROR, 'Администратор еще Вас не одобрил!');
+                else if (loginResponse?.response?.data === "User don't have a password") {
                     setIsConfirmationModalOpened(true);
                     setConfirmationModalInfo({
                         text: 'У Вас отсутствует пароль для входа. Желаете получить его на свою почту?',
@@ -75,6 +81,8 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
                         onReject: () => setIsConfirmationModalOpened(false)
                     });
                 }
+                else
+                    notify(NOTIFY_TYPES.ERROR);
             }
         } catch (error) {
             notify(NOTIFY_TYPES.ERROR);

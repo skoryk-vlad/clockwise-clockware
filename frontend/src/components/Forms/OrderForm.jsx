@@ -7,7 +7,7 @@ import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
-import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE, WATCH_SIZES } from '../../constants';
+import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE, WATCH_SIZES, WATCH_SIZES_TRANSLATE } from '../../constants';
 
 const OrderSchema = z.object({
     watchSize: z.nativeEnum(WATCH_SIZES),
@@ -132,7 +132,7 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     }) => (
                         <NumPicker
                             name={name}
-                            from='1' to='3'
+                            from='1' to='3' values={Object.values(WATCH_SIZES_TRANSLATE)}
                             onClick={(event) => onChange(Object.values(WATCH_SIZES)[+event.target.dataset.num - 1])}
                             value={Object.values(WATCH_SIZES).indexOf(value) + 1}
                             error={error}

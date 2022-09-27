@@ -11,7 +11,7 @@ import { MASTER_STATUSES, MASTER_STATUSES_TRANSLATE, ROLES } from '../../constan
 import { ConfirmationModal } from '../../components/ConfirmationModal/ConfirmationModal';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { Table } from '../../components/Table/Table';
-import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
+import { ColumnHead } from '../../components/Table/ColumnHead';
 import { MasterFilterForm } from '../../components/Forms/MasterFilterForm';
 
 const defaultMaster = {
@@ -29,14 +29,14 @@ const defaultPagination = {
     limit: 10
 };
 const defaultSortByField = {
-    value: 'id',
+    sortedField: 'id',
     isDirectedASC: true
 };
 const tableHeaders = [
     { value: 'id', title: 'id', sortable: true },
     { value: 'name', title: 'Имя', sortable: true },
     { value: 'email', title: 'Почта', sortable: true },
-    { value: 'cities', title: 'Города', sortable: true },
+    { value: 'Cities', title: 'Города', sortable: true },
     { value: 'status', title: 'Статус', sortable: true },
     { value: 'change', title: 'Изменение', sortable: false },
     { value: 'delete', title: 'Удаление', sortable: false },
@@ -58,9 +58,9 @@ export const Masters = () => {
     const [sortByField, setSortByField] = useState(defaultSortByField);
 
     const [fetchMasters, isMastersLoading, Error] = useFetching(async () => {
-        const masters = await MasterService.getMasters({ ...filters, ...pagination });
+        const masters = await MasterService.getMasters({ ...filters, ...pagination, ...sortByField });
         setTotalPages(Math.ceil(masters.count / pagination.limit));
-        sortByColumn(masters.rows.map(master => ({...master, cities: master.Cities.map(city => city.id)})), sortByField.value, sortByField.isDirectedASC, setMasters);
+        setMasters(masters.rows.map(master => ({...master, cities: master.Cities.map(city => city.id)})));
     });
 
     const [fetchAdditionalData, isCitiesLoading] = useFetching(async () => {
@@ -76,7 +76,12 @@ export const Masters = () => {
 
     useEffect(() => {
         fetchMasters();
-    }, [filters, pagination]);
+    }, [filters, pagination, sortByField]);
+
+    useEffect(() => {
+        if(totalPages && pagination.page > totalPages)
+            setPagination({...pagination, page: totalPages});
+    }, [totalPages]);
 
     useEffect(() => {
         if (Error)
@@ -168,11 +173,11 @@ export const Masters = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
-                                    sortByColumn(masters, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setMasters);
-                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
-                                })}
-                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
+                                key={tableHeader.value} sortable={tableHeader.sortable} sortByField={sortByField}
+                                onClick={tableHeader.sortable &&
+                                    (sortedField => sortByField.sortedField === sortedField
+                                        ? setSortByField({ sortedField: sortedField, isDirectedASC: !sortByField.isDirectedASC })
+                                        : setSortByField({ sortedField: sortedField, isDirectedASC: true }))} />)}
                         </tr>
                     </thead>
                     <tbody>

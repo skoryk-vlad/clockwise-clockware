@@ -10,9 +10,8 @@ import { OrderForm } from '../../components/Forms/OrderForm';
 import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE, ROLES, WATCH_SIZES, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { Table } from '../../components/Table/Table';
-import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
+import { ColumnHead } from '../../components/Table/ColumnHead';
 import { OrderFilterForm } from '../../components/Forms/OrderFilterForm';
-import { addDays, formatISO } from 'date-fns';
 
 const defaultOrder = {
     clientId: null,
@@ -29,16 +28,17 @@ const defaultFilters = {
     masters: [],
     cities: [],
     statuses: [],
-    dateStart: formatISO(addDays(new Date(), -30), { representation: 'date' }),
-    dateEnd: ''
+    dateStart: '',
+    dateEnd: '',
+    priceRange: [0, 300]
 };
 const defaultPagination = {
     page: 1,
     limit: 10
 };
 const defaultSortByField = {
-    value: 'date',
-    isDirectedASC: true
+    sortedField: 'date',
+    isDirectedASC: false
 };
 const tableHeaders = [
     { value: 'id', title: 'id', sortable: true },
@@ -46,9 +46,9 @@ const tableHeaders = [
     { value: 'date', title: 'Дата', sortable: true },
     { value: 'time', title: 'Время', sortable: true },
     { value: 'rating', title: 'Рейтинг', sortable: true },
-    { value: 'City.name', title: 'Город', sortable: true },
-    { value: 'Client.name', title: 'Клиент', sortable: true },
-    { value: 'Master.name', title: 'Мастер', sortable: true },
+    { value: 'city', title: 'Город', sortable: true },
+    { value: 'client', title: 'Клиент', sortable: true },
+    { value: 'master', title: 'Мастер', sortable: true },
     { value: 'status', title: 'Статус', sortable: true },
     { value: 'price', title: 'Цена', sortable: true },
     { value: 'change', title: 'Изменение', sortable: false },
@@ -70,9 +70,9 @@ export const Orders = () => {
     const [sortByField, setSortByField] = useState(defaultSortByField);
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        const orders = await OrderService.getOrders({ ...filters, ...pagination });
+        const orders = await OrderService.getOrders({ ...filters, ...pagination, ...sortByField });
         setTotalPages(Math.ceil(orders.count / pagination.limit));
-        sortByColumn(orders.rows, sortByField.value, sortByField.isDirectedASC, setOrders);
+        setOrders(orders.rows);
     });
     const [fetchAdditionalData, isAdditionalDataLoading] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -89,10 +89,15 @@ export const Orders = () => {
         fetchAdditionalData();
         fetchOrders();
     }, []);
-
+    
     useEffect(() => {
         fetchOrders();
-    }, [filters, pagination]);
+    }, [filters, pagination, sortByField]);
+
+    useEffect(() => {
+        if(totalPages && pagination.page > totalPages)
+            setPagination({...pagination, page: totalPages});
+    }, [totalPages]);
 
     useEffect(() => {
         if (Error)
@@ -152,7 +157,7 @@ export const Orders = () => {
                         statuses: Array.isArray(defaultFilters.statuses) ? defaultFilters.statuses.map(status => ({ value: status, label: ORDER_STATUSES_TRANSLATE[status] })) : []
                     }}
                         onClick={newFilterState => { JSON.stringify(filters) !== JSON.stringify(newFilterState) && setFilters(newFilterState); }}
-                        cities={cities} masters={masters} setFilters={setFilters}></OrderFilterForm>}
+                        cities={cities} maxPrice={Math.max(...cities.map(city => +city.price)) * 3} masters={masters} setFilters={setFilters}></OrderFilterForm>}
 
                     <div className="admin-body__btns">
                         <AdminButton onClick={() => { setIsModalOpened(true); setCurrentOrder(defaultOrder) }}>
@@ -172,11 +177,11 @@ export const Orders = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
-                                    sortByColumn(orders, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setOrders);
-                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
-                                })}
-                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
+                                key={tableHeader.value} sortable={tableHeader.sortable} sortByField={sortByField}
+                                onClick={tableHeader.sortable &&
+                                    (sortedField => sortByField.sortedField === sortedField
+                                        ? setSortByField({ sortedField: sortedField, isDirectedASC: !sortByField.isDirectedASC })
+                                        : setSortByField({ sortedField: sortedField, isDirectedASC: true }))} />)}
                         </tr>
                     </thead>
                     <tbody>
@@ -186,9 +191,9 @@ export const Orders = () => {
                             <td>{order.date}</td>
                             <td>{order.time}</td>
                             <td>{order.rating}</td>
-                            <td>{order.City.name}</td>
-                            <td>{order.Client.name}</td>
-                            <td>{order.Master.name}</td>
+                            <td>{order.city}</td>
+                            <td>{order.client}</td>
+                            <td>{order.master}</td>
                             <td>{ORDER_STATUSES_TRANSLATE[order.status]}</td>
                             <td>{order.price}</td>
                             <td className='tableLink' onClick={() => { setIsModalOpened(true); setCurrentOrder(orders.find(orderToFind => orderToFind.id === order.id)) }}><span>Изменить</span></td>

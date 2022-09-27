@@ -26,6 +26,7 @@ export const sendConfirmationOrderMail = async (email: string, name: string, ord
                 <div style="font-size: 14px; margin-top: 8px;"><span style="font-weight: bold;">Размер часов</span>: ${WatchSizesTranslate[order.watchSize]}</div>
                 <div style="font-size: 14px; margin-top: 8px;"><span style="font-weight: bold;">Мастер</span>: ${master}</div>
                 <div style="font-size: 14px; margin-top: 8px;"><span style="font-weight: bold;">Цена</span>: ${order.price} грн</div>
+
             </div>
         </div>
         </div>`;

@@ -1,3 +1,4 @@
+import { City } from './../models/city.model';
 import { z } from 'zod';
 
 export const AddCitySchema = z.object({
@@ -12,7 +13,10 @@ export const GetCitiesSchema = z.object({
     page: z.preprocess(
         (a) => parseInt(z.string().parse(a), 10),
         z.number().int().positive()
-    ).optional()
+    ).optional(),
+    sortedField: z.string().refine(field => Object.keys(City.getAttributes()).includes(field)).optional(),
+    isDirectedASC: z.boolean().optional(),
+    name: z.string().optional()
 });
 export const GetCitySchema = z.object({
     id: z.number().int().positive()

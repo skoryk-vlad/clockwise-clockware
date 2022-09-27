@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { Master } from './../models/master.model';
 import { AddCitySchema, DeleteCitySchema, GetCitySchema, UpdateCitySchema, GetCitiesSchema } from './../validationSchemas/city.schema';
 import { City } from './../models/city.model';
@@ -10,41 +11,47 @@ export default class CityController {
             const city = await City.create({ name, price });
             return res.status(201).json(city);
         } catch (error) {
-            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
     }
     async getCities(req: Request, res: Response): Promise<Response> {
         try {
-            const { limit, page } = GetCitiesSchema.parse(req.query);
+            const { limit, page, sortedField, isDirectedASC, name } = GetCitiesSchema.parse({ ...req.query, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
 
             const { count, rows } = await City.findAndCountAll({
                 include: Master,
-                order: ['id'],
+                where: {
+                    name: { [Op.iLike]: `%${name || ''}%` }
+                },
+                order: [[
+                    sortedField || 'id',
+                    isDirectedASC ? 'ASC' : 'DESC']],
                 limit: limit || 25,
                 offset: limit * (page - 1) || 0,
                 distinct: true
             });
             return res.status(200).json({ count, rows });
         } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
     }
     async getCityById(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetCitySchema.parse({id: +req.params.id});
+            const { id } = GetCitySchema.parse({ id: +req.params.id });
             const city = await City.findByPk(id);
             if (!city) return res.status(404).json('No such city');
             return res.status(200).json(city);
         } catch (error) {
-            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
     }
 
     async updateCity(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetCitySchema.parse({id: +req.params.id});
+            const { id } = GetCitySchema.parse({ id: +req.params.id });
 
             const city = await City.findByPk(id);
             if (!city) return res.status(404).json('No such city');
@@ -54,20 +61,20 @@ export default class CityController {
             city.update({ name, price });
             return res.status(200).json(city);
         } catch (error) {
-            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
     }
 
     async deleteCity(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = DeleteCitySchema.parse({id: +req.params.id});
+            const { id } = DeleteCitySchema.parse({ id: +req.params.id });
             const city = await City.findByPk(id);
             if (!city) return res.status(404).json('No such city');
             await city.destroy();
             return res.status(200).json(city);
         } catch (error) {
-            if(error?.name === "ZodError") return res.status(400).json(error.issues);
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
     }
