@@ -205,9 +205,10 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
                     )}
                 />
             </div>
+            
             <div className={classes.formBottom}>
-                <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
-                    disabled={(isSubmitted && !isValid)}>Оформить заказ</AdminButton>
+                <AdminButton type="submit" className={((isSubmitted && Object.keys(errors).length)) ? "disabledBtn" : ""}
+                    disabled={((isSubmitted && Object.keys(errors).length))}>Оформить заказ</AdminButton>
                 <div className={classes.orderPrice}>Цена: {watch('price') || 0}</div>
             </div>
         </form>

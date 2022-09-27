@@ -25,6 +25,7 @@ export default class ConfirmationController {
                         if (master.getDataValue('status') !== MASTER_STATUSES.NOT_CONFIRMED || master.getDataValue('status') === MASTER_STATUSES.APPROVED) return res.redirect(`${process.env.CLIENT_LINK}/message/already-confirmed`);
                         await master.update({ status: MASTER_STATUSES.CONFIRMED });
                     }
+                    return res.redirect(`${process.env.CLIENT_LINK}/message/master/success`);
                 }
 
                 return res.redirect(`${process.env.CLIENT_LINK}/message/success`);

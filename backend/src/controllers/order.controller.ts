@@ -8,7 +8,7 @@ import { Client, CLIENT_STATUSES, ClientAttributes, ClientCreationAttributes } f
 import { City } from './../models/city.model';
 import { Order, ORDER_STATUSES, WatchSizes, OrderAttributes, OrderCreationAttributes } from './../models/order.model';
 import { Request, Response } from 'express';
-import { sendConfirmationOrderMail } from '../mailer';
+import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../mailer';
 import { v4 as uuidv4 } from 'uuid';
 
 export default class OrderController {
@@ -73,7 +73,8 @@ export default class OrderController {
                 transaction: addOrderTransaction
             });
 
-            await sendConfirmationOrderMail(email, name);
+            await sendConfirmationOrderMail(email, name, order.get(), existMaster.getDataValue('name'));
+
             await addOrderTransaction.commit();
             return res.status(201).json(order);
         } catch (error) {
@@ -234,6 +235,11 @@ export default class OrderController {
 
             const { status } = ChangeStatusSchema.parse(req.body);
             await order.update({ status });
+
+            const client = await Client.findByPk(order.getDataValue('clientId'));
+            const user = await User.findByPk(client.getDataValue('userId'));
+            if (status === ORDER_STATUSES.COMPLETED) await sendOrderCompletedMail(user.getDataValue('email'), client.getDataValue('name'));
+
             return res.status(200).json(order);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);

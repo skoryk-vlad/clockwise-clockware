@@ -11,6 +11,7 @@ import { MessageFromEmail } from "../pages/MessageFromEmail";
 export const publicRoutes = [
     { path: '/', element: <Landing /> },
     { path: '/message/success', element: <MessageFromEmail>Подтверждение прошло успешно!</MessageFromEmail> },
+    { path: '/message/master/success', element: <MessageFromEmail>Благодарим за подтверждение Вашего e-mail! Ожидайте одобрения от администратора. Мы уведомим Вас по указаному электронному адресу.</MessageFromEmail> },
     { path: '/message/already-confirmed', element: <MessageFromEmail>Подтверждение уже было произведено!</MessageFromEmail> },
     { path: '/message/error', element: <MessageFromEmail>Произошла ошибка!</MessageFromEmail> }
 ]

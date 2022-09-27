@@ -87,6 +87,7 @@ label {
     border-color: #ccc;
 }
 
+
 .formInputWrapper {
     width: 200px;
 }
@@ -143,4 +144,9 @@ label {
 .priceRangeTop label {
     margin-right: auto;
     align-self: start;
+}
+
+.isAgreeMessage {
+    color: rgb(19, 169, 19);
+    font-weight: bold;
 }

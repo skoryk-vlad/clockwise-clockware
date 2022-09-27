@@ -1,12 +1,13 @@
 import { Master } from './../models/master.model';
 import { Order } from './../models/order.model';
-import { generatePassword, encryptPassword } from './../password';
-import { sendConfirmationUserMail, sendUserLoginInfoMail } from './../mailer';
+import { encryptPassword } from './../password';
+import { sendConfirmationUserMail } from './../mailer';
 import { sequelize } from './../sequelize';
 import { Op } from 'sequelize';
 import { ROLES, User } from './../models/user.model';
 import { AddClientSchema, DeleteClientSchema, GetClientSchema, UpdateClientSchema, AddClientByAdminSchema, GetClientsSchema, GetClientOrdersSchema } from './../validationSchemas/client.schema';
-import { Client, CLIENT_STATUSES } from './../models/client.model';
+import { Client } from './../models/client.model';
+
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -32,7 +33,8 @@ export default class ClientController {
                 transaction: addClientTransaction
             });
 
-            await sendConfirmationUserMail(email, password, confirmationToken, name);
+            await sendConfirmationUserMail(email, confirmationToken, name);
+            
             await addClientTransaction.commit();
             return res.status(201).json(client);
         } catch (error) {
@@ -49,12 +51,10 @@ export default class ClientController {
             const existUser = await User.findOne({ where: { email } });
             if (existUser) return res.status(409).json('User with this email exist');
 
-            const password = generatePassword();
-            const hash = encryptPassword(password);
             const confirmationToken = uuidv4();
 
             const user = await User.create({
-                email, password: hash, role: ROLES.CLIENT, confirmationToken
+                email, role: ROLES.CLIENT, confirmationToken
             }, {
                 transaction: addClientTransaction
             });
@@ -63,11 +63,8 @@ export default class ClientController {
                 transaction: addClientTransaction
             });
 
-            if (status === CLIENT_STATUSES.NOT_CONFIRMED) {
-                await sendConfirmationUserMail(email, password, confirmationToken, name);
-            } else if (status === CLIENT_STATUSES.CONFIRMED) {
-                await sendUserLoginInfoMail(email, password, name);
-            }
+            await sendConfirmationUserMail(email, confirmationToken, name);
+
             await addClientTransaction.commit();
             return res.status(201).json(client);
         } catch (error) {

@@ -18,7 +18,13 @@ type WatchSizesType = Partial<Record<WATCH_SIZES, number>>;
 export const WatchSizes: WatchSizesType = {
     [WATCH_SIZES.SMALL]: 1,
     [WATCH_SIZES.MEDIUM]: 2,
-    [WATCH_SIZES.BIG]: 3,
+    [WATCH_SIZES.BIG]: 3
+}
+type WatchSizesTranslateType = Partial<Record<WATCH_SIZES, string>>;
+export const WatchSizesTranslate: WatchSizesTranslateType = {
+    [WATCH_SIZES.SMALL]: 'Маленькие',
+    [WATCH_SIZES.MEDIUM]: 'Средние',
+    [WATCH_SIZES.BIG]: 'Большие'
 }
 
 export interface OrderAttributes {

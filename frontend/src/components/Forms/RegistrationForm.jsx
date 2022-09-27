@@ -5,7 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
-import { MySelect } from '../select/MySelect';
+import Select from 'react-select';
+import { Password } from '../Password/Password';
 
 const RegistrationSchema = z.object({
     name: z.string().trim().min(1, 'Требуется имя')
@@ -15,12 +16,10 @@ const RegistrationSchema = z.object({
     isAgree: z.boolean().refine(isAgree => isAgree === true, 'Необходимо согласиться с условиями'),
     isMaster: z.boolean().optional(),
     cities: z.array(z.number().int().positive())
+}).refine(account => (account.isMaster && account.cities.length > 0) || !account.isMaster, {
+    path: ['cities'],
+    message: 'Выберите хотя бы один город'
 });
-
-const deleteValueFromArray = (array, value) => {
-    array.splice(array.indexOf(parseInt(value)), 1);
-    return array;
-}
 
 export const RegistrationForm = ({ user, onClick, btnTitle, cities }) => {
     const { control, handleSubmit, getValues, watch, formState: { errors, isSubmitted, isValid } } = useForm({
@@ -95,8 +94,8 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities }) => {
                         field: { onChange, value, name },
                         fieldState: { error },
                     }) => (
-                        <MyInput
-                            type="password" name={name}
+                        <Password
+                            name={name}
                             onChange={onChange}
                             value={value}
                             error={error}
@@ -141,15 +140,17 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities }) => {
                         control={control}
                         name="cities"
                         render={({
-                            field: { onChange, value, name },
+                            field: { onChange },
                             fieldState: { error },
                         }) => (
-                            <MySelect multiple={true} size="4"
-                                name={name}
-                                onChange={(value) => onChange(getValues().cities.includes(parseInt(value)) ? deleteValueFromArray(getValues().cities, +value) : [...getValues().cities, +value])}
-                                value={value}
+                            <Select
+                                closeMenuOnSelect={false}
+                                value={cities.filter(city => watch('cities').includes(city.id)).map(city => ({ value: city.id, label: city.name }))}
+                                isMulti
                                 error={error}
-                                options={cities.map(city => ({ value: city.id, name: city.name }))}
+                                onChange={options => onChange(options.map(option => option.value))}
+                                options={cities.map(city => ({ value: city.id, label: city.name }))}
+                                placeholder='Выбор городов...'
                             />
                         )}
                     />
@@ -173,7 +174,7 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities }) => {
                             />
                         )}
                     />
-                    <label htmlFor="isAgree">Согласен со всеми условиями</label>
+                    <label htmlFor="isAgree" className={classes.isAgreeMessage}>Согласен со всеми условиями</label>
                     {errors.isAgree && (
                         <div className={classes.checkboxError}>{errors.isAgree.message}</div>
                     )}

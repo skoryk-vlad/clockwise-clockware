@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
+import { Password } from '../Password/Password';
 
 const LoginSchema = z.object({
     email: z.string().trim().min(1, 'Требуется почта').email('Неверный формат почты').max(255),
@@ -13,7 +14,7 @@ const LoginSchema = z.object({
 
 
 export const LoginForm = ({ user, onClick, btnTitle }) => {
-    const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
+    const { control, handleSubmit, formState: { errors, isSubmitted, isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
         defaultValues: user,
@@ -61,8 +62,8 @@ export const LoginForm = ({ user, onClick, btnTitle }) => {
                         field: { onChange, value, name },
                         fieldState: { error },
                     }) => (
-                        <MyInput
-                            type="password" name={name}
+                        <Password
+                            name={name}
                             onChange={onChange}
                             value={value}
                             error={error}
