@@ -35,7 +35,7 @@ export const Table = ({ children, changeLimit, changePage, currentPage, totalPag
                             </React.Fragment>
                         }
                     })}
-                    <div className={`${classes.changePage} ${(currentPage === totalPages ? classes.disabled : '')}`} onClick={() => changePage(currentPage + 1)}><div className={`${classes.paginationBtns__btn} ${classes.right_arrow}`}></div></div>
+                    <div className={`${classes.changePage} ${(!totalPages || currentPage === totalPages ? classes.disabled : '')}`} onClick={() => changePage(currentPage + 1)}><div className={`${classes.paginationBtns__btn} ${classes.right_arrow}`}></div></div>
                     <div className={classes.double_arrow}>{totalPages - 2 > currentPage && totalPages > 5 && <div className={classes.changePage} onClick={() => changePage(totalPages)}><div className={classes.lastPage}></div></div>}</div>
                 </div>
                 <select name="limit" defaultValue={defaultValue} className={classes.paginationBtns_select} onChange={event => changeLimit(+event.target.value)}>
