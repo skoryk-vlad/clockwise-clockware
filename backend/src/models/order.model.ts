@@ -5,7 +5,6 @@ import { sequelize } from '../sequelize';
 import { DataTypes, Optional, ModelDefined } from 'sequelize';
 
 export enum ORDER_STATUSES {
-    AWAITING_CONFIRMATION = 'awaiting confirmation',
     CONFIRMED = 'confirmed',
     COMPLETED = 'completed',
     CANCELED = 'canceled'
@@ -33,7 +32,6 @@ export interface OrderAttributes {
     cityId: number;
     masterId: number;
     status: ORDER_STATUSES;
-    confirmationToken: string;
     price: number;
 }
 
@@ -72,10 +70,6 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
-        },
-        confirmationToken: {
-            type: DataTypes.UUID,
-            allowNull: false
         },
         price: {
             type: DataTypes.INTEGER,

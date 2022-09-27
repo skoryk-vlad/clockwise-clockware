@@ -10,7 +10,7 @@ export const NOTIFY_TYPES =  {
 export const notify = (type, message = 'Произошла ошибка!') => {
     switch (type) {
         case NOTIFY_TYPES.SUCCESS:
-            toast.success(message, { autoClose: 10000 });
+            toast.success(message);
             break;
         case NOTIFY_TYPES.ERROR:
             toast.error(message);
@@ -25,7 +25,7 @@ export const Notifications = () => {
     return (
         <ToastContainer
             position="bottom-right"
-            autoClose={3000}
+            autoClose={null}
             hideProgressBar={false}
             newestOnTop={false}
             closeOnClick

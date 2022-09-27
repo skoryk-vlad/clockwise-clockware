@@ -4,12 +4,13 @@ import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { ClientPersonalForm } from '../../components/Forms/ClientPersonalForm';
 import { SetRatingForm } from '../../components/Forms/SetRatingForm';
 import { Loader } from '../../components/Loader/Loader';
+import { MasterChoice } from '../../components/MasterChoice/MasterChoice';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { OrderButton } from '../../components/OrderButton/OrderButton';
 import { jwtPayload } from '../../components/PrivateRoute';
-import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
+import { ColumnHead } from '../../components/Table/ColumnHead';
 import { Table } from '../../components/Table/Table';
 import { WATCH_SIZES, ORDER_STATUSES, ROLES, ORDER_STATUSES_TRANSLATE, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
@@ -22,7 +23,7 @@ const defaultOrder = {
     date: '',
     time: null,
     rating: 0,
-    status: ORDER_STATUSES.AWAITING_CONFIRMATION
+    status: ORDER_STATUSES.CONFIRMED
 };
 
 const defaultPagination = {
@@ -30,7 +31,7 @@ const defaultPagination = {
     limit: 10
 };
 const defaultSortByField = {
-    value: 'date',
+    sortedField: 'date',
     isDirectedASC: false
 };
 const tableHeaders = [
@@ -48,7 +49,6 @@ export const ClientOrders = () => {
     const [isFormOpened, setIsFormOpened] = useState(true);
     const [freeMasters, setFreeMasters] = useState([]);
     const [order, setOrder] = useState(defaultOrder);
-    const [chosenMaster, setChosenMaster] = useState(null);
 
     const [orderId, setOrderId] = useState(null);
     const [isSetRatingOpened, setIsSetRatingOpened] = useState(false);
@@ -64,9 +64,9 @@ export const ClientOrders = () => {
 
     const [fetchOrders, isLoading, Error] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'));
-        const orders = await ClientService.getClientOrders(payload.id, pagination);
+        const orders = await ClientService.getClientOrders(payload.id, { ...pagination, ...sortByField });
         setTotalPages(Math.ceil(orders.count / pagination.limit));
-        sortByColumn(orders.rows, sortByField.value, sortByField.isDirectedASC, setOrders);
+        setOrders(orders.rows);
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'));
@@ -77,15 +77,8 @@ export const ClientOrders = () => {
         setCities(cities.rows);
     });
 
-    const chooseMaster = (event) => {
-        const masterId = event.target.closest(`.mstr_itm`).id;
-        setChosenMaster(+masterId);
-        setOrder({ ...order, masterId: +masterId });
-    };
-
     const findMasters = async (order) => {
         setOrder(order);
-        setChosenMaster(null)
         const freeMasters = await MasterService.getFreeMasters(order.cityId, order.date, order.time, order.watchSize);
         setFreeMasters(freeMasters.sort((a, b) => b.rating - a.rating).map(master => master.rating && +master.rating !== 0 ? master : { ...master, rating: '-' }));
         setIsFormOpened(false);
@@ -103,20 +96,22 @@ export const ClientOrders = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, [pagination]);
+    }, [pagination, sortByField]);
 
     useEffect(() => {
         if (isModalOpened === false) {
             setIsSetRatingOpened(false);
+            setOrder(defaultOrder);
+            setIsFormOpened(true);
         }
     }, [isModalOpened]);
 
-    const addOrder = async () => {
+    const addOrder = async (chosenMaster) => {
         try {
-            await OrderService.addOrder({ ...order, name: client.name, email: client.email });
+            await OrderService.addOrder({ ...order, name: client.name, email: client.email, masterId: chosenMaster });
             setIsModalOpened(false);
             setIsFormOpened(true);
-            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен! Для подтверждения заказа перейдите по ссылке, отправленной на вашу электронную почту!');
+            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен!');
             setOrder(defaultOrder);
             setIsFormOpened(true);
             fetchOrders();
@@ -158,32 +153,11 @@ export const ClientOrders = () => {
                             ?
                             <SetRatingForm onClick={setRating} />
                             :
-                            isFormOpened
+                            isFormOpened && isModalOpened
                                 ?
-                                <ClientPersonalForm order={defaultOrder} onClick={findMasters} btnTitle={'Добавить'} cities={cities}></ClientPersonalForm>
+                                <ClientPersonalForm order={order} onClick={findMasters} btnTitle={'Добавить'} cities={cities}></ClientPersonalForm>
                                 :
-                                <div className='mastersBlock'>
-                                    <div className='mastersList'>
-                                        {
-                                            freeMasters.map(master =>
-                                                <div key={master.id} id={master.id} className={'masterItem mstr_itm' + (+chosenMaster === master.id ? ' active' : '')}>
-                                                    <div className='masterName'>{master.name}</div>
-                                                    <div className='masterRating'>Рейтинг: {master.rating}</div>
-                                                    <OrderButton onClick={event => chooseMaster(event)} className='masterBtn'>Выбрать</OrderButton>
-                                                </div>
-                                            )
-                                        }
-                                        {
-                                            freeMasters.length === 0 &&
-                                            <div className='warning'>К сожалению, мастеров на это время в этот день нет. Выберите другое время или дату.</div>
-                                        }
-                                        <div className='return' onClick={returnForm}>
-                                            <img src="/images/icons/top.png" alt="Назад" />
-                                        </div>
-                                    </div>
-                                    <OrderButton onClick={() => { addOrder() }} className={(chosenMaster === null ? "disabledBtn" : '')}
-                                        disabled={chosenMaster === null}>Оформить заказ</OrderButton>
-                                </div>
+                                <MasterChoice freeMasters={freeMasters} returnForm={returnForm} price={order.price} addOrder={addOrder}></MasterChoice>
                     }
                 </MyModal>
 
@@ -193,11 +167,11 @@ export const ClientOrders = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
-                                    sortByColumn(orders, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setOrders);
-                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
-                                })}
-                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
+                                key={tableHeader.value} sortable={tableHeader.sortable} sortByField={sortByField}
+                                onClick={tableHeader.sortable &&
+                                    (sortedField => sortByField.sortedField === sortedField
+                                        ? setSortByField({ sortedField: sortedField, isDirectedASC: !sortByField.isDirectedASC })
+                                        : setSortByField({ sortedField: sortedField, isDirectedASC: true }))} />)}
                         </tr>
                     </thead>
                     <tbody>

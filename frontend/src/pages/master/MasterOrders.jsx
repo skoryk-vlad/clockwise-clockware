@@ -6,7 +6,7 @@ import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { jwtPayload } from '../../components/PrivateRoute';
-import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
+import { ColumnHead } from '../../components/Table/ColumnHead';
 import { Table } from '../../components/Table/Table';
 import { ORDER_MASTER_STATUSES_TRANSLATE, ROLES, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
@@ -20,7 +20,7 @@ const tableHeaders = [
     { value: 'time', title: 'Время начала', sortable: true },
     { value: 'endTime', title: 'Время конца', sortable: true },
     { value: 'price', title: 'Цена', sortable: true },
-    { value: 'status', title: 'Статус', sortable: false },
+    { value: 'status', title: 'Статус', sortable: true },
     { value: 'change', title: 'Статус', sortable: false }
 ];
 const defaultPagination = {
@@ -28,7 +28,7 @@ const defaultPagination = {
     limit: 10
 };
 const defaultSortByField = {
-    value: 'date',
+    sortedField: 'date',
     isDirectedASC: false
 };
 
@@ -44,9 +44,9 @@ export const MasterOrders = () => {
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'));
-        const orders = await MasterService.getMasterOrders(payload.id, pagination);
+        const orders = await MasterService.getMasterOrders(payload.id, { ...pagination, ...sortByField });
         setTotalPages(Math.ceil(orders.count / pagination.limit));
-        sortByColumn(orders.rows, sortByField.value, sortByField.isDirectedASC, setOrders);
+        setOrders(orders.rows);
     });
 
     useEffect(() => {
@@ -56,7 +56,7 @@ export const MasterOrders = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, [pagination]);
+    }, [pagination, sortByField]);
 
     const changeStatus = async (order) => {
         if (order.status === 'completed') {
@@ -79,11 +79,11 @@ export const MasterOrders = () => {
                     <thead>
                         <tr>
                             {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                key={tableHeader.value} onClick={tableHeader.sortable && (value => {
-                                    sortByColumn(orders, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setOrders);
-                                    sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
-                                })}
-                                sortable={tableHeader.sortable} sortByField={sortByField} />)}
+                                key={tableHeader.value} sortable={tableHeader.sortable} sortByField={sortByField}
+                                onClick={tableHeader.sortable &&
+                                    (sortedField => sortByField.sortedField === sortedField
+                                        ? setSortByField({ sortedField: sortedField, isDirectedASC: !sortByField.isDirectedASC })
+                                        : setSortByField({ sortedField: sortedField, isDirectedASC: true }))} />)}
                         </tr>
                     </thead>
                     <tbody>

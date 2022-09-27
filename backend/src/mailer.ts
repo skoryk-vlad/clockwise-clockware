@@ -8,9 +8,7 @@ const transporter: Transporter = nodemailer.createTransport({
     }
 });
 
-export const sendConfirmationOrderMail = async (email: string, confirmationToken: string, name: string): Promise<SentMessageInfo> => {
-    const confirmationLink: string = `${process.env.BASE_LINK}/api/confirm/order/${confirmationToken}`;
-
+export const sendConfirmationOrderMail = async (email: string, name: string): Promise<SentMessageInfo> => {
     const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
         <div style="max-width: 600px; background-color: #fff; margin: auto; border: 1px solid lightgray; border-radius: 2px;">
             <div style="overflow: hidden; height: 40px; display: flex; align-items: center; padding: 10px;">
@@ -22,10 +20,6 @@ export const sendConfirmationOrderMail = async (email: string, confirmationToken
             <div style="padding: 10px;">
                 <div style="font-weight: bold; text-align: center; font-size: 22px; margin-top: 10px;">Здравствуйте, ${name}!</div>
                 <div style="font-size: 17px; margin-top: 15px;">Благодарим Вас за оформление заказа. Для подтверждения нажмите кнопку ниже:</div>
-                <a href="${confirmationLink}" style="padding: 10px 20px; color: #fff; font-size: 20px; background-color: #6F2CFF; text-decoration: none;
-                border: 1px solid #6F2CFF; cursor: pointer; border-radius: 20px; display: inline-block; margin-top: 10px;">
-                    Подтвердить
-                </a>
             </div>
         </div>
         </div>`;

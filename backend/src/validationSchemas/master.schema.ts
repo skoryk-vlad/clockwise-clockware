@@ -1,5 +1,5 @@
-import { MASTER_STATUSES } from './../models/master.model';
-import { WATCH_SIZES } from './../models/order.model';
+import { MASTER_STATUSES, Master } from './../models/master.model';
+import { WATCH_SIZES, Order } from './../models/order.model';
 import { z } from 'zod';
 
 export const AddMasterSchema = z.object({
@@ -25,10 +25,24 @@ export const GetMastersSchema = z.object({
         z.number().int().positive()
     ).optional(),
     cities: z.array(z.number().int().positive()).optional(),
-    statuses: z.array(z.nativeEnum(MASTER_STATUSES)).optional()
+    statuses: z.array(z.nativeEnum(MASTER_STATUSES)).optional(),
+    sortedField: z.string().refine(field => [...Object.keys(Master.getAttributes()), 'email', 'Cities'].includes(field)).optional(),
+    isDirectedASC: z.boolean().optional()
 });
 export const GetMasterSchema = z.object({
     id: z.number().int().positive()
+});
+export const GetMasterOrdersSchema = z.object({
+    limit: z.preprocess(
+        (a) => parseInt(z.string().parse(a), 10),
+        z.number().int().positive()
+    ).optional(),
+    page: z.preprocess(
+        (a) => parseInt(z.string().parse(a), 10),
+        z.number().int().positive()
+    ).optional(),
+    sortedField: z.string().refine(field => [...Object.keys(Order.getAttributes()), 'city', 'client'].includes(field)).optional(),
+    isDirectedASC: z.boolean().optional()
 });
 export const UpdateMasterSchema = z.object({
     name: z.string().trim().min(3).max(255),

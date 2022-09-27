@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MyInput } from '../input/MyInput';
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +8,7 @@ import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
 import { formatISO } from 'date-fns'
-import { WATCH_SIZES } from '../../constants';
+import { WATCH_SIZES, WATCH_SIZES_TRANSLATE } from '../../constants';
 
 const date = new Date();
 const minDate = formatISO(date, { representation: 'date' });
@@ -42,13 +42,17 @@ const ClientPersonalSchema = z.object({
 });
 
 export const ClientPersonalForm = ({ order, onClick, cities }) => {
-    const { control, handleSubmit, getValues, watch, formState: { errors, isValid, isSubmitted } } = useForm({
+    const { control, handleSubmit, getValues, setValue, watch, formState: { errors, isValid, isSubmitted } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
         defaultValues: order,
         resolver: zodResolver(ClientPersonalSchema)
     });
     const onSubmit = () => onClick(getValues());
+
+    useEffect(() => {
+        setValue('price', cities.find(city => city.id === watch('cityId'))?.price * (Object.values(WATCH_SIZES).indexOf(watch('watchSize')) + 1));
+    }, [watch('cityId'), watch('watchSize')]);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
@@ -68,7 +72,7 @@ export const ClientPersonalForm = ({ order, onClick, cities }) => {
                     }) => (
                         <NumPicker
                             name={name}
-                            from='1' to='3'
+                            from='1' to='3' values={Object.values(WATCH_SIZES_TRANSLATE)}
                             onClick={(event) => onChange(Object.values(WATCH_SIZES)[+event.target.dataset.num - 1])}
                             value={Object.values(WATCH_SIZES).indexOf(value) + 1}
                             error={error}
@@ -151,8 +155,11 @@ export const ClientPersonalForm = ({ order, onClick, cities }) => {
                 />
             </div>
 
-            <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
-                disabled={(isSubmitted && !isValid)}>Оформить заказ</AdminButton>
+            <div className={classes.formBottom}>
+                <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
+                    disabled={(isSubmitted && !isValid)}>Оформить заказ</AdminButton>
+                <div className={classes.orderPrice}>Цена: {watch('price') || 0}</div>
+            </div>
         </form>
     )
 }

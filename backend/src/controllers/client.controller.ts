@@ -5,7 +5,7 @@ import { sendConfirmationUserMail, sendUserLoginInfoMail } from './../mailer';
 import { sequelize } from './../sequelize';
 import { Op } from 'sequelize';
 import { ROLES, User } from './../models/user.model';
-import { AddClientSchema, DeleteClientSchema, GetClientSchema, UpdateClientSchema, AddClientByAdminSchema, GetClientsSchema } from './../validationSchemas/client.schema';
+import { AddClientSchema, DeleteClientSchema, GetClientSchema, UpdateClientSchema, AddClientByAdminSchema, GetClientsSchema, GetClientOrdersSchema } from './../validationSchemas/client.schema';
 import { Client, CLIENT_STATUSES } from './../models/client.model';
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
@@ -78,7 +78,7 @@ export default class ClientController {
     }
     async getClients(req: Request, res: Response): Promise<Response> {
         try {
-            const { limit, page } = GetClientsSchema.parse(req.query);
+            const { limit, page, sortedField, isDirectedASC } = GetClientsSchema.parse({ ...req.query, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
 
             const { count, rows } = await Client.findAndCountAll({
                 attributes: { include: [[sequelize.col('User.email'), 'email']] },
@@ -86,13 +86,16 @@ export default class ClientController {
                     model: User,
                     attributes: []
                 },
-                order: ['id'],
+                order: [[
+                    sortedField || 'id',
+                    isDirectedASC ? 'ASC' : 'DESC']],
                 limit: limit || 25,
                 offset: limit * (page - 1) || 0,
                 distinct: true
             });
             return res.status(200).json({ count, rows });
         } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
     }
@@ -120,7 +123,7 @@ export default class ClientController {
             const client = await Client.findByPk(id);
             if (!client) return res.status(404).json('No such client');
 
-            const { limit, page } = GetClientsSchema.parse(req.query);
+            const { limit, page, sortedField, isDirectedASC } = GetClientOrdersSchema.parse({ ...req.query, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
 
             const { count, rows } = await Order.findAndCountAll({
                 where: {
@@ -130,7 +133,9 @@ export default class ClientController {
                 include: [{
                     model: Master, attributes: []
                 }],
-                order: [['date', 'DESC']],
+                order: [[
+                    sortedField || 'date',
+                    isDirectedASC ? 'ASC' : 'DESC']],
                 limit: limit || 25,
                 offset: limit * (page - 1) || 0
             });

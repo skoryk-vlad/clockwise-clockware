@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { CityService, ClientService, MasterService, OrderService } from '../../API/Server';
 import { ChangeStatusForm } from '../../components/Forms/ChangeStatusForm';
+import { Loader } from '../../components/Loader/Loader';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar'
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
-import { ColumnHead, sortByColumn } from '../../components/Table/ColumnHead';
+import { ColumnHead } from '../../components/Table/ColumnHead';
 import { Table } from '../../components/Table/Table';
 import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE, ROLES, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
@@ -15,14 +16,14 @@ const defaultOrder = {
 };
 
 const defaultFilters = {
-    statuses: [ORDER_STATUSES.AWAITING_CONFIRMATION, ORDER_STATUSES.CONFIRMED],
+    statuses: [ORDER_STATUSES.CONFIRMED],
 };
 const defaultPagination = {
     page: 1,
     limit: 10
 };
 const defaultSortByField = {
-    value: 'date',
+    sortedField: 'date',
     isDirectedASC: true
 };
 const tableHeaders = [
@@ -31,9 +32,9 @@ const tableHeaders = [
     { value: 'date', title: 'Дата', sortable: true },
     { value: 'time', title: 'Время', sortable: true },
     { value: 'rating', title: 'Рейтинг', sortable: true },
-    { value: 'City.name', title: 'Город', sortable: true },
-    { value: 'Client.name', title: 'Клиент', sortable: true },
-    { value: 'Master.name', title: 'Мастер', sortable: true },
+    { value: 'city', title: 'Город', sortable: true },
+    { value: 'client', title: 'Клиент', sortable: true },
+    { value: 'master', title: 'Мастер', sortable: true },
     { value: 'status', title: 'Статус', sortable: true },
     { value: 'price', title: 'Цена', sortable: true },
     { value: 'change', title: 'Изменение', sortable: false }
@@ -56,10 +57,10 @@ export const Admin = () => {
     const [ordersCount, setOrdersCount] = useState(0);
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        const orders = await OrderService.getOrders({ ...filters, ...pagination });
+        const orders = await OrderService.getOrders({ ...filters, ...pagination, ...sortByField });
         setTotalPages(Math.ceil(orders.count / pagination.limit));
         setOrdersCount(orders.count);
-        sortByColumn(orders.rows, sortByField.value, sortByField.isDirectedASC, setOrders);
+        setOrders(orders.rows);
     });
     const [fetchAdditionalData] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -79,7 +80,7 @@ export const Admin = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, [pagination]);
+    }, [pagination, sortByField]);
 
     useEffect(() => {
         if (!isModalOpened)
@@ -130,11 +131,11 @@ export const Admin = () => {
                         <thead>
                             <tr>
                                 {tableHeaders.map(tableHeader => <ColumnHead value={tableHeader.value} title={tableHeader.title}
-                                    key={tableHeader.value} onClick={tableHeader.sortable && (value => {
-                                        sortByColumn(orders, value, sortByField.value === value ? !sortByField.isDirectedASC : true, setOrders);
-                                        sortByField.value === value ? setSortByField({ value, isDirectedASC: !sortByField.isDirectedASC }) : setSortByField({ value, isDirectedASC: true })
-                                    })}
-                                    sortable={tableHeader.sortable} sortByField={sortByField} />)}
+                                    key={tableHeader.value} sortable={tableHeader.sortable} sortByField={sortByField}
+                                    onClick={tableHeader.sortable &&
+                                        (sortedField => sortByField.sortedField === sortedField
+                                            ? setSortByField({ sortedField: sortedField, isDirectedASC: !sortByField.isDirectedASC })
+                                            : setSortByField({ sortedField: sortedField, isDirectedASC: true }))} />)}
                             </tr>
                         </thead>
                         <tbody>
@@ -154,6 +155,16 @@ export const Admin = () => {
                             )}
                         </tbody>
                     </Table>
+
+                    {Error &&
+                        <h2 className='adminError'>Произошла ошибка {Error}</h2>
+                    }
+                    {orders.length === 0 && !isOrdersLoading && !Error &&
+                        <h2 className='adminError'>Отсутствуют записи</h2>
+                    }
+                    {isOrdersLoading &&
+                        <Loader />
+                    }
                 </div>
             </div>
 

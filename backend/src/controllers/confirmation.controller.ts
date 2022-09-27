@@ -1,30 +1,10 @@
 import { Master, MASTER_STATUSES } from './../models/master.model';
 import { Client, CLIENT_STATUSES } from './../models/client.model';
 import { ROLES, User } from './../models/user.model';
-import { Order, ORDER_STATUSES } from './../models/order.model';
 import { Request, Response } from 'express';
 import { validate as uuidValidate } from 'uuid';
 
 export default class ConfirmationController {
-    async confirmOrder(req: Request, res: Response): Promise<void> {
-        const confirmationToken: string = req.params.confirmationToken;
-
-        if (uuidValidate(confirmationToken)) {
-            try {
-                const order = await Order.findOne({ where: { confirmationToken } });
-                if (!order) return res.redirect(`${process.env.CLIENT_LINK}/message/error`);
-                if (order.getDataValue('status') !== ORDER_STATUSES.AWAITING_CONFIRMATION) return res.redirect(`${process.env.CLIENT_LINK}/message/already-confirmed`);
-                await order.update({ status: ORDER_STATUSES.CONFIRMED });
-                const client = await Client.findByPk(order.getDataValue('clientId'));
-                if (client.getDataValue('status') === CLIENT_STATUSES.NOT_CONFIRMED) await client.update({ status: CLIENT_STATUSES.CONFIRMED });
-                return res.redirect(`${process.env.CLIENT_LINK}/message/success`);
-            } catch (error) {
-                return res.redirect(`${process.env.CLIENT_LINK}/message/error`);
-            }
-        } else {
-            return res.redirect(`${process.env.CLIENT_LINK}/message/error`);
-        }
-    }
     async confirmUser(req: Request, res: Response): Promise<void> {
         const confirmationToken: string = req.params.confirmationToken;
 

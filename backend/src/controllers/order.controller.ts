@@ -65,16 +65,15 @@ export default class OrderController {
                 }
             }
 
-            const confirmationToken = uuidv4();
             const price = existCity.getDataValue('price') * (endTime - time);
 
             const order = await Order.create({
-                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, confirmationToken, price
+                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, price
             }, {
                 transaction: addOrderTransaction
             });
 
-            await sendConfirmationOrderMail(email, confirmationToken, name);
+            await sendConfirmationOrderMail(email, name);
             await addOrderTransaction.commit();
             return res.status(201).json(order);
         } catch (error) {
@@ -85,12 +84,13 @@ export default class OrderController {
     }
     async getOrders(req: Request, res: Response): Promise<Response> {
         try {
-            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[];
+            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[], priceRangeQuery: number[];
             if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
             if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
             if (req.query.masters) mastersQuery = req.query.masters.toString().split(',').map(masterId => +masterId);
+            if (req.query.priceRange) priceRangeQuery = req.query.priceRange.toString().split(',').map(price => +price);
 
-            const { limit, page, cities, masters, statuses, dateStart, dateEnd } = GetOrdersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, masters: mastersQuery });
+            const { limit, page, cities, masters, statuses, dateStart, dateEnd, sortedField, isDirectedASC, priceRange } = GetOrdersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, masters: mastersQuery, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true, priceRange: priceRangeQuery });
 
             let include = [
                 { model: City, as: 'City', where: {} },
@@ -118,10 +118,16 @@ export default class OrderController {
                     }
                 }]
             }
-
             const config: FindAndCountOptions<Attributes<Model<OrderAttributes, OrderCreationAttributes>>> = {
+                attributes: {
+                    include: [[sequelize.col('City.name'), 'city'],
+                    [sequelize.col('Client.name'), 'client'],
+                    [sequelize.col('Master.name'), 'master']]
+                },
                 include,
-                order: [['date', 'DESC']],
+                order: [[
+                    sortedField || 'date',
+                    isDirectedASC ? 'ASC' : 'DESC']],
                 limit: limit || 25,
                 offset: limit * (page - 1) || 0,
                 distinct: true
@@ -130,6 +136,12 @@ export default class OrderController {
                 config.where = {
                     ...config.where,
                     status: statuses
+                }
+            }
+            if (priceRange) {
+                config.where = {
+                    ...config.where,
+                    price: { [Op.between]: [priceRange[0], priceRange[1]] }
                 }
             }
             if (dateStart || dateEnd) {

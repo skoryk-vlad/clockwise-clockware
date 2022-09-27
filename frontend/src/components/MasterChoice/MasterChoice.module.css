@@ -1,27 +1,5 @@
-.form {
-    width: 500px;
-}
-
-.formRow {
-   margin: 0px 0px 5px 0px;
-}
-
-.rowTop {
-    display: flex;
-    align-items: end;
-}
-
-label {
-    font-size: 20px;
-}
-
-.error {
-    color: red;
-    font-size: 14px;
-    margin: 0px 0px 1px 10px;
-}
-
 .mastersBlock {
+    position: relative;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -33,7 +11,10 @@ label {
     flex-wrap: wrap;
     margin: 0px 0px 20px 0px;
     justify-content: center;
+    max-height: 310px;
+    overflow: auto;
 }
+
 .masterItem {
     width: 150px;
     border-radius: 20px;
@@ -45,9 +26,7 @@ label {
     flex-direction: column;
     transition: .3s ease;
     border: 1px solid #fff;
-}
-.masterItem:not(:last-child) {
-    margin: 0px 10px 10px 0px;
+    margin: 4px;
 }
 
 .masterName {
@@ -55,9 +34,11 @@ label {
     font-weight: bold;
     margin: 0px 0px 10px 0px;
 }
+
 .masterRating {
     margin: auto 0px 25px 0px;
 }
+
 .active {
     background-color: #ccc;
     border-color: #aaa;
@@ -66,8 +47,8 @@ label {
 
 .return {
     position: absolute;
-    top: -35px;
-    left: -35px;
+    top: -15px;
+    left: -15px;
     height: 30px;
     width: 30px;
     border-radius: 50%;
@@ -79,15 +60,31 @@ label {
     cursor: pointer;
     transition: .3s ease;
 }
+
 .return:hover {
     background-color: #eee;
 }
+
 .return img {
     width: 80%;
     height: 80%;
     transform: rotate(-90deg);
 }
+
 .warning {
     font-size: 20px;
     text-align: center;
+}
+
+.formBottom {
+    display: flex;
+    justify-content: space-between;
+}
+
+.orderPrice {
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
 }
