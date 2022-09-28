@@ -75,13 +75,19 @@ export default class ClientController {
     }
     async getClients(req: Request, res: Response): Promise<Response> {
         try {
-            const { limit, page, sortedField, isDirectedASC } = GetClientsSchema.parse({ ...req.query, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
+            const { limit, page, sortedField, isDirectedASC, name } = GetClientsSchema.parse({ ...req.query, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
 
             const { count, rows } = await Client.findAndCountAll({
                 attributes: { include: [[sequelize.col('User.email'), 'email']] },
                 include: {
                     model: User,
                     attributes: []
+                },
+                where: {
+                    [Op.or]: [
+                        sequelize.literal(`"User"."email" ILIKE '%${name || ''}%'`),
+                        { name: { [Op.iLike]: `%${name || ''}%` } }
+                    ]
                 },
                 order: [[
                     sortedField || 'id',

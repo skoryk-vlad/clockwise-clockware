@@ -94,11 +94,12 @@ export default class MasterController {
     }
     async getMasters(req: Request, res: Response): Promise<Response> {
         try {
-            let statusesQuery: string[], citiesQuery: number[];
+            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[];
             if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
             if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
+            if (req.query.masters) mastersQuery = req.query.masters.toString().split(',').map(masterId => +masterId);
 
-            const { limit, page, cities, statuses, sortedField, isDirectedASC } = GetMastersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
+            const { limit, page, cities, statuses, sortedField, isDirectedASC, name, masters } = GetMastersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true, masters: mastersQuery });
 
             const config: FindAndCountOptions<Attributes<Model<MasterAttributes, MasterCreationAttributes>>> = {
                 attributes: { include: [[sequelize.col('User.email'), 'email']] },
@@ -111,6 +112,12 @@ export default class MasterController {
                     attributes: [],
                     required: true
                 }],
+                where: {
+                    [Op.or]: [
+                        sequelize.literal(`"User"."email" ILIKE '%${name || ''}%'`),
+                        { name: { [Op.iLike]: `%${name || ''}%` } }
+                    ]
+                },
                 order: sortedField === 'Cities' ? [[City, 'name', isDirectedASC ? 'ASC' : 'DESC']]
                     : sequelize.literal(`"${sortedField || 'id'}" ${isDirectedASC ? 'ASC' : 'DESC'}`),
                 limit: limit || 25,
@@ -121,6 +128,12 @@ export default class MasterController {
                 config.where = {
                     ...config.where,
                     status: statuses
+                }
+            }
+            if (masters) {
+                config.where = {
+                    ...config.where,
+                    id: masters
                 }
             }
             if (cities) {
@@ -171,9 +184,9 @@ export default class MasterController {
 
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
-            
+
             const { limit, page, sortedField, isDirectedASC } = GetMasterOrdersSchema.parse({ ...req.query, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
-            
+
             const { count, rows } = await Order.findAndCountAll({
                 where: {
                     masterId: id
@@ -294,7 +307,7 @@ export default class MasterController {
 
             const user = await User.findByPk(master.getDataValue('userId'));
 
-            await CityMaster.destroy({ where: {masterId: id}, transaction: deleteMasterTransaction });
+            await CityMaster.destroy({ where: { masterId: id }, transaction: deleteMasterTransaction });
 
             await master.destroy({ transaction: deleteMasterTransaction });
             await user.destroy({ transaction: deleteMasterTransaction });
