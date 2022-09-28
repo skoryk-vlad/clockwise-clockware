@@ -23,7 +23,8 @@ export const GetClientsSchema = z.object({
         z.number().int().positive()
     ).optional(),
     sortedField: z.string().refine(field => [...Object.keys(Client.getAttributes()), 'email'].includes(field)).optional(),
-    isDirectedASC: z.boolean().optional()
+    isDirectedASC: z.boolean().optional(),
+    name: z.string().optional()
 });
 export const GetClientSchema = z.object({
     id: z.number().int().positive()

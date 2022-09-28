@@ -6,10 +6,13 @@ import { AdminButton } from '../AdminButton/AdminButton';
 import { MASTER_STATUSES, MASTER_STATUSES_TRANSLATE } from '../../constants';
 import Select from 'react-select';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AutocompleteInput } from '../AutocompleteInput/AutocompleteInput';
+import { MasterService } from '../../API/Server';
 
 const MasterFilterSchema = z.object({
     cities: z.array(z.number().int().positive()).optional(),
-    statuses: z.array(z.nativeEnum(MASTER_STATUSES)).optional()
+    statuses: z.array(z.nativeEnum(MASTER_STATUSES)).optional(),
+    masters: z.array(z.number().int().positive()).optional()
 });
 
 export const MasterFilterForm = ({ filters, onClick, cities, setFilters }) => {
@@ -24,6 +27,23 @@ export const MasterFilterForm = ({ filters, onClick, cities, setFilters }) => {
     return (
         <form onSubmit={handleSubmit(onSubmit)} className={classes.filterForm}>
             <div className={classes.filterFormRow}>
+                <div className={classes.rowColumn}>
+                    <div className={classes.rowTop}>
+                        <label htmlFor="cities">Мастера</label>
+                    </div>
+                    <Controller
+                        control={control}
+                        name="masters"
+                        render={({
+                            field: { onChange, value }
+                        }) => (
+                            <AutocompleteInput getOptions={MasterService.getMasters}
+                                value={value} onChange={onChange}
+                                placeholder="Выбор мастеров..." isMulti
+                            />
+                        )}
+                    />
+                </div>
                 <div className={classes.rowColumn}>
                     <div className={classes.rowTop}>
                         <label htmlFor="cities">Города</label>

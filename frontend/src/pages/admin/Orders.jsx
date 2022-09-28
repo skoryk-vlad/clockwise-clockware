@@ -26,11 +26,12 @@ const defaultOrder = {
 
 const defaultFilters = {
     masters: [],
+    clients: [],
     cities: [],
     statuses: [],
     dateStart: '',
     dateEnd: '',
-    priceRange: [0, 300]
+    priceRange: [50, 300]
 };
 const defaultPagination = {
     page: 1,
@@ -60,6 +61,7 @@ export const Orders = () => {
     const [cities, setCities] = useState([]);
     const [clients, setClients] = useState([]);
     const [masters, setMasters] = useState([]);
+    const [prices, setPrices] = useState({ min: 0, max: 0 });
 
     const [currentOrder, setCurrentOrder] = useState(defaultOrder);
     const [isModalOpened, setIsModalOpened] = useState(false);
@@ -78,10 +80,12 @@ export const Orders = () => {
         const cities = await CityService.getCities();
         const clients = await ClientService.getClients();
         const masters = await MasterService.getMasters();
+        const prices = await OrderService.getMinAndMaxPrices();
 
         setCities(cities.rows);
         setClients(clients.rows);
         setMasters(masters.rows);
+        setPrices(prices);
     });
 
     useEffect(() => {
@@ -89,14 +93,14 @@ export const Orders = () => {
         fetchAdditionalData();
         fetchOrders();
     }, []);
-    
+
     useEffect(() => {
         fetchOrders();
     }, [filters, pagination, sortByField]);
 
     useEffect(() => {
-        if(totalPages && pagination.page > totalPages)
-            setPagination({...pagination, page: totalPages});
+        if (totalPages && pagination.page > totalPages)
+            setPagination({ ...pagination, page: totalPages });
     }, [totalPages]);
 
     useEffect(() => {
@@ -157,7 +161,7 @@ export const Orders = () => {
                         statuses: Array.isArray(defaultFilters.statuses) ? defaultFilters.statuses.map(status => ({ value: status, label: ORDER_STATUSES_TRANSLATE[status] })) : []
                     }}
                         onClick={newFilterState => { JSON.stringify(filters) !== JSON.stringify(newFilterState) && setFilters(newFilterState); }}
-                        cities={cities} maxPrice={Math.max(...cities.map(city => +city.price)) * 3} masters={masters} setFilters={setFilters}></OrderFilterForm>}
+                        cities={cities} prices={prices} masters={masters} setFilters={setFilters}></OrderFilterForm>}
 
                     <div className="admin-body__btns">
                         <AdminButton onClick={() => { setIsModalOpened(true); setCurrentOrder(defaultOrder) }}>

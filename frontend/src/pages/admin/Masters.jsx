@@ -22,7 +22,8 @@ const defaultMaster = {
 };
 const defaultFilters = {
     cities: [],
-    statuses: []
+    statuses: [],
+    masters: []
 };
 const defaultPagination = {
     page: 1,

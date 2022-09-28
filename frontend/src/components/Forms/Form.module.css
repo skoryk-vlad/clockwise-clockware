@@ -50,13 +50,14 @@ label {
 }
 
 .rowColumn {
-    width: 300px;
+    width: 280px;
     margin: 0px 5px 0px 0px;
 }
 
 .filterFormRow {
     margin: 0px 0px 5px 0px;
     display: flex;
+    justify-content: space-between;
     width: 100%;
 }
 
@@ -114,6 +115,7 @@ label {
 
 .priceRangeWrapper {
     height: 38px;
+    margin: 0px 10px;
 }
 
 .priceRange {

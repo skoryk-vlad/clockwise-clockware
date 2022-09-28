@@ -27,7 +27,9 @@ export const GetMastersSchema = z.object({
     cities: z.array(z.number().int().positive()).optional(),
     statuses: z.array(z.nativeEnum(MASTER_STATUSES)).optional(),
     sortedField: z.string().refine(field => [...Object.keys(Master.getAttributes()), 'email', 'Cities'].includes(field)).optional(),
-    isDirectedASC: z.boolean().optional()
+    isDirectedASC: z.boolean().optional(),
+    name: z.string().optional(),
+    masters: z.array(z.number().int().positive()).optional(),
 });
 export const GetMasterSchema = z.object({
     id: z.number().int().positive()

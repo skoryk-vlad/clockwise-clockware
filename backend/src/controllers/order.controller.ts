@@ -85,18 +85,19 @@ export default class OrderController {
     }
     async getOrders(req: Request, res: Response): Promise<Response> {
         try {
-            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[], priceRangeQuery: number[];
+            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[], clientsQuery: number[], priceRangeQuery: number[];
             if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
             if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
             if (req.query.masters) mastersQuery = req.query.masters.toString().split(',').map(masterId => +masterId);
+            if (req.query.clients) clientsQuery = req.query.clients.toString().split(',').map(clientId => +clientId);
             if (req.query.priceRange) priceRangeQuery = req.query.priceRange.toString().split(',').map(price => +price);
 
-            const { limit, page, cities, masters, statuses, dateStart, dateEnd, sortedField, isDirectedASC, priceRange } = GetOrdersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, masters: mastersQuery, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true, priceRange: priceRangeQuery });
+            const { limit, page, cities, masters, clients, statuses, dateStart, dateEnd, sortedField, isDirectedASC, priceRange } = GetOrdersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, masters: mastersQuery, clients: clientsQuery, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true, priceRange: priceRangeQuery });
 
             let include = [
                 { model: City, as: 'City', where: {} },
                 { model: Master, as: 'Master', where: {} },
-                { model: Client, as: 'Client' }
+                { model: Client, as: 'Client', where: {} }
             ];
 
             if (cities) {
@@ -116,6 +117,16 @@ export default class OrderController {
                     as: 'Master',
                     where: {
                         id: masters
+                    }
+                }]
+            }
+            if (clients) {
+                include = [...include,
+                {
+                    model: Client,
+                    as: 'Client',
+                    where: {
+                        id: clients
                     }
                 }]
             }
@@ -272,6 +283,20 @@ export default class OrderController {
             return res.status(200).json(order);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async getMinAndMaxPrices(req: Request, res: Response): Promise<Response> {
+        try {
+            const prices = await Order.findAll({
+                attributes: [
+                    [sequelize.fn('min', sequelize.col('price')), 'min'],
+                    [sequelize.fn('max', sequelize.col('price')), 'max']
+                ]
+            });
+
+            return res.status(200).json(prices[0]);
+        } catch (error) {
             return res.sendStatus(500);
         }
     }

@@ -139,6 +139,10 @@ export class OrderService {
         const { data } = await api.post(`/order/rating/${id}`, { rating });
         return data;
     }
+    static async getMinAndMaxPrices() {
+        const { data } = await api.get(`/order-prices`);
+        return data;
+    }
 }
 export class UserService {
     static async resetPassword(email) {
