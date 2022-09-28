@@ -13,6 +13,6 @@ router.get('/order', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.g
 router.get('/order/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getOrderById);
 router.put('/order/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.updateOrder);
 router.delete('/order/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.deleteOrder);
-router.get('/order-prices', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getMinAndMaxPrices);
+router.get('/order-min-max-prices', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getMinAndMaxPrices);
 
 export default router;

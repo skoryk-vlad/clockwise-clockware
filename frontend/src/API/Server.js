@@ -140,7 +140,7 @@ export class OrderService {
         return data;
     }
     static async getMinAndMaxPrices() {
-        const { data } = await api.get(`/order-prices`);
+        const { data } = await api.get(`/order-min-max-prices`);
         return data;
     }
 }

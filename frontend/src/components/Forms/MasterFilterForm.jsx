@@ -6,7 +6,7 @@ import { AdminButton } from '../AdminButton/AdminButton';
 import { MASTER_STATUSES, MASTER_STATUSES_TRANSLATE } from '../../constants';
 import Select from 'react-select';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AutocompleteInput } from '../AutocompleteInput/AutocompleteInput';
+import { Lookup, splitBySubstring } from '../Lookup/Lookup';
 import { MasterService } from '../../API/Server';
 
 const MasterFilterSchema = z.object({
@@ -29,7 +29,7 @@ export const MasterFilterForm = ({ filters, onClick, cities, setFilters }) => {
             <div className={classes.filterFormRow}>
                 <div className={classes.rowColumn}>
                     <div className={classes.rowTop}>
-                        <label htmlFor="cities">Мастера</label>
+                        <label htmlFor="masters">Мастера</label>
                     </div>
                     <Controller
                         control={control}
@@ -37,9 +37,18 @@ export const MasterFilterForm = ({ filters, onClick, cities, setFilters }) => {
                         render={({
                             field: { onChange, value }
                         }) => (
-                            <AutocompleteInput getOptions={MasterService.getMasters}
+                            <Lookup getOptions={MasterService.getMasters}
                                 value={value} onChange={onChange}
                                 placeholder="Выбор мастеров..." isMulti
+                                label={(master) => `${master.name} (${master.email})`}
+                                formatOptionLabel={(label, inputValue) => {
+                                    const labelArr = label.split(' ');
+                                    const nameParts = splitBySubstring(labelArr[0], inputValue);
+                                    const emailParts = splitBySubstring(labelArr[1], inputValue);
+                                    return (<div>
+                                        {nameParts[0]}<span className={classes.searched}>{nameParts[1]}</span>{nameParts[2]} <span className={classes.email}>{emailParts[0]}<span className={classes.searched}>{emailParts[1]}</span>{emailParts[2]}</span>
+                                    </div>)
+                                }}
                             />
                         )}
                     />

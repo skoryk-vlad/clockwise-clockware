@@ -61,7 +61,7 @@ export const Orders = () => {
     const [cities, setCities] = useState([]);
     const [clients, setClients] = useState([]);
     const [masters, setMasters] = useState([]);
-    const [prices, setPrices] = useState({ min: 0, max: 0 });
+    const [prices, setPrices] = useState([0, 0]);
 
     const [currentOrder, setCurrentOrder] = useState(defaultOrder);
     const [isModalOpened, setIsModalOpened] = useState(false);
@@ -85,7 +85,7 @@ export const Orders = () => {
         setCities(cities.rows);
         setClients(clients.rows);
         setMasters(masters.rows);
-        setPrices(prices);
+        setPrices([prices.min, prices.max]);
     });
 
     useEffect(() => {
