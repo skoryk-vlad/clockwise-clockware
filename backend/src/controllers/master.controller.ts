@@ -234,7 +234,12 @@ export default class MasterController {
                 where: {
                     id: { [Op.notIn]: overlapsOrders.map(overlapsOrder => overlapsOrder.getDataValue('masterId')) }
                 },
-                attributes: { include: [[sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 2), 'rating']] },
+                attributes: {
+                    include: [
+                        [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 1), 'rating'],
+                        [sequelize.fn('count', sequelize.col('Order.review')), 'reviews']
+                    ]
+                },
                 include: [{
                     model: City,
                     as: 'Cities',
@@ -247,7 +252,8 @@ export default class MasterController {
                     as: 'Order',
                     attributes: []
                 }],
-                group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id']
+                group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id'],
+                order: [['rating', 'DESC NULLS LAST']]
             });
 
             return res.status(200).json(freeMasters);
@@ -316,6 +322,30 @@ export default class MasterController {
             return res.status(200).json(master);
         } catch (error) {
             await deleteMasterTransaction.rollback();
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async getMasterReviews(req: Request, res: Response): Promise<Response> {
+        try {
+            const { id } = GetMasterSchema.parse({ id: +req.params.id });
+
+            const master = await Master.findByPk(id);
+            if (!master) return res.status(404).json('No such master');
+
+            const orders = await Order.findAll({
+                attributes: ['review'],
+                where: {
+                    masterId: master.getDataValue('id'),
+                    review: { [Op.ne]: null }
+                },
+                order: [['date', 'DESC']],
+                limit: 5,
+                offset: 0
+            })
+
+            return res.status(200).json(orders.map(order => order.getDataValue('review')));
+        } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }

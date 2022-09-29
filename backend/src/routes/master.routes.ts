@@ -14,5 +14,6 @@ router.get('/master/:id/orders', isJwtNotExpired, hasRoles([ROLES.ADMIN, ROLES.M
 router.get('/freemasters', masterController.getFreeMasters);
 router.put('/master/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), masterController.updateMaster);
 router.delete('/master/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), masterController.deleteMaster);
+router.get('/master-reviews/:id', masterController.getMasterReviews);
 
 export default router;

@@ -5,7 +5,6 @@
 .wrapper {
   min-height: 100%;
   overflow: hidden;
-  background-color: bisque;
   display: flex;
   flex-direction: column;
 }
@@ -263,13 +262,14 @@
 }
 
 .rc-slider-handle {
-  position: absolute; 
+  position: absolute;
   background-color: #aaa;
   border-radius: 50%;
   width: 14px;
   height: 14px;
   cursor: pointer;
 }
+
 .rc-slider-rail {
   position: absolute;
   width: 100%;
@@ -277,11 +277,63 @@
   background-color: #fff;
   border-radius: 6px;
   border: 1px solid #ccc;
-}  
+}
+
 .rc-slider-track {
   position: absolute;
   height: 10px;
   border-radius: 6px;
   background-color: #ccc;
   opacity: 100%;
+}
+
+.reviewWrapper {
+  background-color: #fafafa;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+}
+
+.review {
+  background-color: #eee;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.reviewTitle {
+  font-size: 25px;
+  margin: 0px 0px 20px 0px;
+}
+
+.reviewBlock {
+  width: 100%;
+  margin: 0px 0px 20px 0px;
+  text-align: left;
+}
+
+.reviewLabel {
+  font-size: 18px;
+  margin: 0px 0px 10px 0px;
+}
+
+.reviewTextarea {
+  width: 100%;
+  height: 200px;
+  resize: vertical;
+  border: 1px solid #6F2CFF;
+  padding: 5px;
+  font-size: 16px;
+}
+
+.errorMessage {
+  color: red;
+  font-size: 14px;
+  margin: 0px 0px 1px 10px;
 }

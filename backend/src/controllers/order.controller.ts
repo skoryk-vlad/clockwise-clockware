@@ -1,6 +1,6 @@
 import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
-import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema } from './../validationSchemas/order.schema';
+import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema, addReviewSchema } from './../validationSchemas/order.schema';
 import { sequelize } from './../sequelize';
 import { Model, Op, FindAndCountOptions, Attributes } from 'sequelize';
 import { Master } from './../models/master.model';
@@ -9,7 +9,7 @@ import { City } from './../models/city.model';
 import { Order, ORDER_STATUSES, WatchSizes, OrderAttributes, OrderCreationAttributes } from './../models/order.model';
 import { Request, Response } from 'express';
 import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../mailer';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
@@ -65,10 +65,11 @@ export default class OrderController {
                 }
             }
 
+            const reviewToken = uuidv4();
             const price = existCity.getDataValue('price') * (endTime - time);
 
             const order = await Order.create({
-                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, price
+                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, price, reviewToken
             }, {
                 transaction: addOrderTransaction
             });
@@ -249,7 +250,7 @@ export default class OrderController {
 
             const client = await Client.findByPk(order.getDataValue('clientId'));
             const user = await User.findByPk(client.getDataValue('userId'));
-            if (status === ORDER_STATUSES.COMPLETED) await sendOrderCompletedMail(user.getDataValue('email'), client.getDataValue('name'));
+            if (status === ORDER_STATUSES.COMPLETED) await sendOrderCompletedMail(user.getDataValue('email'), client.getDataValue('name'), order.getDataValue('reviewToken'));
 
             return res.status(200).json(order);
         } catch (error) {
@@ -297,6 +298,49 @@ export default class OrderController {
 
             return res.status(200).json(prices[0]);
         } catch (error) {
+            return res.sendStatus(500);
+        }
+    }
+    async redirectToReview(req: Request, res: Response): Promise<void> {
+        try {
+            const reviewToken: string = req.params.reviewToken;
+
+            if (uuidValidate(reviewToken)) {
+                const order = await Order.findOne({ where: { reviewToken } });
+                if (!order) return res.redirect(`${process.env.CLIENT_LINK}/message/order-not-exist`);
+                if (order.getDataValue('status') !== ORDER_STATUSES.COMPLETED) return res.redirect(`${process.env.CLIENT_LINK}/message/order-not-completed`);
+                if (order.getDataValue('review')) return res.redirect(`${process.env.CLIENT_LINK}/message/order-already-reviewed`);
+
+                return res.redirect(`${process.env.CLIENT_LINK}/order-review?${reviewToken}`);
+            } else {
+                return res.redirect(`${process.env.CLIENT_LINK}/message/error`);
+            }
+        } catch (error) {
+            return res.redirect(`${process.env.CLIENT_LINK}/message/error`);
+        }
+    }
+    async addReview(req: Request, res: Response): Promise<Response> {
+        try {
+            const reviewToken: string = req.params.reviewToken;
+
+            if (uuidValidate(reviewToken)) {
+                const order = await Order.findOne({ where: { reviewToken } });
+                if (!order) return res.status(404).json('No such order');
+                if (order.getDataValue('status') !== ORDER_STATUSES.COMPLETED) return res.status(409).json('Order not completed yet');
+                if (order.getDataValue('review')) return res.status(409).json('Review already exist');
+
+                const { rating, review } = addReviewSchema.parse(req.body);
+                await order.update({ rating });
+                if (review) await order.update({ review });
+
+                return res.status(200).json(order);
+            } else {
+                return res.sendStatus(400);
+            }
+        } catch (error) {
+            console.log(error.issues);
+
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
     }

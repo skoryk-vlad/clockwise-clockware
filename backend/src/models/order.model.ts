@@ -39,6 +39,8 @@ export interface OrderAttributes {
     masterId: number;
     status: ORDER_STATUSES;
     price: number;
+    reviewToken: string;
+    review: string;
 }
 
 export type OrderCreationAttributes = Optional<OrderAttributes, 'id'>;
@@ -80,6 +82,13 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
         price: {
             type: DataTypes.INTEGER,
             allowNull: false
+        },
+        reviewToken: {
+            type: DataTypes.UUID,
+            allowNull: false
+        },
+        review: {
+            type: DataTypes.TEXT
         },
         createdAt: DataTypes.DATE,
         updatedAt: DataTypes.DATE,

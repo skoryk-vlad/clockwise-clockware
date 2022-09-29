@@ -52,3 +52,7 @@ export const ChangeStatusSchema = z.object({
 export const SetRatingSchema = z.object({
     rating: z.number().int().min(0).max(5)
 });
+export const addReviewSchema = z.object({
+    rating: z.number().int().min(0).max(5),
+    review: z.string().max(1000).optional()
+});

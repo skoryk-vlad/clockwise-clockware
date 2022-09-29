@@ -82,7 +82,7 @@ export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
     }
     const findMasters = async (order) => {
         const freeMasters = await MasterService.getFreeMasters(order.cityId, order.date, order.time, order.watchSize);
-        setFreeMasters(freeMasters.sort((a, b) => b.rating - a.rating).map(master => master.rating && +master.rating !== 0 ? master : { ...master, rating: '-' }));
+        setFreeMasters(freeMasters.map(master => !master.rating ? ({...master, rating: '-'}) : master));
         setIsFormOpened(false);
         setIsConfirmationModalOpened(false);
     }
