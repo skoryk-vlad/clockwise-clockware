@@ -81,6 +81,10 @@ export class MasterService {
         const { data } = await api.get(`/master/${id}/orders?${createSearchParams(attributes)}`);
         return data;
     }
+    static async getMasterReviews(id) {
+        const { data } = await api.get(`/master-reviews/${id}`);
+        return data;
+    }
 }
 
 export class ClientService {
@@ -141,6 +145,10 @@ export class OrderService {
     }
     static async getMinAndMaxPrices() {
         const { data } = await api.get(`/order-min-max-prices`);
+        return data;
+    }
+    static async addOrderReview(reviewToken, rating, review) {
+        const { data } = await api.post(`/add-order-review/${reviewToken}`, { rating, review });
         return data;
     }
 }

@@ -21,11 +21,11 @@ export const Landing = () => {
     return (
         <div className="wrapper">
             <Header register={() => { setIsAuthorizationModalOpened(true); setIsRegistration(true) }}
-                login={() => { setIsAuthorizationModalOpened(true); setIsRegistration(false) }} />
+                login={() => { setIsAuthorizationModalOpened(true); setIsRegistration(false); setNeedRedirect(true) }} />
             <Main onClick={() => setIsOrderModalOpened(true)} />
             <Footer />
             <TopButton />
-            
+
             <MyModal visible={isOrderModalOpened} setVisible={setIsOrderModalOpened}>
                 <OrderModal setIsOrderModalOpened={setIsOrderModalOpened}
                     login={() => { setIsAuthorizationModalOpened(true); setIsRegistration(false); setNeedRedirect(false) }}

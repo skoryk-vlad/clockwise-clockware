@@ -158,7 +158,9 @@ export const sendResetedPasswordMail = async (email: string, password: string, n
     });
 };
 
-export const sendOrderCompletedMail = async (email: string, name: string): Promise<SentMessageInfo> => {
+export const sendOrderCompletedMail = async (email: string, name: string, reviewToken: string): Promise<SentMessageInfo> => {
+    const reviewLink: string = `${process.env.BASE_LINK}/api/order-review/${reviewToken}`;
+    
     const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
     <div style="max-width: 600px; background-color: #fff; margin: auto; border: 1px solid lightgray; border-radius: 2px;">
         <div style="overflow: hidden; height: 40px; display: flex; align-items: center; padding: 10px;">
@@ -169,10 +171,10 @@ export const sendOrderCompletedMail = async (email: string, name: string): Promi
         </div>
         <div style="padding: 10px;">
             <div style="font-weight: bold; text-align: center; font-size: 22px; margin-top: 10px;">Здравствуйте, ${name}!</div>
-            <div style="font-size: 17px; margin-top: 15px;">Поздравляем! Мастер отметил заказ выполненным. Теперь Вы можете авторизоваться в своем личном кабинете и оценить его выполнение.</div>
-            <a href="${process.env.CLIENT_LINK}" style="padding: 10px 20px; color: #fff; font-size: 20px; background-color: #6F2CFF; text-decoration: none;
+            <div style="font-size: 17px; margin-top: 15px;">Поздравляем! Мастер отметил заказ выполненным. Теперь Вы можете оценить его выполнение и оставить отзыв:</div>
+            <a href="${reviewLink}" style="padding: 10px 20px; color: #fff; font-size: 20px; background-color: #6F2CFF; text-decoration: none;
             border: 1px solid #6F2CFF; cursor: pointer; border-radius: 20px; display: inline-block; margin-top: 10px; ">
-                Перейти на сайт
+                Оставить отзыв
             </a>
         </div>
     </div>
