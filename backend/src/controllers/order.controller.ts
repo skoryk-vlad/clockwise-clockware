@@ -1,3 +1,4 @@
+import { scheduleReminderMail } from './../cron';
 import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
 import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema, addReviewSchema } from './../validationSchemas/order.schema';
@@ -75,6 +76,9 @@ export default class OrderController {
             });
 
             await sendConfirmationOrderMail(email, name, order.get(), existMaster.getDataValue('name'));
+
+            const masterUser = await User.findByPk(existMaster.getDataValue('userId'));
+            scheduleReminderMail(masterUser.getDataValue('email'), existMaster.getDataValue('name'), order.get(), client.getDataValue('name'));
 
             await addOrderTransaction.commit();
             return res.status(201).json(order);

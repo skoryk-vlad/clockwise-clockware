@@ -14,7 +14,6 @@ import userRouter from './routes/user.routes';
 const PORT: number = Number(process.env.PORT) || 3001;
 const app: Express = express();
 
-
 app.use(cors());
 app.use(express.json());
 
@@ -25,5 +24,9 @@ app.use('/api', masterRouter);
 app.use('/api', orderRouter);
 app.use('/api', confirmationRouter);
 app.use('/api', userRouter);
+
+app.get('/api/ping', (req, res) => {
+    res.sendStatus(200);
+});
 
 app.listen(PORT, () => { console.log(`Server started on port ${PORT} in ${process.env.NODE_ENV}mode`); });
