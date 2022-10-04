@@ -1,4 +1,3 @@
-import { scheduleReminderMail } from './../cron';
 import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
 import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema, addReviewSchema } from './../validationSchemas/order.schema';
@@ -76,9 +75,6 @@ export default class OrderController {
             });
 
             await sendConfirmationOrderMail(email, name, order.get(), existMaster.getDataValue('name'));
-
-            const masterUser = await User.findByPk(existMaster.getDataValue('userId'));
-            scheduleReminderMail(masterUser.getDataValue('email'), existMaster.getDataValue('name'), order.get(), client.getDataValue('name'));
 
             await addOrderTransaction.commit();
             return res.status(201).json(order);
@@ -342,8 +338,6 @@ export default class OrderController {
                 return res.sendStatus(400);
             }
         } catch (error) {
-            console.log(error.issues);
-
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }

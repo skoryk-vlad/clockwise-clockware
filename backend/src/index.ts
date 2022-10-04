@@ -10,6 +10,7 @@ import masterRouter from './routes/master.routes';
 import orderRouter from './routes/order.routes';
 import confirmationRouter from './routes/confirmation.routes';
 import userRouter from './routes/user.routes';
+import { sendReminderMailTask } from './cronTasks/sendReminderMailTask';
 
 const PORT: number = Number(process.env.PORT) || 3001;
 const app: Express = express();
@@ -17,6 +18,7 @@ const app: Express = express();
 app.use(cors());
 app.use(express.json());
 
+sendReminderMailTask();
 app.use('/api', authRouter);
 app.use('/api', cityRouter);
 app.use('/api', clientRouter);
