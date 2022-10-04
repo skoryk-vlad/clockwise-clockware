@@ -246,11 +246,12 @@ export default class OrderController {
             if (!order) return res.status(404).json('No such order');
 
             const { status } = ChangeStatusSchema.parse(req.body);
+            const oldStatus = order.getDataValue('status');
             await order.update({ status });
 
             const client = await Client.findByPk(order.getDataValue('clientId'));
             const user = await User.findByPk(client.getDataValue('userId'));
-            if (status === ORDER_STATUSES.COMPLETED) await sendOrderCompletedMail(user.getDataValue('email'), client.getDataValue('name'), order.getDataValue('reviewToken'));
+            if (oldStatus !== status && status === ORDER_STATUSES.COMPLETED) await sendOrderCompletedMail(user.getDataValue('email'), client.getDataValue('name'), order.getDataValue('reviewToken'));
 
             return res.status(200).json(order);
         } catch (error) {

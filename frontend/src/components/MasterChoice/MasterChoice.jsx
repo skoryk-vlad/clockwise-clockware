@@ -47,7 +47,14 @@ export const MasterChoice = ({ freeMasters, returnForm, addOrder, price }) => {
             </div>
             {reviewsInfo.reviews.length > 0 && <div className={classes.reviews}>
                 <h3>Отзывы о мастере <div className={classes.masterName}>{reviewsInfo.masterName}</div></h3>
-                {reviewsInfo.reviews.map(review => <p key={review}>{review}</p>)}
+                {reviewsInfo.reviews.map(review => <div key={review.id} className={classes.masterReview}>
+                    <div className={classes.masterReviewTop}>
+                        <div className={classes.masterReviewName}>{review.client}</div>
+                        <div>{review.rating}{`\u2605`}</div>
+                    </div>
+                    <div>{review.review}</div>
+                    <div className={classes.masterReviewDate}>{review.date}</div>
+                </div>)}
                 <div className={`${classes.return} ${classes.close}`} onClick={() => setReviewsInfo({ masterName: '', reviews: [] })}>
                     <img src="/images/icons/close.png" alt="Назад" />
                 </div>

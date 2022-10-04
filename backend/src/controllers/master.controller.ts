@@ -333,8 +333,9 @@ export default class MasterController {
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
 
-            const orders = await Order.findAll({
-                attributes: ['review'],
+            const reviews = await Order.findAll({
+                include: [{ model: Client, attributes: [] }],
+                attributes: ['id', 'review', 'rating', 'date', [sequelize.col('Client.name'), 'client']],
                 where: {
                     masterId: master.getDataValue('id'),
                     review: { [Op.ne]: null }
@@ -344,7 +345,7 @@ export default class MasterController {
                 offset: 0
             })
 
-            return res.status(200).json(orders.map(order => order.getDataValue('review')));
+            return res.status(200).json(reviews);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
