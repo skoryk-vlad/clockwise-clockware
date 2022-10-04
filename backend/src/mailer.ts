@@ -26,7 +26,6 @@ export const sendConfirmationOrderMail = async (email: string, name: string, ord
                 <div style="font-size: 14px; margin-top: 8px;"><span style="font-weight: bold;">Размер часов</span>: ${WatchSizesTranslate[order.watchSize]}</div>
                 <div style="font-size: 14px; margin-top: 8px;"><span style="font-weight: bold;">Мастер</span>: ${master}</div>
                 <div style="font-size: 14px; margin-top: 8px;"><span style="font-weight: bold;">Цена</span>: ${order.price} грн</div>
-
             </div>
         </div>
         </div>`;
@@ -160,7 +159,7 @@ export const sendResetedPasswordMail = async (email: string, password: string, n
 
 export const sendOrderCompletedMail = async (email: string, name: string, reviewToken: string): Promise<SentMessageInfo> => {
     const reviewLink: string = `${process.env.BASE_LINK}/api/order-review/${reviewToken}`;
-    
+
     const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
     <div style="max-width: 600px; background-color: #fff; margin: auto; border: 1px solid lightgray; border-radius: 2px;">
         <div style="overflow: hidden; height: 40px; display: flex; align-items: center; padding: 10px;">
@@ -184,6 +183,35 @@ export const sendOrderCompletedMail = async (email: string, name: string, review
         from: `"Clockwise Clockware" <${process.env.MAIL_USER}>`,
         to: email,
         subject: 'Заказ успешно выполнен - Clockwise Clockware',
+        html: htmlMessage
+    });
+};
+
+export const sendReminderMail = async (email: string, name: string, order: OrderAttributes, client: string): Promise<SentMessageInfo> => {
+    const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
+    <div style="max-width: 600px; background-color: #fff; margin: auto; border: 1px solid lightgray; border-radius: 2px;">
+        <div style="overflow: hidden; height: 40px; display: flex; align-items: center; padding: 10px;">
+            <a href="${process.env.CLIENT_LINK}" style="overflow: hidden; width: 40px; height: 40px; cursor: pointer;">
+                <img src="https://clockwiseintership.netlify.app/images/logo.png" style="width: 100%; height: 100%;" alt="Clockwise Clockware" />
+            </a>
+            <a href="${process.env.CLIENT_LINK}" style="margin: 0px 0px 0px 10px; color: #000; cursor: pointer; text-decoration: none; font-size: 20px; line-height: 20px;">Clockwise <br /> Clockware</a>
+        </div>
+        <div style="padding: 10px;">
+            <div style="font-weight: bold; text-align: center; font-size: 22px; margin-top: 10px;">Здравствуйте, ${name}!</div>
+            <div style="font-size: 17px; margin-top: 15px;">Напоминание о предстоящем заказе. До начала выполнения остался 1 час.</div>
+            <div style="font-size: 17px; margin-top: 10px;">Детали:</div>
+            <div style="font-size: 14px; margin-top: 8px;"><span style="font-weight: bold;">Дата и время</span>: ${order.date} ${order.time}:00 - ${order.endTime}:00</div>
+            <div style="font-size: 14px; margin-top: 8px;"><span style="font-weight: bold;">Размер часов</span>: ${WatchSizesTranslate[order.watchSize]}</div>
+            <div style="font-size: 14px; margin-top: 8px;"><span style="font-weight: bold;">Клиент</span>: ${client}</div>
+            <div style="font-size: 14px; margin-top: 8px;"><span style="font-weight: bold;">Цена</span>: ${order.price} грн</div>
+        </div>
+    </div>
+</div>`;
+
+    return await transporter.sendMail({
+        from: `"Clockwise Clockware" <${process.env.MAIL_USER}>`,
+        to: email,
+        subject: 'Напоминание о заказе - Clockwise Clockware',
         html: htmlMessage
     });
 };
