@@ -48,8 +48,8 @@ export const OrderFilterForm = ({ filters, onClick, cities, setFilters, prices }
                                 label={(master) => `${master.name} (${master.email})`}
                                 formatOptionLabel={(label, inputValue) => {
                                     const labelArr = label.split(' ');
-                                    const nameParts = splitBySubstring(labelArr[0], inputValue);
-                                    const emailParts = splitBySubstring(labelArr[1], inputValue);
+                                    const emailParts = splitBySubstring(labelArr.pop(), inputValue);
+                                    const nameParts = splitBySubstring(labelArr.join(' '), inputValue);
                                     return (<div>
                                         {nameParts[0]}<span className={classes.searched}>{nameParts[1]}</span>{nameParts[2]} <span className={classes.email}>{emailParts[0]}<span className={classes.searched}>{emailParts[1]}</span>{emailParts[2]}</span>
                                     </div>)
@@ -74,8 +74,8 @@ export const OrderFilterForm = ({ filters, onClick, cities, setFilters, prices }
                                 label={(client) => `${client.name} (${client.email})`}
                                 formatOptionLabel={(label, inputValue) => {
                                     const labelArr = label.split(' ');
-                                    const nameParts = splitBySubstring(labelArr[0], inputValue);
-                                    const emailParts = splitBySubstring(labelArr[1], inputValue);
+                                    const emailParts = splitBySubstring(labelArr.pop(), inputValue);
+                                    const nameParts = splitBySubstring(labelArr.join(' '), inputValue);
                                     return (<div>
                                         {nameParts[0]}<span className={classes.searched}>{nameParts[1]}</span>{nameParts[2]} <span className={classes.email}>{emailParts[0]}<span className={classes.searched}>{emailParts[1]}</span>{emailParts[2]}</span>
                                     </div>)

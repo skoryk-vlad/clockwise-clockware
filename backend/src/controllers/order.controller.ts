@@ -338,8 +338,6 @@ export default class OrderController {
                 return res.sendStatus(400);
             }
         } catch (error) {
-            console.log(error.issues);
-
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }

@@ -177,3 +177,17 @@ export class AuthService {
         }
     }
 }
+
+export class PaymentService {
+    static async pay(price, watchSize, orderId) {
+        try {
+            const { data } = await api.post(`/pay`, { price, watchSize, orderId });
+            if (data.forwardLink) {
+                document.location.assign(data.forwardLink);
+            }
+            return data;
+        } catch (error) {
+            return error;
+        }
+    }
+}

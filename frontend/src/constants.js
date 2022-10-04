@@ -1,10 +1,12 @@
 export const ORDER_STATUSES = {
-    CONFIRMED: 'confirmed',
+    AWAITING_PAYMENT: 'awaiting payment',
+    PAID: 'paid',
     COMPLETED: 'completed',
     CANCELED: 'canceled'
 }
 export const ORDER_STATUSES_TRANSLATE = {
-    [ORDER_STATUSES.CONFIRMED]: 'Подтвержден',
+    [ORDER_STATUSES.AWAITING_PAYMENT]: 'Ожидает оплаты',
+    [ORDER_STATUSES.PAID]: 'Оплачен',
     [ORDER_STATUSES.COMPLETED]: 'Выполнен',
     [ORDER_STATUSES.CANCELED]: 'Отменен'
 }

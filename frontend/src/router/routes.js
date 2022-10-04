@@ -18,6 +18,8 @@ export const publicRoutes = [
     { path: '/message/order-not-exist', element: <MessageFromEmail>Произошла ошибка! Такого заказа не существует!</MessageFromEmail> },
     { path: '/message/order-not-completed', element: <MessageFromEmail>Произошла ошибка! Заказ еще не выполнен!</MessageFromEmail> },
     { path: '/message/order-already-reviewed', element: <MessageFromEmail>Произошла ошибка! Заказ уже имеет отзыв!</MessageFromEmail> },
+    { path: '/message/payment/success', element: <MessageFromEmail>Спасибо! Оплата прошла успешно!</MessageFromEmail> },
+    { path: '/message/payment/already-paid', element: <MessageFromEmail>Произошла ошибка! Заказ уже оплачен!</MessageFromEmail> },
     { path: '/order-review', element: <Review/> }
 ]
 
