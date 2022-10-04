@@ -21,7 +21,7 @@ export const Table = ({ children, changeLimit, changePage, currentPage, totalPag
             <table className={classes.table}>
                 {children}
             </table>
-            <div className={classes.paginationBtns}>
+            {totalPages > 0 && <div className={classes.paginationBtns}>
                 <div></div>
                 <div className={classes.paginationBtns_page}>
                     <div className={classes.double_arrow}>{currentPage > 3 && totalPages > 5 && <div className={classes.changePage} onClick={() => changePage(1)}><div className={classes.firstPage}></div></div>}</div>
@@ -41,7 +41,7 @@ export const Table = ({ children, changeLimit, changePage, currentPage, totalPag
                 <select name="limit" defaultValue={defaultValue} className={classes.paginationBtns_select} onChange={event => changeLimit(+event.target.value)}>
                     {availableLimit.map(limit => <option value={limit} key={limit}>{limit}</option>)}
                 </select>
-            </div>
+            </div>}
         </div>
     )
 }

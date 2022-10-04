@@ -21,7 +21,7 @@ const defaultOrder = {
     date: '',
     time: null,
     rating: 0,
-    status: ORDER_STATUSES.CONFIRMED
+    status: ORDER_STATUSES.AWAITING_PAYMENT
 };
 
 const defaultFilters = {
