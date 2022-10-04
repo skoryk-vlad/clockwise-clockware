@@ -1,3 +1,4 @@
+import { sequelize } from './../sequelize';
 import { Master } from './../models/master.model';
 import { sendReminderMail } from '../mailer';
 import { Order } from '../models/order.model';
@@ -10,19 +11,18 @@ export const sendReminderMailTask = async () => {
     cron.schedule(`0 0 9-17 * * *`, async () => {
         try {
             const orders = await Order.findAll({
+                attributes: { include: [[sequelize.col('Master.name'), 'master'], [sequelize.col('Master.User.email'), 'email'], [sequelize.col('Client.name'), 'client']] },
+                include: [{ model: Master, attributes: [], include: [{ model: User, attributes: [] }] },
+                { model: Client, attributes: [] }],
                 where: {
                     date: formatISO(new Date(), { representation: 'date' }),
                     time: getHours(new Date()) + 1
                 }
             })
-            if (orders.length > 0) {
-                orders.forEach(async (order) => {
-                    const master = await Master.findByPk(order.getDataValue('masterId'));
-                    const user = await User.findByPk(master.getDataValue('userId'));
-                    const client = await Client.findByPk(order.getDataValue('clientId'));
-                    await sendReminderMail(user.getDataValue('email'), master.getDataValue('name'), order.get(), client.getDataValue('name'));
-                });
-            }
+            orders.forEach(async (order) => {
+                const orderAttributes = JSON.parse(JSON.stringify(order));
+                await sendReminderMail(orderAttributes.email, orderAttributes.master, order.get(), orderAttributes.client);
+            });
         } catch (error) {
             console.log(error);
         }
