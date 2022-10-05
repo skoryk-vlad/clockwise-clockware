@@ -6,10 +6,11 @@ export default class PaymentController {
     async acceptPayment(req: Request, res: Response): Promise<Response> {
         try {
             const orderId = req.body.resource.custom_id;
+            const paypalInvoiceId = req.body.resource.id;
 
             const order = await Order.findByPk(orderId);
             if (order && order.getDataValue('status') === ORDER_STATUSES.AWAITING_PAYMENT)
-                await order.update({ status: ORDER_STATUSES.PAID });
+                await order.update({ status: ORDER_STATUSES.PAID, paypalInvoiceId });
 
             return res.sendStatus(200);
         } catch (error) {

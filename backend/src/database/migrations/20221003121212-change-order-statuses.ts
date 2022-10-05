@@ -32,12 +32,20 @@ module.exports = {
           type: Sequelize.ENUM(...Object.values(ORDER_STATUSES)),
           allowNull: false
         }
+      ),
+      await queryInterface.addColumn(
+        'Order',
+        'paypalInvoiceId',
+        {
+          type: Sequelize.STRING
+        }
       )
     ]);
   },
 
   async down(queryInterface: QueryInterface, Sequelize: any) {
     return Promise.all([
+      await queryInterface.removeColumn('Order', 'paypalInvoiceId'),
       await queryInterface.changeColumn(
         'Order',
         'status',

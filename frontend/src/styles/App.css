@@ -370,8 +370,3 @@
   display: flex;
   justify-content: space-between;
 }
-
-.paypal {
-  height: 142px;
-  overflow: hidden;
-}
