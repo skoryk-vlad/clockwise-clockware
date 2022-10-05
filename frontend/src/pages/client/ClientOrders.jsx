@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CityService, ClientService, MasterService, OrderService, PaymentService } from '../../API/Server';
+import { CityService, ClientService, MasterService, OrderService } from '../../API/Server';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { ClientPersonalForm } from '../../components/Forms/ClientPersonalForm';
 import { SetRatingForm } from '../../components/Forms/SetRatingForm';
@@ -8,6 +8,7 @@ import { MasterChoice } from '../../components/MasterChoice/MasterChoice';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
+import { PayPal } from '../../components/PayPal';
 import { jwtPayload } from '../../components/PrivateRoute';
 import { ColumnHead } from '../../components/Table/ColumnHead';
 import { Table } from '../../components/Table/Table';
@@ -61,6 +62,13 @@ export const ClientOrders = () => {
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
     const [isModalOpened, setIsModalOpened] = useState(false);
+
+    const [checkout, setCheckout] = useState(false);
+    const [paymentInfo, setPaymentInfo] = useState({
+        price: null,
+        watchSize: '',
+        orderId: null
+    });
 
     const [fetchOrders, isLoading, Error] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'));
@@ -136,10 +144,8 @@ export const ClientOrders = () => {
     }
 
     const createPayment = async (price, watchSize, orderId) => {
-        const response = await PaymentService.pay(price, watchSize, orderId);
-        if(response?.response?.data) {
-            notify(NOTIFY_TYPES.ERROR);
-        }
+        setPaymentInfo({ price, watchSize, orderId });
+        setCheckout(true);
     }
 
     return (
@@ -166,6 +172,10 @@ export const ClientOrders = () => {
                                 :
                                 <MasterChoice freeMasters={freeMasters} returnForm={returnForm} price={order.price} addOrder={addOrder}></MasterChoice>
                     }
+                </MyModal>
+
+                <MyModal visible={checkout} setVisible={setCheckout}>
+                    {checkout && <PayPal price={paymentInfo.price} watchSize={paymentInfo.watchSize} orderId={paymentInfo.orderId} setCheckout={setCheckout} onApprove={fetchOrders} />}
                 </MyModal>
 
                 <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}

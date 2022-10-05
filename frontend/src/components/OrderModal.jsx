@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { CityService, MasterService, OrderService, PaymentService, UserService } from '../API/Server';
+import { CityService, MasterService, OrderService, UserService } from '../API/Server';
 import { useFetching } from '../hooks/useFetching';
 import { ClientOrderForm } from './Forms/ClientOrderForm';
 import { WATCH_SIZES, ORDER_STATUSES, ROLES, WATCH_SIZES_TRANSLATE } from '../constants';
@@ -8,6 +8,8 @@ import { jwtPayload } from './PrivateRoute';
 import { notify, NOTIFY_TYPES } from './Notifications';
 import { MasterChoice } from './MasterChoice/MasterChoice';
 import { OrderButton } from './OrderButton/OrderButton';
+import { PayPal } from './PayPal';
+import { MyModal } from './modal/MyModal';
 
 const defaultOrder = {
     name: "",
@@ -19,7 +21,7 @@ const defaultOrder = {
     status: ORDER_STATUSES.AWAITING_PAYMENT
 };
 
-export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
+export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, register }) => {
     const [isFormOpened, setIsFormOpened] = useState(true);
     const [freeMasters, setFreeMasters] = useState([]);
     const [order, setOrder] = useState(defaultOrder);
@@ -34,6 +36,9 @@ export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
         onReject: () => { }
     });
 
+    const [checkout, setCheckout] = useState(false);
+    const [orderPaid, setOrderPaid] = useState(false);
+
     const [cities, setCities] = useState([]);
     const [fetchCities, isCitiesLoading, Error] = useFetching(async () => {
         const cities = await CityService.getCities();
@@ -42,6 +47,9 @@ export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
     useEffect(() => {
         fetchCities();
     }, []);
+    useEffect(() => {
+        if(isOrderModalOpened === false) refusePayment();
+    }, [isOrderModalOpened]);
 
     const addOrder = async (chosenMaster) => {
         const orderReturned = await OrderService.addOrder({ ...order, masterId: chosenMaster });
@@ -95,16 +103,10 @@ export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
         setIsFormOpened(true);
     }
 
-    const createPayment = async () => {
-        const response = await PaymentService.pay(orderReturned.price, WATCH_SIZES_TRANSLATE[orderReturned.watchSize], orderReturned.id);
-        if(response?.response?.data) {
-            notify(NOTIFY_TYPES.ERROR);
-        }
-    }
-
     const refusePayment = () => {
         setIsOrderModalOpened(false);
         setIsOrderDetailsOpened(false);
+        setOrderPaid(false);
     }
 
     return (
@@ -120,10 +122,16 @@ export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
                         <div className='orderDetails__item'><span className='orderDetails__bold'>Размер часов:</span> {WATCH_SIZES_TRANSLATE[orderReturned.watchSize]}</div>
                         <div className='orderDetails__item'><span className='orderDetails__bold'>Цена:</span> {orderReturned.price}</div>
                         <div className='orderDetails__text'>Вы можете оплатить заказ сейчас или же наличными мастеру перед выполнением.</div>
-                        <div className="orderDetails__buttons">
-                            <OrderButton onClick={createPayment}>Оплатить сейчас</OrderButton>
-                            <OrderButton onClick={refusePayment}>На месте</OrderButton>
-                        </div>
+                        {orderPaid
+                            ?
+                            <div className='orderDetails__text'><span className='orderDetails__bold'>Спасибо! Оплата прошла успешно. Ожидайте выполнение заказа мастером.</span></div>
+                            :
+                            <div className="orderDetails__buttons">
+                                <OrderButton onClick={() => setCheckout(true)}>Оплатить сейчас</OrderButton>
+                                <OrderButton onClick={refusePayment}>На месте</OrderButton>
+                            </div>
+                        }
+
                     </div>
                     :
                     isFormOpened
@@ -132,6 +140,9 @@ export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
                         :
                         <MasterChoice freeMasters={freeMasters} returnForm={returnForm} price={order.price} addOrder={addOrder}></MasterChoice>
             }
+            <MyModal visible={checkout} setVisible={setCheckout}>
+                {checkout && <PayPal price={orderReturned.price} watchSize={WATCH_SIZES_TRANSLATE[orderReturned.watchSize]} orderId={orderReturned.id} setCheckout={setCheckout} onApprove={() => setOrderPaid(true)} />}
+            </MyModal>
         </div>
     )
 }

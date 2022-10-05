@@ -15,13 +15,6 @@ enum OLD_ORDER_STATUSES {
 module.exports = {
   async up(queryInterface: QueryInterface, Sequelize: any) {
     return Promise.all([
-      await queryInterface.addColumn(
-        'Order',
-        'paymentToken',
-        {
-          type: Sequelize.STRING
-        }
-      ),
       await queryInterface.changeColumn(
         'Order',
         'status',
@@ -45,7 +38,6 @@ module.exports = {
 
   async down(queryInterface: QueryInterface, Sequelize: any) {
     return Promise.all([
-      await queryInterface.removeColumn('Order', 'paymentToken'),
       await queryInterface.changeColumn(
         'Order',
         'status',
@@ -62,7 +54,7 @@ module.exports = {
           type: Sequelize.ENUM(...Object.values(OLD_ORDER_STATUSES)),
           allowNull: false
         }
-      ),
+      )
     ]);
   }
 };
