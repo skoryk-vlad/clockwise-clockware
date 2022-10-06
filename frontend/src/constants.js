@@ -13,11 +13,13 @@ export const ORDER_STATUSES_TRANSLATE = {
 
 export const ORDER_MASTER_STATUSES = {
     NOT_COMPLETED: 'not completed',
-    COMPLETED: 'completed'
+    COMPLETED: 'completed',
+    CANCELED: 'canceled'
 }
 export const ORDER_MASTER_STATUSES_TRANSLATE = {
-    [ORDER_MASTER_STATUSES.NOT_COMPLETED]: 'Не закончен',
-    [ORDER_MASTER_STATUSES.COMPLETED]: 'Закончен'
+    [ORDER_MASTER_STATUSES.NOT_COMPLETED]: 'Не выполнен',
+    [ORDER_MASTER_STATUSES.COMPLETED]: 'Выполнен',
+    [ORDER_MASTER_STATUSES.CANCELED]: 'Отменен'
 }
 
 export const CLIENT_STATUSES = {

@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { MasterService, OrderService } from '../../API/Server';
-import { ChangeStatusMasterForm } from '../../components/Forms/ChangeStatusMasterForm';
+import { ConfirmationModal } from '../../components/ConfirmationModal/ConfirmationModal';
 import { Loader } from '../../components/Loader/Loader';
-import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { jwtPayload } from '../../components/PrivateRoute';
 import { ColumnHead } from '../../components/Table/ColumnHead';
 import { Table } from '../../components/Table/Table';
-import { ORDER_MASTER_STATUSES_TRANSLATE, ROLES, WATCH_SIZES_TRANSLATE } from '../../constants';
+import { ORDER_MASTER_STATUSES, ORDER_MASTER_STATUSES_TRANSLATE, ORDER_STATUSES, ROLES, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 
@@ -35,12 +34,16 @@ const defaultSortByField = {
 export const MasterOrders = () => {
     const [orders, setOrders] = useState([]);
 
-    const [currentOrder, setCurrentOrder] = useState(null);
-    const [isModalOpened, setIsModalOpened] = useState(false);
-
     const [pagination, setPagination] = useState(defaultPagination);
     const [totalPages, setTotalPages] = useState(0);
     const [sortByField, setSortByField] = useState(defaultSortByField);
+
+    const [isConfirmationModalOpened, setIsConfirmationModalOpened] = useState(false);
+    const [confirmationModalInfo, setConfirmationModalInfo] = useState({
+        text: '',
+        onAccept: () => { },
+        onReject: () => { }
+    });
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'));
@@ -58,13 +61,18 @@ export const MasterOrders = () => {
         fetchOrders();
     }, [pagination, sortByField]);
 
-    const changeStatus = async (order) => {
-        if (order.status === 'completed') {
-            await OrderService.changeStatusById(order.id, order.status);
-            fetchOrders();
-        }
-        notify(NOTIFY_TYPES.SUCCESS, 'Статус успешно изменен');
-        setIsModalOpened(false);
+    const changeStatus = async (id) => {
+        setIsConfirmationModalOpened(true);
+        setConfirmationModalInfo({
+            text: 'Вы уверены, что хотите отметить заказ выполненным?',
+            onAccept: async () => {
+                await OrderService.changeStatusById(id, ORDER_STATUSES.COMPLETED);
+                fetchOrders();
+                setIsConfirmationModalOpened(false);
+                notify(NOTIFY_TYPES.SUCCESS, 'Статус успешно изменен!');
+            },
+            onReject: () => setIsConfirmationModalOpened(false)
+        });
     };
 
     return (
@@ -95,13 +103,16 @@ export const MasterOrders = () => {
                             <td>{order.time}</td>
                             <td>{order.endTime}</td>
                             <td>{order.price}</td>
-                            <td>{ORDER_MASTER_STATUSES_TRANSLATE[order.status === 'completed' ? 'completed' : 'not completed']}</td>
-                            <td className='tableLink' onClick={() => { setIsModalOpened(true); setCurrentOrder(orders.find(orderToFind => orderToFind.id === order.id)); }}><span>Выставить</span></td>
+                            <td>{ORDER_MASTER_STATUSES_TRANSLATE[order.status] || ORDER_MASTER_STATUSES_TRANSLATE[ORDER_MASTER_STATUSES.NOT_COMPLETED]}</td>
+                            <td className='tableLink' onClick={order.status !== ORDER_MASTER_STATUSES.COMPLETED && order.status !== ORDER_MASTER_STATUSES.CANCELED ? () => changeStatus(order.id) : () => { }}>
+                                {order.status !== ORDER_MASTER_STATUSES.COMPLETED && order.status !== ORDER_MASTER_STATUSES.CANCELED ? <span>Отметить</span> : `-`}
+                            </td>
                         </tr>
                         )}
                     </tbody>
                 </Table>
 
+                {isConfirmationModalOpened && <ConfirmationModal text={confirmationModalInfo.text} onAccept={confirmationModalInfo.onAccept} onReject={confirmationModalInfo.onReject} />}
                 {Error &&
                     <h2 className='adminError'>Произошла ошибка ${Error}</h2>
                 }
@@ -112,9 +123,6 @@ export const MasterOrders = () => {
                     <Loader />
                 }
             </div>
-            <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                {currentOrder && <ChangeStatusMasterForm order={{ id: currentOrder.id, status: currentOrder.status === 'completed' ? 'completed' : 'not completed' }} onClick={changeStatus}></ChangeStatusMasterForm>}
-            </MyModal>
         </div>
     )
 }
