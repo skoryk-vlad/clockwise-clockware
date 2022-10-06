@@ -15,7 +15,7 @@ const defaultOrder = {
     cityId: null,
     date: "",
     time: null,
-    status: ORDER_STATUSES.CONFIRMED
+    status: ORDER_STATUSES.AWAITING_PAYMENT
 };
 
 export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {

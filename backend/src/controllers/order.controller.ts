@@ -2,7 +2,7 @@ import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
 import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema, addReviewSchema } from './../validationSchemas/order.schema';
 import { sequelize } from './../sequelize';
-import { Model, Op, FindAndCountOptions, Attributes } from 'sequelize';
+import { Model, Op, FindAndCountOptions, Attributes, FindOptions } from 'sequelize';
 import { Master } from './../models/master.model';
 import { Client, CLIENT_STATUSES, ClientAttributes, ClientCreationAttributes } from './../models/client.model';
 import { City } from './../models/city.model';
@@ -10,6 +10,8 @@ import { Order, ORDER_STATUSES, WatchSizes, OrderAttributes, OrderCreationAttrib
 import { Request, Response } from 'express';
 import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../mailer';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
+import { createOrderReport } from '../reports';
+import { resolve } from 'path'; 
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
@@ -337,6 +339,73 @@ export default class OrderController {
             } else {
                 return res.sendStatus(400);
             }
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async createReport(req: Request, res: Response): Promise<any> {
+        try {
+            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[], clientsQuery: number[], priceRangeQuery: number[];
+            if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
+            if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
+            if (req.query.masters) mastersQuery = req.query.masters.toString().split(',').map(masterId => +masterId);
+            if (req.query.clients) clientsQuery = req.query.clients.toString().split(',').map(clientId => +clientId);
+            if (req.query.priceRange) priceRangeQuery = req.query.priceRange.toString().split(',').map(price => +price);
+
+            const { cities, masters, clients, statuses, dateStart, dateEnd, sortedField, isDirectedASC, priceRange } = GetOrdersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, masters: mastersQuery, clients: clientsQuery, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true, priceRange: priceRangeQuery });
+
+            let include = [
+                { model: City, as: 'City', where: {}, attributes: [] },
+                { model: Master, as: 'Master', where: {}, attributes: [] },
+                { model: Client, as: 'Client', where: {}, attributes: [] }
+            ];
+
+            if (cities) {
+                include = [...include, {
+                    model: City, as: 'City',
+                    where: { id: cities },
+                    attributes: []
+                }]
+            }
+            if (masters) {
+                include = [...include, {
+                    model: Master, as: 'Master',
+                    where: { id: masters },
+                    attributes: []
+                }]
+            }
+            if (clients) {
+                include = [...include, {
+                    model: Client, as: 'Client',
+                    where: { id: clients }, attributes: []
+                }]
+            }
+            const config: FindOptions<Attributes<Model<OrderAttributes, OrderCreationAttributes>>> = {
+                attributes: [
+                    'id', 'watchSize', 'status', 'date', 'time', 'endTime', [sequelize.col('City.name'), 'city'], [sequelize.col('Client.name'), 'client'], [sequelize.col('Master.name'), 'master'], 'price', 'rating', 'review'
+                ],
+                include,
+                order: [[sortedField || 'date', isDirectedASC ? 'ASC' : 'DESC']],
+            }
+            if (statuses) {
+                config.where = { ...config.where, status: statuses }
+            }
+            if (priceRange) {
+                config.where = { ...config.where, price: { [Op.between]: [priceRange[0], priceRange[1]] } }
+            }
+            if (dateStart || dateEnd) {
+                const dateConditions = [];
+                if (dateStart) dateConditions.push({ [Op.gte]: dateStart });
+                if (dateEnd) dateConditions.push({ [Op.lte]: dateEnd });
+                config.where = { ...config.where, date: { [Op.and]: dateConditions } }
+            }
+
+            const orders = await Order.findAll(config);
+
+            await createOrderReport(orders.map(order => order.toJSON()));
+
+            return res.status(200).sendFile(resolve('reports/order-report.xlsx'));
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);

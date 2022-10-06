@@ -5,7 +5,8 @@ import { sequelize } from '../sequelize';
 import { DataTypes, Optional, ModelDefined } from 'sequelize';
 
 export enum ORDER_STATUSES {
-    CONFIRMED = 'confirmed',
+    AWAITING_PAYMENT = 'awaiting payment',
+    PAID = 'paid',
     COMPLETED = 'completed',
     CANCELED = 'canceled'
 }
@@ -25,6 +26,13 @@ export const WatchSizesTranslate: WatchSizesTranslateType = {
     [WATCH_SIZES.SMALL]: 'Маленькие',
     [WATCH_SIZES.MEDIUM]: 'Средние',
     [WATCH_SIZES.BIG]: 'Большие'
+}
+type OrderStatusesTranslateType = Partial<Record<ORDER_STATUSES, string>>;
+export const OrderStatusesTranslate: OrderStatusesTranslateType = {
+    [ORDER_STATUSES.AWAITING_PAYMENT]: 'Ожидает оплаты',
+    [ORDER_STATUSES.PAID]: 'Оплачен',
+    [ORDER_STATUSES.COMPLETED]: 'Выполнен',
+    [ORDER_STATUSES.CANCELED]: 'Отменен'
 }
 
 export interface OrderAttributes {

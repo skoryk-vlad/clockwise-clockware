@@ -21,7 +21,7 @@ const defaultOrder = {
     date: '',
     time: null,
     rating: 0,
-    status: ORDER_STATUSES.CONFIRMED
+    status: ORDER_STATUSES.AWAITING_PAYMENT
 };
 
 const defaultFilters = {
@@ -166,6 +166,9 @@ export const Orders = () => {
                     <div className="admin-body__btns">
                         <AdminButton onClick={() => { setIsModalOpened(true); setCurrentOrder(defaultOrder) }}>
                             Добавить
+                        </AdminButton>
+                        <AdminButton onClick={async () => await OrderService.createReport({ ...filters, ...sortByField })}>
+                            Отчет
                         </AdminButton>
                     </div>
                 </div>
