@@ -35,6 +35,27 @@ export const OrderStatusesTranslate: OrderStatusesTranslateType = {
     [ORDER_STATUSES.CANCELED]: 'Отменен'
 }
 
+export type OrderReportType = {
+    id: number;
+    watchSize: WATCH_SIZES;
+    status: ORDER_STATUSES;
+    date: string;
+    time: number;
+    endTime: number;
+    city: string;
+    client: string;
+    master: string;
+    price: number;
+    rating: number;
+    review: string;
+}
+export type OrderReportAttributes = keyof OrderReportType;
+
+export type OrderTableColumn = {
+    value: OrderReportAttributes;
+    columnTitle: string;
+}
+
 export interface OrderAttributes {
     id: number;
     watchSize: WATCH_SIZES;

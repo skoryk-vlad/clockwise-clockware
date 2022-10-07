@@ -8,8 +8,3 @@ export interface JWTUserPayload {
     id: number;
     role: ROLES
 }
-
-export type TableColumn = {
-    value: string;
-    columnTitle: string;
-}

@@ -403,9 +403,9 @@ export default class OrderController {
 
             const orders = await Order.findAll(config);
 
-            await createOrderReport(orders.map(order => order.toJSON()));
+            const report = await createOrderReport(orders.map(order => order.toJSON()));
 
-            return res.status(200).sendFile(resolve('reports/order-report.xlsx'));
+            return res.status(200).send(report);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
