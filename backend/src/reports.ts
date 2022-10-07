@@ -1,4 +1,4 @@
-import { WatchSizesTranslate, OrderStatusesTranslate, OrderAttributes, OrderReportAttributes, OrderReportType, OrderTableColumn } from './models/order.model';
+import { WatchSizesTranslate, OrderStatusesTranslate, OrderAttributes, OrderReportAttributes, OrderReportType, OrderTableColumn, WATCH_SIZES, ORDER_STATUSES } from './models/order.model';
 import XLSX from 'xlsx';
 
 const tableColumns: OrderTableColumn[] = [
@@ -16,13 +16,28 @@ const tableColumns: OrderTableColumn[] = [
     { value: 'review', columnTitle: 'Отзыв' }
 ]
 
+const defaultOrderFormatted: OrderReportType = {
+    id: null,
+    watchSize: WatchSizesTranslate[WATCH_SIZES.SMALL],
+    status: OrderStatusesTranslate[ORDER_STATUSES.AWAITING_PAYMENT],
+    date: '',
+    time: null,
+    endTime: null,
+    city: '',
+    client: '',
+    master: '',
+    price: null,
+    rating: null,
+    review: ''
+}
+
 export const createOrderReport = async (orders: OrderAttributes[]): Promise<Buffer> => {
     const workbook = XLSX.utils.book_new();
 
     const columns: OrderReportAttributes[] = tableColumns.map(column => column.value);
 
-    const ordersFormatted = orders.map(order => {
-        return columns.reduce((acc, currentValue) => {
+    const ordersFormatted = orders.map((order) => {
+        return columns.reduce((acc: OrderReportType, currentValue: OrderReportAttributes) => {
             switch (currentValue) {
                 case 'watchSize': {
                     acc[currentValue] = WatchSizesTranslate[order[currentValue]];
@@ -33,11 +48,11 @@ export const createOrderReport = async (orders: OrderAttributes[]): Promise<Buff
                     break;
                 }
                 default: {
-                    acc[currentValue] = order[currentValue];
+                    acc[currentValue as any] = order[currentValue];
                 }
             }
             return acc;
-        }, {}) as OrderReportType;
+        }, { ...defaultOrderFormatted });
     });
 
     const worksheet = XLSX.utils.aoa_to_sheet([tableColumns.map(column => column.columnTitle)]);
