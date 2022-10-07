@@ -21,11 +21,45 @@ export const WatchSizes: WatchSizesType = {
     [WATCH_SIZES.MEDIUM]: 2,
     [WATCH_SIZES.BIG]: 3
 }
+
 type WatchSizesTranslateType = Partial<Record<WATCH_SIZES, string>>;
 export const WatchSizesTranslate: WatchSizesTranslateType = {
     [WATCH_SIZES.SMALL]: 'Маленькие',
     [WATCH_SIZES.MEDIUM]: 'Средние',
     [WATCH_SIZES.BIG]: 'Большие'
+}
+const WatchSizesTranslateValues = Object.values(WatchSizesTranslate);
+type WatchSizesTranslateValuesType = typeof WatchSizesTranslateValues[number];
+
+type OrderStatusesTranslateType = Partial<Record<ORDER_STATUSES, string>>;
+export const OrderStatusesTranslate: OrderStatusesTranslateType = {
+    [ORDER_STATUSES.AWAITING_PAYMENT]: 'Ожидает оплаты',
+    [ORDER_STATUSES.PAID]: 'Оплачен',
+    [ORDER_STATUSES.COMPLETED]: 'Выполнен',
+    [ORDER_STATUSES.CANCELED]: 'Отменен'
+}
+const OrderStatusesTranslateValues = Object.values(OrderStatusesTranslate);
+type OrderStatusesTranslateValuesType = typeof OrderStatusesTranslateValues[number];
+
+export type OrderReportType = {
+    id: number;
+    watchSize: WatchSizesTranslateValuesType;
+    status: OrderStatusesTranslateValuesType;
+    date: string;
+    time: number;
+    endTime: number;
+    city: string;
+    client: string;
+    master: string;
+    price: number;
+    rating: number;
+    review: string;
+}
+export type OrderReportAttributes = keyof OrderReportType;
+
+export type OrderTableColumn = {
+    value: OrderReportAttributes;
+    columnTitle: string;
 }
 
 export interface OrderAttributes {

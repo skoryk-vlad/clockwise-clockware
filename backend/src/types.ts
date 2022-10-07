@@ -3,6 +3,7 @@ export type AuthInfo = {
     email: string,
     password: string
 }
+
 export interface JWTUserPayload {
     id: number;
     role: ROLES

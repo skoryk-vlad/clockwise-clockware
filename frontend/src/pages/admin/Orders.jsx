@@ -167,6 +167,9 @@ export const Orders = () => {
                         <AdminButton onClick={() => { setIsModalOpened(true); setCurrentOrder(defaultOrder) }}>
                             Добавить
                         </AdminButton>
+                        <AdminButton onClick={async () => await OrderService.createReport({ ...filters, ...sortByField })}>
+                            Отчет
+                        </AdminButton>
                     </div>
                 </div>
 

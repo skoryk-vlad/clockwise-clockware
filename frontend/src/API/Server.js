@@ -151,6 +151,20 @@ export class OrderService {
         const { data } = await api.post(`/add-order-review/${reviewToken}`, { rating, review });
         return data;
     }
+    static async createReport(attributes = []) {
+        const { data } = await api.get(`/order-report?${createSearchParams(attributes)}`, {
+            responseType: 'blob'
+        });
+
+        const href = URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = href;
+        link.download = 'Заказы.xlsx';
+        link.click();
+        URL.revokeObjectURL(href);
+
+        return data;
+    }
 }
 export class UserService {
     static async resetPassword(email) {
