@@ -10,12 +10,32 @@ import { Order, ORDER_STATUSES, WatchSizes, OrderAttributes, OrderCreationAttrib
 import { Request, Response } from 'express';
 import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../mailer';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
+});
+
+function uploadStream(fileBuffer: Buffer, options: any): any {
+    return new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(options, (error, result) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(result);
+            }
+        }).end(fileBuffer);
+    });
+}
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
         const addOrderTransaction = await sequelize.transaction();
         try {
-            const { name, email, masterId, cityId, watchSize, date, time, status } = AddOrderSchema.parse(req.body);
+            const { name, email, masterId, cityId, watchSize, date, time, status } = AddOrderSchema.parse({ ...req.body, time: +req.body.time, masterId: +req.body.masterId, cityId: +req.body.cityId });
 
             const existCity = await City.findByPk(cityId);
             if (!existCity) return res.status(404).json('No such city');
@@ -64,12 +84,24 @@ export default class OrderController {
                     await client.update({ name }, { transaction: addOrderTransaction });
                 }
             }
-
             const reviewToken = uuidv4();
             const price = existCity.getDataValue('price') * (endTime - time);
 
+            const imagesLinks: string[] = [];
+            if (req.files && req.files.length) {
+                const files = req.files;
+
+                await Promise.all(Object.keys(files).map(async (index) => {
+                    const uploaded = await uploadStream(files[index].buffer, {
+                        unique_filename: true, folder: process.env.CLOUDINARY_FOLDER
+                    });
+
+                    imagesLinks.push(uploaded.secure_url);
+                }))
+            }
+
             const order = await Order.create({
-                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, price, reviewToken
+                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, price, reviewToken, imagesLinks
             }, {
                 transaction: addOrderTransaction
             });

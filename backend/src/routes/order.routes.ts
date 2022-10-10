@@ -6,7 +6,12 @@ import { isJwtNotExpired, hasRoles } from './auth.routes';
 const router: Router = Router();
 const orderController: OrderController = new OrderController();
 
-router.post('/order', orderController.addOrder);
+import multer from 'multer';
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+router.post('/order', upload.array('images', 5), orderController.addOrder);
 router.post('/order/status/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN, ROLES.MASTER]), orderController.changeStatus);
 router.post('/order/rating/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN, ROLES.CLIENT]), orderController.setRating);
 router.get('/order', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getOrders);

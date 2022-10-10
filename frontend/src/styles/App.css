@@ -337,3 +337,12 @@
   font-size: 14px;
   margin: 0px 0px 1px 10px;
 }
+
+.carousel {
+  width: 500px;
+  margin: 10px;
+}
+
+.carousel button:before {
+  color: #505050;
+}

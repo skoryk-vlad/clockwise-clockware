@@ -15,7 +15,8 @@ const defaultOrder = {
     cityId: null,
     date: "",
     time: null,
-    status: ORDER_STATUSES.CONFIRMED
+    status: ORDER_STATUSES.COMPLETED,
+    images: []
 };
 
 export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
@@ -40,7 +41,11 @@ export const OrderModal = ({ setIsOrderModalOpened, login, register }) => {
     }, []);
 
     const addOrder = async (chosenMaster) => {
-        await OrderService.addOrder({ ...order, masterId: chosenMaster });
+        const formData = new FormData();
+        Array.from(order.images).map(image => formData.append(`images`, image));
+        Object.entries(order).forEach(([key, value]) => formData.append(key, value));
+        formData.append("masterId", chosenMaster);
+        await OrderService.addOrder(formData);
         setIsFormOpened(true);
         setIsOrderModalOpened(false);
         notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен!');

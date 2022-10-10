@@ -41,6 +41,7 @@ export interface OrderAttributes {
     price: number;
     reviewToken: string;
     review: string;
+    imagesLinks: string[];
 }
 
 export type OrderCreationAttributes = Optional<OrderAttributes, 'id'>;
@@ -89,6 +90,9 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
         },
         review: {
             type: DataTypes.TEXT
+        },
+        imagesLinks: {
+            type: DataTypes.ARRAY(DataTypes.STRING)
         },
         createdAt: DataTypes.DATE,
         updatedAt: DataTypes.DATE,
