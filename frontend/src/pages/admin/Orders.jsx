@@ -191,7 +191,7 @@ export const Orders = () => {
                     {currentOrder && <OrderForm order={currentOrder} onClick={currentOrder?.id ? updateOrder : addOrder}
                         clients={clients} cities={cities} btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
                     {imageUrls.length > 0 && <Slider {...settings} className='carousel'>
-                        {imageUrls.map((imageUrl, index) => <img src={imageUrl} alt='Фото заказа' key={index} />)}
+                        {imageUrls.map((imageUrl, index) => <div className='carousel_item' key={index}><img src={imageUrl} alt='Фото заказа' /></div>)}
                     </Slider>}
                 </MyModal>
 

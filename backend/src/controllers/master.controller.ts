@@ -1,7 +1,7 @@
 import { sequelize } from './../sequelize';
 import { CityMaster } from './../models/cityMaster.model';
 import { Client } from './../models/client.model';
-import { sendConfirmationUserMail, sendMasterApprovedMail } from './../mailer';
+import { sendConfirmationUserMail, sendMasterApprovedMail } from '../services/mailer';
 import { encryptPassword } from './../password';
 import { User, ROLES } from './../models/user.model';
 import { City } from './../models/city.model';

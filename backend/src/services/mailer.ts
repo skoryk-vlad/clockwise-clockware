@@ -1,4 +1,4 @@
-import { OrderAttributes, WatchSizesTranslate } from './models/order.model';
+import { OrderAttributes, WatchSizesTranslate } from '../models/order.model';
 import nodemailer, { Transporter, SentMessageInfo } from 'nodemailer';
 
 const transporter: Transporter = nodemailer.createTransport({

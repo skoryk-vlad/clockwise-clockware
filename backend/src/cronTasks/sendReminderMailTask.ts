@@ -1,6 +1,6 @@
 import { sequelize } from './../sequelize';
 import { Master } from './../models/master.model';
-import { sendReminderMail } from '../mailer';
+import { sendReminderMail } from '../services/mailer';
 import { Order } from '../models/order.model';
 import cron from 'node-cron';
 import { formatISO, getHours } from 'date-fns';

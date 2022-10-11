@@ -1,7 +1,7 @@
 import { Master } from './../models/master.model';
 import { Order } from './../models/order.model';
 import { encryptPassword } from './../password';
-import { sendConfirmationUserMail } from './../mailer';
+import { sendConfirmationUserMail } from '../services/mailer';
 import { sequelize } from './../sequelize';
 import { Op } from 'sequelize';
 import { ROLES, User } from './../models/user.model';

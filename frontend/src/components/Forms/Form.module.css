@@ -164,18 +164,19 @@ label {
 
 .images {
     display: flex;
-    margin: 10px 0;
+    border: dashed 2px #ccc;
+    border-top: 0;
 }
 
 .image {
     position: relative;
     height: 100px;
     width: 100px;
-    border: dashed 2px #ccc;
+    border-right: dashed 2px #ccc;
     padding: 5px;
 }
 
-.image:not(:last-child) {
+.image:nth-child(5) {
     border-right: 0;
 }
 
