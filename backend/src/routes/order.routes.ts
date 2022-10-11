@@ -21,5 +21,6 @@ router.delete('/order/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderContr
 router.get('/order-min-max-prices', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getMinAndMaxPrices);
 router.get('/order-review/:reviewToken', orderController.redirectToReview);
 router.post('/add-order-review/:reviewToken', orderController.addReview);
+router.get('/order-report', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.createReport);
 
 export default router;

@@ -16,7 +16,7 @@ const defaultOrder = {
 };
 
 const defaultFilters = {
-    statuses: [ORDER_STATUSES.CONFIRMED],
+    statuses: [ORDER_STATUSES.AWAITING_PAYMENT, ORDER_STATUSES.PAID],
 };
 const defaultPagination = {
     page: 1,

@@ -113,15 +113,30 @@
     text-align: center;
 }
 
-.reviews p {
+.masterReview {
     font-size: 18px;
     background-color: #eee;
     padding: 5px;
     border-radius: 4px;
 }
 
-.reviews p:not(:last-child) {
+.masterReview:not(:last-child) {
     margin: 0px 0px 10px 0px;
+}
+
+.masterReviewTop {
+    display: flex;
+    justify-content: space-between;
+    margin: 0px 0px 10px 0px;
+}
+.masterReviewName {
+    font-weight: bold;
+}
+.masterReviewDate {
+    font-size: 14px;
+    text-align: right;
+    margin: 3px 0px 0px 0px;
+    color: #777;
 }
 
 .close {

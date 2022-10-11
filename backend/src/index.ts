@@ -10,6 +10,7 @@ import masterRouter from './routes/master.routes';
 import orderRouter from './routes/order.routes';
 import confirmationRouter from './routes/confirmation.routes';
 import userRouter from './routes/user.routes';
+import paymentRouter from './routes/payment.routes';
 import { sendReminderMailTask } from './cronTasks/sendReminderMailTask';
 
 const PORT: number = Number(process.env.PORT) || 3001;
@@ -26,6 +27,7 @@ app.use('/api', masterRouter);
 app.use('/api', orderRouter);
 app.use('/api', confirmationRouter);
 app.use('/api', userRouter);
+app.use('/api', paymentRouter);
 
 app.get('/api/ping', (req, res) => {
     res.sendStatus(200);

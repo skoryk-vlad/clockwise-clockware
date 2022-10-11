@@ -27,7 +27,7 @@ export const Landing = () => {
             <TopButton />
 
             <MyModal visible={isOrderModalOpened} setVisible={setIsOrderModalOpened}>
-                <OrderModal setIsOrderModalOpened={setIsOrderModalOpened}
+                <OrderModal isOrderModalOpened={isOrderModalOpened} setIsOrderModalOpened={setIsOrderModalOpened}
                     login={() => { setIsAuthorizationModalOpened(true); setIsRegistration(false); setNeedRedirect(false) }}
                     register={() => { setIsAuthorizationModalOpened(true); setIsRegistration(true) }} />
             </MyModal>

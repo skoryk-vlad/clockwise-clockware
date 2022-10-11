@@ -8,7 +8,7 @@ import { MasterChoice } from '../../components/MasterChoice/MasterChoice';
 import { MyModal } from '../../components/modal/MyModal';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
-import { OrderButton } from '../../components/OrderButton/OrderButton';
+import { PayPal } from '../../components/PayPal';
 import { jwtPayload } from '../../components/PrivateRoute';
 import { ColumnHead } from '../../components/Table/ColumnHead';
 import { Table } from '../../components/Table/Table';
@@ -23,7 +23,7 @@ const defaultOrder = {
     date: '',
     time: null,
     rating: 0,
-    status: ORDER_STATUSES.CONFIRMED
+    status: ORDER_STATUSES.AWAITING_PAYMENT
 };
 
 const defaultPagination = {
@@ -42,7 +42,8 @@ const tableHeaders = [
     { value: 'endTime', title: 'Время конца', sortable: true },
     { value: 'price', title: 'Цена', sortable: true },
     { value: 'status', title: 'Статус', sortable: true },
-    { value: 'rating', title: 'Рейтинг', sortable: true }
+    { value: 'rating', title: 'Рейтинг', sortable: true },
+    { value: 'payment', title: 'Оплата', sortable: false }
 ];
 
 export const ClientOrders = () => {
@@ -61,6 +62,13 @@ export const ClientOrders = () => {
     const [orders, setOrders] = useState([]);
     const [cities, setCities] = useState([]);
     const [isModalOpened, setIsModalOpened] = useState(false);
+
+    const [checkout, setCheckout] = useState(false);
+    const [paymentInfo, setPaymentInfo] = useState({
+        price: null,
+        watchSize: '',
+        orderId: null
+    });
 
     const [fetchOrders, isLoading, Error] = useFetching(async () => {
         const payload = jwtPayload(localStorage.getItem('token'));
@@ -135,6 +143,11 @@ export const ClientOrders = () => {
         }
     }
 
+    const createPayment = async (price, watchSize, orderId) => {
+        setPaymentInfo({ price, watchSize, orderId });
+        setCheckout(true);
+    }
+
     return (
         <div className='admin-container'>
             <Navbar role={ROLES.CLIENT} />
@@ -159,6 +172,10 @@ export const ClientOrders = () => {
                                 :
                                 <MasterChoice freeMasters={freeMasters} returnForm={returnForm} price={order.price} addOrder={addOrder}></MasterChoice>
                     }
+                </MyModal>
+
+                <MyModal visible={checkout} setVisible={setCheckout}>
+                    {checkout && <PayPal price={paymentInfo.price} watchSize={paymentInfo.watchSize} orderId={paymentInfo.orderId} setCheckout={setCheckout} onApprove={fetchOrders} />}
                 </MyModal>
 
                 <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}
@@ -190,6 +207,7 @@ export const ClientOrders = () => {
                                     notify(NOTIFY_TYPES.ERROR, 'Заказ еще не выполнен!');
                                 }
                             } : () => { }}>{!order.rating ? <span>Выставить</span> : order.rating}</td>
+                            <td className='tableLink' onClick={order.status === ORDER_STATUSES.AWAITING_PAYMENT ? (() => createPayment(order.price, WATCH_SIZES_TRANSLATE[order.watchSize], order.id)) : () => { }}>{order.status === ORDER_STATUSES.AWAITING_PAYMENT ? <span>Оплатить</span> : `\u2714`}</td>
                         </tr>
                         )}
                     </tbody>
