@@ -157,6 +157,72 @@ label {
     font-size: 12px;
     color: #666;
 }
+
 .searched {
     font-weight: bold;
+}
+
+.images {
+    display: flex;
+    border: dashed 2px #ccc;
+    border-top: 0;
+}
+
+.image {
+    position: relative;
+    height: 100px;
+    width: 100px;
+    border-right: dashed 2px #ccc;
+    padding: 5px;
+}
+
+.image:nth-child(5) {
+    border-right: 0;
+}
+
+.imageContainer {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100%;
+    width: 100%;
+}
+
+.return {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: .3s ease;
+}
+
+.return:hover {
+    background-color: #eee;
+}
+
+.return img {
+    width: 80%;
+    height: 80%;
+    transform: rotate(-90deg);
+}
+
+.fileUpload input {
+    display: none;
+}
+
+.fileUpload label {
+    cursor: pointer;
+    display: inline-block;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    border: dashed 2px #ccc;
 }

@@ -12,6 +12,18 @@ import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { Table } from '../../components/Table/Table';
 import { ColumnHead } from '../../components/Table/ColumnHead';
 import { OrderFilterForm } from '../../components/Forms/OrderFilterForm';
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
+const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    adaptiveHeight: true
+};
 
 const defaultOrder = {
     clientId: null,
@@ -52,6 +64,7 @@ const tableHeaders = [
     { value: 'master', title: 'Мастер', sortable: true },
     { value: 'status', title: 'Статус', sortable: true },
     { value: 'price', title: 'Цена', sortable: true },
+    { value: 'images', title: 'Фото', sortable: false },
     { value: 'change', title: 'Изменение', sortable: false },
     { value: 'delete', title: 'Удаление', sortable: false }
 ];
@@ -70,6 +83,8 @@ export const Orders = () => {
     const [filters, setFilters] = useState(defaultFilters);
     const [totalPages, setTotalPages] = useState(0);
     const [sortByField, setSortByField] = useState(defaultSortByField);
+
+    const [imageUrls, setImageUrls] = useState([]);
 
     const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
         const orders = await OrderService.getOrders({ ...filters, ...pagination, ...sortByField });
@@ -109,8 +124,10 @@ export const Orders = () => {
     }, [Error]);
 
     useEffect(() => {
-        if (!isModalOpened)
+        if (!isModalOpened) {
             setCurrentOrder(null);
+            setImageUrls([]);
+        }
     }, [isModalOpened]);
 
     const deleteOrder = async (id) => {
@@ -168,7 +185,7 @@ export const Orders = () => {
                             Добавить
                         </AdminButton>
                         <AdminButton onClick={async () => await OrderService.createReport({ ...filters, ...sortByField })}>
-                            Отчет
+                            Экспорт
                         </AdminButton>
                     </div>
                 </div>
@@ -176,6 +193,9 @@ export const Orders = () => {
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
                     {currentOrder && <OrderForm order={currentOrder} onClick={currentOrder?.id ? updateOrder : addOrder}
                         clients={clients} cities={cities} btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
+                    {imageUrls.length > 0 && <Slider {...settings} className='carousel'>
+                        {imageUrls.map((imageUrl, index) => <div className='carousel_item' key={index}><img src={imageUrl} alt='Фото заказа' /></div>)}
+                    </Slider>}
                 </MyModal>
 
                 <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}
@@ -203,6 +223,8 @@ export const Orders = () => {
                             <td>{order.master}</td>
                             <td>{ORDER_STATUSES_TRANSLATE[order.status]}</td>
                             <td>{order.price}</td>
+                            <td className='tableLink' onClick={order.imagesLinks && order.imagesLinks.length ? () => { setImageUrls(order.imagesLinks); setIsModalOpened(true); } : () => {}}>
+                                {order.imagesLinks && order.imagesLinks.length ? <span>Смотреть</span> : '-'}</td>
                             <td className='tableLink' onClick={() => { setIsModalOpened(true); setCurrentOrder(orders.find(orderToFind => orderToFind.id === order.id)) }}><span>Изменить</span></td>
                             <td className='tableLink' onClick={() => deleteOrder(order.id)}><span>Удалить</span></td>
                         </tr>

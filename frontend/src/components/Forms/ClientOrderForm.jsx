@@ -10,6 +10,8 @@ import { NumPicker } from '../NumPicker/NumPicker';
 import { formatISO, getHours, addHours } from 'date-fns'
 import { WATCH_SIZES, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useEffect } from 'react';
+import { useState } from 'react';
+import { notify, NOTIFY_TYPES } from '../Notifications';
 
 const date = new Date();
 const minDate = formatISO(date, { representation: 'date' });
@@ -45,6 +47,7 @@ const ClientOrderSchema = z.object({
 });
 
 export const ClientOrderForm = ({ order, onClick, cities }) => {
+    const [fileDataURLs, setFileDataURLs] = useState([]);
     const { control, handleSubmit, getValues, setValue, watch, formState: { errors, isValid, isSubmitted } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
@@ -205,7 +208,81 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
                     )}
                 />
             </div>
-            
+            <div className={classes.formRow}>
+                <div className={classes.rowTop}>
+                    <label htmlFor="images">Фото</label>
+                    {errors.time && !isValid && (
+                        <div className={classes.errorMessage}>{errors.time.message}</div>
+                    )}
+                </div>
+                <Controller
+                    name="images"
+                    control={control}
+                    defaultValue={[]}
+                    render={({
+                        field: { onChange, value }
+                    }) => {
+                        return (
+                            <>
+                                <div className={classes.fileUpload}>
+                                    <input
+                                        type="file" id="images" multiple
+                                        accept=".jpеg,.jpg,.png"
+                                        value={value.filename}
+                                        onChange={(event) => {
+                                            const files = Array.from(event.target.files).filter(file => {
+                                                if (!file.type.includes('image/')) {
+                                                    notify(NOTIFY_TYPES.ERROR, 'Прикрепить можно только фото!');
+                                                    return false;
+                                                }
+                                                if (file.size > 1048576) {
+                                                    notify(NOTIFY_TYPES.ERROR, 'Размер фото не должен превышать 1 Мб!');
+                                                    return false;
+                                                }
+                                                return true;
+                                            });
+                                            if (files.length > 5) {
+                                                files.splice(5, files.length);
+                                                notify(NOTIFY_TYPES.ERROR, 'Прикрепить можно не более 5 фото!');
+                                            };
+                                            const dataFiles = new DataTransfer();
+
+                                            setFileDataURLs([]);
+
+                                            files.forEach(file => {
+                                                dataFiles.items.add(file);
+
+                                                const reader = new FileReader();
+                                                reader.onload = (e) => setFileDataURLs(FileDataURLs => [...FileDataURLs, { FileDataURL: e.target.result, name: file.name }]);
+                                                reader.readAsDataURL(file);
+                                            });
+
+                                            onChange(dataFiles.files);
+                                        }}
+                                    />
+                                    <label htmlFor="images">Прикрепить фото</label>
+                                </div>
+                                {fileDataURLs.length > 0 && <div className={classes.images}>
+                                    {fileDataURLs.map((fileDataURL, index) => <div className={classes.image} key={index}>
+                                        <div className={classes.imageContainer} style={{ backgroundImage: `url(${fileDataURL.FileDataURL})` }}></div>
+                                        <div className={classes.return} onClick={() => {
+                                            const images = Array.from(watch().images).filter(image => image.name !== fileDataURL.name);
+                                            const dataFiles = new DataTransfer();
+                                            images.forEach(image => dataFiles.items.add(image));
+                                            setFileDataURLs(fileDataURLs.filter(fileData => fileData.name !== fileDataURL.name));
+
+                                            onChange(dataFiles.files);
+                                        }}>
+                                            <img src="/images/icons/close.png" alt="Удалить" />
+                                        </div>
+                                    </div>)}
+                                </div>}
+                            </>
+                        );
+                    }}
+                />
+            </div>
+
             <div className={classes.formBottom}>
                 <AdminButton type="submit" className={((isSubmitted && Object.keys(errors).length)) ? "disabledBtn" : ""}
                     disabled={((isSubmitted && Object.keys(errors).length))}>Оформить заказ</AdminButton>

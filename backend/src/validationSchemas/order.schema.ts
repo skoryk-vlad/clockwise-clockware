@@ -1,5 +1,5 @@
 import { WATCH_SIZES, ORDER_STATUSES, Order } from './../models/order.model';
-import { boolean, z } from 'zod';
+import { z } from 'zod';
 
 export const AddOrderSchema = z.object({
     name: z.string().trim().min(3).max(255),
@@ -56,3 +56,4 @@ export const addReviewSchema = z.object({
     rating: z.number().int().min(0).max(5),
     review: z.string().max(1000).optional()
 });
+export const addImagesSchema = z.array(z.any().refine(file => file.mimetype.includes('image/') && file.size <= 1048576, 'The file must be an image and less than 1 MB in size')).optional();

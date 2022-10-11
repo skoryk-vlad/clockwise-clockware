@@ -77,6 +77,7 @@ export interface OrderAttributes {
     reviewToken: string;
     review: string;
     paypalInvoiceId: string;
+    imagesLinks: string[];
 }
 
 export type OrderCreationAttributes = Optional<OrderAttributes, 'id'>;
@@ -128,6 +129,9 @@ export const Order: ModelDefined<OrderAttributes, OrderCreationAttributes> = seq
         },
         paypalInvoiceId: {
             type: DataTypes.STRING
+        },
+        imagesLinks: {
+            type: DataTypes.ARRAY(DataTypes.STRING)
         },
         createdAt: DataTypes.DATE,
         updatedAt: DataTypes.DATE,

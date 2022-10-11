@@ -1,6 +1,7 @@
+import { uploadStream } from './../services/cloudinary';
 import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
-import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema, addReviewSchema } from './../validationSchemas/order.schema';
+import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema, addReviewSchema, addImagesSchema } from './../validationSchemas/order.schema';
 import { sequelize } from './../sequelize';
 import { Model, Op, FindAndCountOptions, Attributes, FindOptions } from 'sequelize';
 import { Master } from './../models/master.model';
@@ -8,7 +9,7 @@ import { Client, CLIENT_STATUSES, ClientAttributes, ClientCreationAttributes } f
 import { City } from './../models/city.model';
 import { Order, ORDER_STATUSES, WatchSizes, OrderAttributes, OrderCreationAttributes } from './../models/order.model';
 import { Request, Response } from 'express';
-import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../mailer';
+import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../services/mailer';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { createOrderReport } from '../reports';
 import { resolve } from 'path'; 
@@ -17,7 +18,7 @@ export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
         const addOrderTransaction = await sequelize.transaction();
         try {
-            const { name, email, masterId, cityId, watchSize, date, time, status } = AddOrderSchema.parse(req.body);
+            const { name, email, masterId, cityId, watchSize, date, time, status } = AddOrderSchema.parse({ ...req.body, time: +req.body.time, masterId: +req.body.masterId, cityId: +req.body.cityId });
 
             const existCity = await City.findByPk(cityId);
             if (!existCity) return res.status(404).json('No such city');
@@ -66,12 +67,20 @@ export default class OrderController {
                     await client.update({ name }, { transaction: addOrderTransaction });
                 }
             }
-
             const reviewToken = uuidv4();
             const price = existCity.getDataValue('price') * (endTime - time);
 
+            let imagesLinks: string[] = [];
+            if (req.files && req.files.length) {
+                const files = addImagesSchema.parse(req.files);
+
+                imagesLinks = await Promise.all(Object.keys(files).map(async (index) => (await uploadStream(files[index].buffer, {
+                    unique_filename: true, folder: process.env.CLOUDINARY_FOLDER
+                })).secure_url));
+            }
+
             const order = await Order.create({
-                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, price, reviewToken
+                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, price, reviewToken, imagesLinks
             }, {
                 transaction: addOrderTransaction
             });
