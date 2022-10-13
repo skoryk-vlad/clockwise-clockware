@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { CityService, ClientService, MasterService, OrderService } from '../../API/Server';
+import React, { useEffect } from 'react';
+import { ClientService, OrderService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
-import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
 import { MyModal } from '../../components/modal/MyModal';
 import { AdminButton } from '../../components/AdminButton/AdminButton';
 import { OrderForm } from '../../components/Forms/OrderForm';
 import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE, ROLES, WATCH_SIZES, WATCH_SIZES_TRANSLATE } from '../../constants';
-import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { Table } from '../../components/Table/Table';
 import { ColumnHead } from '../../components/Table/ColumnHead';
 import { OrderFilterForm } from '../../components/Forms/OrderFilterForm';
+import { useSelector, useDispatch } from 'react-redux';
+import { addOrderThunk, deleteOrderThunk, getOrdersMinAndMaxPricesThunk, getOrdersThunk, updateOrderThunk } from '../../store/orders/thunks';
+import { setCurrentOrder, setFilters, setIsModalOpened, setPagination, setSortByField } from '../../store/orders/slice';
+import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 
 const defaultOrder = {
     clientId: null,
@@ -24,23 +26,6 @@ const defaultOrder = {
     status: ORDER_STATUSES.AWAITING_PAYMENT
 };
 
-const defaultFilters = {
-    masters: [],
-    clients: [],
-    cities: [],
-    statuses: [],
-    dateStart: '',
-    dateEnd: '',
-    priceRange: [50, 300]
-};
-const defaultPagination = {
-    page: 1,
-    limit: 10
-};
-const defaultSortByField = {
-    sortedField: 'date',
-    isDirectedASC: false
-};
 const tableHeaders = [
     { value: 'id', title: 'id', sortable: true },
     { value: 'watchSize', title: 'Размер часов', sortable: true },
@@ -57,95 +42,58 @@ const tableHeaders = [
 ];
 
 export const Orders = () => {
-    const [orders, setOrders] = useState([]);
-    const [cities, setCities] = useState([]);
-    const [clients, setClients] = useState([]);
-    const [masters, setMasters] = useState([]);
-    const [prices, setPrices] = useState([0, 0]);
+    const dispatch = useDispatch();
 
-    const [currentOrder, setCurrentOrder] = useState(defaultOrder);
-    const [isModalOpened, setIsModalOpened] = useState(false);
-
-    const [pagination, setPagination] = useState(defaultPagination);
-    const [filters, setFilters] = useState(defaultFilters);
-    const [totalPages, setTotalPages] = useState(0);
-    const [sortByField, setSortByField] = useState(defaultSortByField);
-
-    const [fetchOrders, isOrdersLoading, Error] = useFetching(async () => {
-        const orders = await OrderService.getOrders({ ...filters, ...pagination, ...sortByField });
-        setTotalPages(Math.ceil(orders.count / pagination.limit));
-        setOrders(orders.rows);
-    });
-    const [fetchAdditionalData, isAdditionalDataLoading] = useFetching(async () => {
-        const cities = await CityService.getCities();
-        const clients = await ClientService.getClients();
-        const masters = await MasterService.getMasters();
-        const prices = await OrderService.getMinAndMaxPrices();
-
-        setCities(cities.rows);
-        setClients(clients.rows);
-        setMasters(masters.rows);
-        setPrices([prices.min, prices.max]);
-    });
+    const { orders, totalPages, filters, pagination, sortByField, isLoading, error, prices, currentOrder, isModalOpened } = useSelector(state => ({
+        orders: state.orders.orders,
+        filters: state.orders.filters,
+        pagination: state.orders.pagination,
+        sortByField: state.orders.sortByField,
+        totalPages: state.orders.totalPages,
+        isLoading: state.orders.isLoading,
+        error: state.orders.error,
+        prices: state.orders.priceBoundaries,
+        currentOrder: state.orders.currentOrder,
+        isModalOpened: state.orders.isModalOpened,
+    }));
 
     useEffect(() => {
         document.title = "Заказы - Clockwise Clockware";
-        fetchAdditionalData();
-        fetchOrders();
+        dispatch(getOrdersMinAndMaxPricesThunk());
     }, []);
 
     useEffect(() => {
-        fetchOrders();
+        dispatch(getOrdersThunk());
     }, [filters, pagination, sortByField]);
 
     useEffect(() => {
         if (totalPages && pagination.page > totalPages)
-            setPagination({ ...pagination, page: totalPages });
+            dispatch(setPagination({ ...pagination, page: totalPages }))
     }, [totalPages]);
 
     useEffect(() => {
-        if (Error)
-            setOrders([]);
-    }, [Error]);
-
-    useEffect(() => {
         if (!isModalOpened)
-            setCurrentOrder(null);
+            dispatch(setCurrentOrder(null));
     }, [isModalOpened]);
 
     const deleteOrder = async (id) => {
-        try {
-            await OrderService.deleteOrderById(id);
-            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно удален');
-            fetchOrders();
-        } catch (error) {
-            notify(NOTIFY_TYPES.ERROR);
-            console.log(error.response.data);
-        }
+        const response = await dispatch(deleteOrderThunk(id));
+
+        if (response.error) notify(NOTIFY_TYPES.ERROR);
+        else notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно удален!');
     }
     const addOrder = async (order) => {
-        try {
-            const client = clients.find(client => client.id === order.clientId);
-            await OrderService.addOrder({ ...order, name: client.name, email: client.email });
-            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно добавлен');
-            setIsModalOpened(false);
-            fetchOrders();
-            return true;
-        } catch (error) {
-            notify(NOTIFY_TYPES.ERROR);
-            console.log(error.response.data);
-        }
+        const client = await ClientService.getClientById(order.clientId);
+        const response = await dispatch(addOrderThunk({ ...order, name: client.name, email: client.email }));
+
+        if (response.error) notify(NOTIFY_TYPES.ERROR);
+        else notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно добавлен!');
     }
     const updateOrder = async (order) => {
-        try {
-            await OrderService.updateOrderById(order);
-            notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно изменен');
-            setIsModalOpened(false);
-            fetchOrders();
-        } catch (error) {
-            notify(NOTIFY_TYPES.ERROR);
-            console.log(error.response.data);
-        }
+        const response = await dispatch(updateOrderThunk(order));
+
+        if (response.error) notify(NOTIFY_TYPES.ERROR);
+        else notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно изменен!');
     }
 
     return (
@@ -154,17 +102,12 @@ export const Orders = () => {
             <div className='admin-body'>
                 <h1 className='admin-body__title'>Заказы</h1>
                 <div className='admin-body__top'>
-                    {!isAdditionalDataLoading && <OrderFilterForm filters={{
-                        ...defaultFilters,
-                        masters: Array.isArray(defaultFilters.masters) ? defaultFilters.masters.map(masterId => ({ value: masterId, label: masters.find(master => masterId === master.id)?.name })) : [],
-                        cities: Array.isArray(defaultFilters.cities) ? defaultFilters.cities.map(cityId => ({ value: cityId, label: cities.find(city => cityId === city.id)?.name })) : [],
-                        statuses: Array.isArray(defaultFilters.statuses) ? defaultFilters.statuses.map(status => ({ value: status, label: ORDER_STATUSES_TRANSLATE[status] })) : []
-                    }}
-                        onClick={newFilterState => { JSON.stringify(filters) !== JSON.stringify(newFilterState) && setFilters(newFilterState); }}
-                        cities={cities} prices={prices} masters={masters} setFilters={setFilters}></OrderFilterForm>}
+                    <OrderFilterForm filters={filters}
+                        onClick={newFilterState => { JSON.stringify(filters) !== JSON.stringify(newFilterState) && dispatch(setFilters(newFilterState)); }}
+                        prices={prices}></OrderFilterForm>
 
                     <div className="admin-body__btns">
-                        <AdminButton onClick={() => { setIsModalOpened(true); setCurrentOrder(defaultOrder) }}>
+                        <AdminButton onClick={() => { dispatch(setIsModalOpened(true)); dispatch(setCurrentOrder(defaultOrder)) }}>
                             Добавить
                         </AdminButton>
                         <AdminButton onClick={async () => await OrderService.createReport({ ...filters, ...sortByField })}>
@@ -173,13 +116,13 @@ export const Orders = () => {
                     </div>
                 </div>
 
-                <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
+                <MyModal visible={isModalOpened} setVisible={isModalOpened => dispatch(setIsModalOpened(isModalOpened))}>
                     {currentOrder && <OrderForm order={currentOrder} onClick={currentOrder?.id ? updateOrder : addOrder}
-                        clients={clients} cities={cities} btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
+                        btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
                 </MyModal>
 
-                <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}
-                    changePage={changeTo => (changeTo > 0 && changeTo <= totalPages) && setPagination({ ...pagination, page: changeTo })}
+                <Table changeLimit={limit => dispatch(setPagination({ ...pagination, limit }))}
+                    changePage={changeTo => (changeTo > 0 && changeTo <= totalPages) && (dispatch(setPagination({ ...pagination, page: changeTo })))}
                     currentPage={pagination.page} totalPages={totalPages}>
                     <thead>
                         <tr>
@@ -187,8 +130,8 @@ export const Orders = () => {
                                 key={tableHeader.value} sortable={tableHeader.sortable} sortByField={sortByField}
                                 onClick={tableHeader.sortable &&
                                     (sortedField => sortByField.sortedField === sortedField
-                                        ? setSortByField({ sortedField: sortedField, isDirectedASC: !sortByField.isDirectedASC })
-                                        : setSortByField({ sortedField: sortedField, isDirectedASC: true }))} />)}
+                                        ? dispatch(setSortByField({ sortedField: sortedField, isDirectedASC: !sortByField.isDirectedASC }))
+                                        : dispatch(setSortByField({ sortedField: sortedField, isDirectedASC: true })))} />)}
                         </tr>
                     </thead>
                     <tbody>
@@ -203,20 +146,20 @@ export const Orders = () => {
                             <td>{order.master}</td>
                             <td>{ORDER_STATUSES_TRANSLATE[order.status]}</td>
                             <td>{order.price}</td>
-                            <td className='tableLink' onClick={() => { setIsModalOpened(true); setCurrentOrder(orders.find(orderToFind => orderToFind.id === order.id)) }}><span>Изменить</span></td>
+                            <td className='tableLink' onClick={() => { dispatch(setIsModalOpened(true)); dispatch(setCurrentOrder(orders.find(orderToFind => orderToFind.id === order.id))) }}><span>Изменить</span></td>
                             <td className='tableLink' onClick={() => deleteOrder(order.id)}><span>Удалить</span></td>
                         </tr>
                         )}
                     </tbody>
                 </Table>
 
-                {Error &&
-                    <h2 className='adminError'>Произошла ошибка {Error}</h2>
+                {error &&
+                    <h2 className='adminError'>Произошла ошибка "{error}"</h2>
                 }
-                {orders.length === 0 && !isOrdersLoading && !Error &&
+                {orders.length === 0 && !isLoading && !error &&
                     <h2 className='adminError'>Отсутствуют записи</h2>
                 }
-                {isOrdersLoading &&
+                {isLoading &&
                     <Loader />
                 }
             </div>

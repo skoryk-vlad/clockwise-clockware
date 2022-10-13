@@ -11,7 +11,7 @@ import { Request, Response } from 'express';
 import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../mailer';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { createOrderReport } from '../reports';
-import { resolve } from 'path'; 
+import { resolve } from 'path';
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
@@ -99,8 +99,14 @@ export default class OrderController {
 
             let include = [
                 { model: City, as: 'City', where: {} },
-                { model: Master, as: 'Master', where: {} },
-                { model: Client, as: 'Client', where: {} }
+                {
+                    model: Master, as: 'Master', where: {},
+                    include: [{ model: User, attributes: ['email'] }]
+                },
+                {
+                    model: Client, as: 'Client', where: {},
+                    include: [{ model: User, attributes: ['email'] }]
+                }
             ];
 
             if (cities) {
@@ -120,7 +126,8 @@ export default class OrderController {
                     as: 'Master',
                     where: {
                         id: masters
-                    }
+                    },
+                    include: [{ model: User, attributes: ['email'] }]
                 }]
             }
             if (clients) {
@@ -130,7 +137,8 @@ export default class OrderController {
                     as: 'Client',
                     where: {
                         id: clients
-                    }
+                    },
+                    include: [{ model: User, attributes: ['email'] }]
                 }]
             }
             const config: FindAndCountOptions<Attributes<Model<OrderAttributes, OrderCreationAttributes>>> = {

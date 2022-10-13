@@ -9,7 +9,7 @@ import { MyInput } from '../input/MyInput';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Slider from 'rc-slider';
 import { Lookup, splitBySubstring } from '../Lookup/Lookup';
-import { ClientService, MasterService } from '../../API/Server';
+import { CityService, ClientService, MasterService } from '../../API/Server';
 
 const OrderFilterSchema = z.object({
     masters: z.array(z.number().int().positive()).optional(),
@@ -20,7 +20,7 @@ const OrderFilterSchema = z.object({
     dateEnd: z.string().regex(/([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))/).optional().or(z.literal('')),
 });
 
-export const OrderFilterForm = ({ filters, onClick, cities, setFilters, prices }) => {
+export const OrderFilterForm = ({ filters, onClick, prices }) => {
     const { control, reset, handleSubmit, watch, getValues, formState: { isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
@@ -43,7 +43,7 @@ export const OrderFilterForm = ({ filters, onClick, cities, setFilters, prices }
                             field: { onChange, value }
                         }) => (
                             <Lookup getOptions={MasterService.getMasters}
-                                value={value} onChange={onChange}
+                                value={value} onChange={onChange} defaultOptions
                                 placeholder="Выбор мастеров..." isMulti
                                 label={(master) => `${master.name} (${master.email})`}
                                 formatOptionLabel={(label, inputValue) => {
@@ -69,7 +69,7 @@ export const OrderFilterForm = ({ filters, onClick, cities, setFilters, prices }
                             field: { onChange, value }
                         }) => (
                             <Lookup getOptions={ClientService.getClients}
-                                value={value} onChange={onChange}
+                                value={value} onChange={onChange} defaultOptions
                                 placeholder="Выбор клиентов..." isMulti
                                 label={(client) => `${client.name} (${client.email})`}
                                 formatOptionLabel={(label, inputValue) => {
@@ -92,16 +92,18 @@ export const OrderFilterForm = ({ filters, onClick, cities, setFilters, prices }
                         control={control}
                         name="cities"
                         render={({
-                            field: { onChange }
+                            field: { onChange, value }
                         }) => (
-                            <Select
-                                closeMenuOnSelect={false}
-                                defaultValue={filters.cities}
-                                value={cities.filter(city => watch('cities').includes(city.id)).map(city => ({ value: city.id, label: city.name }))}
-                                isMulti
-                                onChange={options => onChange(options.map(option => option.value))}
-                                options={cities.map(city => ({ value: city.id, label: city.name }))}
-                                placeholder='Выбор городов...'
+                            <Lookup getOptions={CityService.getCities}
+                                value={value} onChange={onChange} defaultOptions
+                                placeholder="Выбор городов..." isMulti
+                                label={city => city.name}
+                                formatOptionLabel={(label, inputValue) => {
+                                    const parts = splitBySubstring(label, inputValue);
+                                    return (<div>
+                                        {parts[0]}<span className={classes.searched}>{parts[1]}</span>{parts[2]}
+                                    </div>)
+                                }}
                             />
                         )}
                     />
@@ -233,7 +235,7 @@ export const OrderFilterForm = ({ filters, onClick, cities, setFilters, prices }
 
                 <div className={classes.filterButton}>
                     <AdminButton type="submit" disabled={!isValid}>Фильтровать</AdminButton>
-                    <AdminButton type="button" onClick={() => { reset(); setFilters(filters); }}>Сбросить</AdminButton>
+                    <AdminButton type="button" onClick={() => { reset(); onClick(getValues()); }}>Сбросить</AdminButton>
                 </div>
             </div>
         </form>

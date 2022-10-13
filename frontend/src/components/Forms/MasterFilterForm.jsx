@@ -38,7 +38,7 @@ export const MasterFilterForm = ({ filters, onClick, cities, setFilters }) => {
                             field: { onChange, value }
                         }) => (
                             <Lookup getOptions={MasterService.getMasters}
-                                value={value} onChange={onChange}
+                                value={value} onChange={onChange} defaultValues
                                 placeholder="Выбор мастеров..." isMulti
                                 label={(master) => `${master.name} (${master.email})`}
                                 formatOptionLabel={(label, inputValue) => {

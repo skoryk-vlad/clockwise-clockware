@@ -38,7 +38,7 @@ export class Lookup extends React.Component {
         super(props);
         this.state = {
             inputValue: '',
-            selected: []
+            selected: props.defaultValue || []
         };
     }
 
@@ -47,13 +47,19 @@ export class Lookup extends React.Component {
     }
 
     handleChange = (selected) => {
-        if (this.props.onChange) this.props.onChange(selected.map(selected => selected.value));
+        if (this.props.onChange) {
+            if (Array.isArray(selected)) {
+                this.props.onChange(selected.map(selected => selected.value));
+            } else {
+                this.props.onChange(selected.value);
+            }
+        };
         this.setState({ selected });
     }
 
     formatOptionLabel = ({ label }) => {
         return (
-            this.props.formatOptionLabel(label, this.state.inputValue)
+            this.props.formatOptionLabel ? this.props.formatOptionLabel(label, this.state.inputValue) : label
         )
     }
 
@@ -68,8 +74,7 @@ export class Lookup extends React.Component {
         return (
             <AsyncSelect {...this.props}
                 formatOptionLabel={this.formatOptionLabel}
-                defaultOptions
-                value={this.state.selected.filter(option => this.props.value.includes(option.value))}
+                value={Array.isArray(this.state.selected) ? this.state.selected.filter(option => this.props.value.includes(option.value)) : this.state.selected}
                 loadOptions={this.throttle}
                 onInputChange={this.handleInputChange}
                 inputValue={this.state.inputValue}
