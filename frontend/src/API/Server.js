@@ -166,16 +166,12 @@ export class OrderService {
         return data;
     }
     static async getOrderImages(id) {
-        const { data } = await api.get(`/order-images/${id}`, {
-            responseType: 'blob'
-        });
-
-        const href = URL.createObjectURL(data);
+        const { data } = await api.get(`/order-images/${id}`);
+        
         const link = document.createElement('a');
-        link.href = href;
+        link.href = data;
         link.download = 'Фото.zip';
         link.click();
-        URL.revokeObjectURL(href);
 
         return data;
     }

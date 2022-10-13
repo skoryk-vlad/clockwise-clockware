@@ -12,7 +12,6 @@ import { Request, Response } from 'express';
 import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../services/mailer';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { createOrderReport } from '../reports';
-import axios from 'axios';
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
@@ -431,13 +430,15 @@ export default class OrderController {
             const imagesLinks = (await Order.findByPk(id, {
                 attributes: ['imagesLinks']
             })).getDataValue('imagesLinks');
-            
+
             if (!imagesLinks || !imagesLinks.length) return res.status(404).json('Order does not have images');
 
+            // Convert Cloudinary links from DB to public_ids
+            // https://res.cloudinary.com/da2dn0rta/image/upload/v1665408175/local/zcxjsvtv7g5iwihmjxcd.jpg -> local/zcxjsvtv7g5iwihmjxcd
             const publicIds = imagesLinks.map(link => {
-                const parts = link.split('/').splice(-2)
+                const parts = link.split('/').splice(-2);
                 return `${parts[0]}/${parts[1].split('.')[0]}`;
-            })
+            });
 
             const archiveUrl = cloudinary.utils.download_zip_url({
                 public_ids: publicIds,
@@ -446,10 +447,7 @@ export default class OrderController {
                 use_original_filename: true
             });
 
-            const archive = await axios.get(archiveUrl, {
-                responseType: 'arraybuffer'
-            });
-            return res.status(200).send(archive.data);
+            return res.status(200).send(archiveUrl);
         } catch (error) {
             return res.sendStatus(500);
         }
