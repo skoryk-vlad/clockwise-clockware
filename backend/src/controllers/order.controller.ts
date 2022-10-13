@@ -12,13 +12,12 @@ import { Request, Response } from 'express';
 import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../services/mailer';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { createOrderReport } from '../reports';
-import { resolve } from 'path'; 
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
         const addOrderTransaction = await sequelize.transaction();
         try {
-            const { name, email, masterId, cityId, watchSize, date, time, status } = AddOrderSchema.parse({ ...req.body, time: +req.body.time, masterId: +req.body.masterId, cityId: +req.body.cityId });
+            const { name, email, masterId, cityId, watchSize, date, time, status } = AddOrderSchema.parse(req.body);
 
             const existCity = await City.findByPk(cityId);
             if (!existCity) return res.status(404).json('No such city');
@@ -97,14 +96,7 @@ export default class OrderController {
     }
     async getOrders(req: Request, res: Response): Promise<Response> {
         try {
-            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[], clientsQuery: number[], priceRangeQuery: number[];
-            if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
-            if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
-            if (req.query.masters) mastersQuery = req.query.masters.toString().split(',').map(masterId => +masterId);
-            if (req.query.clients) clientsQuery = req.query.clients.toString().split(',').map(clientId => +clientId);
-            if (req.query.priceRange) priceRangeQuery = req.query.priceRange.toString().split(',').map(price => +price);
-
-            const { limit, page, cities, masters, clients, statuses, dateStart, dateEnd, sortedField, isDirectedASC, priceRange } = GetOrdersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, masters: mastersQuery, clients: clientsQuery, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true, priceRange: priceRangeQuery });
+            const { limit, page, cities, masters, clients, statuses, dateStart, dateEnd, sortedField, isDirectedASC, priceRange } = GetOrdersSchema.parse(req.query);
 
             let include = [
                 { model: City, as: 'City', where: {} },
@@ -190,7 +182,7 @@ export default class OrderController {
     }
     async getOrderById(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetOrderSchema.parse({ id: +req.params.id });
+            const { id } = GetOrderSchema.parse(req.params);
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');
             return res.status(200).json(order);
@@ -201,7 +193,7 @@ export default class OrderController {
     }
     async updateOrder(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetOrderSchema.parse({ id: +req.params.id });
+            const { id } = GetOrderSchema.parse(req.params);
 
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');
@@ -251,7 +243,7 @@ export default class OrderController {
     }
     async changeStatus(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetOrderSchema.parse({ id: +req.params.id });
+            const { id } = GetOrderSchema.parse(req.params);
 
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');
@@ -272,7 +264,7 @@ export default class OrderController {
     }
     async setRating(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetOrderSchema.parse({ id: +req.params.id });
+            const { id } = GetOrderSchema.parse(req.params);
 
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');
@@ -289,7 +281,7 @@ export default class OrderController {
     }
     async deleteOrder(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = DeleteOrderSchema.parse({ id: +req.params.id });
+            const { id } = DeleteOrderSchema.parse(req.params);
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');
             await order.destroy();
@@ -356,14 +348,7 @@ export default class OrderController {
     }
     async createReport(req: Request, res: Response): Promise<any> {
         try {
-            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[], clientsQuery: number[], priceRangeQuery: number[];
-            if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
-            if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
-            if (req.query.masters) mastersQuery = req.query.masters.toString().split(',').map(masterId => +masterId);
-            if (req.query.clients) clientsQuery = req.query.clients.toString().split(',').map(clientId => +clientId);
-            if (req.query.priceRange) priceRangeQuery = req.query.priceRange.toString().split(',').map(price => +price);
-
-            const { cities, masters, clients, statuses, dateStart, dateEnd, sortedField, isDirectedASC, priceRange } = GetOrdersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, masters: mastersQuery, clients: clientsQuery, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true, priceRange: priceRangeQuery });
+            const { cities, masters, clients, statuses, dateStart, dateEnd, sortedField, isDirectedASC, priceRange } = GetOrdersSchema.parse(req.query);
 
             let include = [
                 { model: City, as: 'City', where: {}, attributes: [] },
