@@ -22,5 +22,6 @@ router.get('/order-min-max-prices', isJwtNotExpired, hasRoles([ROLES.ADMIN]), or
 router.get('/order-review/:reviewToken', orderController.redirectToReview);
 router.post('/add-order-review/:reviewToken', orderController.addReview);
 router.get('/order-report', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.createReport);
+router.get('/order-images/:id', isJwtNotExpired, hasRoles([ROLES.MASTER]), orderController.getOrderImages);
 
 export default router;

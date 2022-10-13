@@ -191,7 +191,7 @@ export default class MasterController {
                 where: {
                     masterId: id
                 },
-                attributes: ['id', [sequelize.col('Client.name'), 'client'], [sequelize.col('City.name'), 'city'], 'watchSize', 'date', 'time', 'endTime', 'price', 'status'],
+                attributes: ['id', [sequelize.col('Client.name'), 'client'], [sequelize.col('City.name'), 'city'], 'watchSize', 'date', 'time', 'endTime', 'price', 'status', 'imagesLinks'],
                 include: [{
                     model: City, attributes: []
                 }, {
