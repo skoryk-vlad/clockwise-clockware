@@ -24,15 +24,18 @@ export const GetMastersSchema = z.object({
         (a) => parseInt(z.string().parse(a), 10),
         z.number().int().positive()
     ).optional(),
-    cities: z.array(z.number().int().positive()).optional(),
-    statuses: z.array(z.nativeEnum(MASTER_STATUSES)).optional(),
+    cities: z.preprocess(value => String(value).split(',').map(id => +id), z.array(z.number().int().positive())).optional(),
+    masters: z.preprocess(value => String(value).split(',').map(id => +id), z.array(z.number().int().positive())).optional(),
+    statuses: z.preprocess(value => String(value).split(','), z.array(z.nativeEnum(MASTER_STATUSES))).optional(),
     sortedField: z.string().refine(field => [...Object.keys(Master.getAttributes()), 'email', 'Cities'].includes(field)).optional(),
-    isDirectedASC: z.boolean().optional(),
+    isDirectedASC: z.enum(['true', 'false']).transform(isDirectedASC => isDirectedASC === 'true').optional(),
     name: z.string().optional(),
-    masters: z.array(z.number().int().positive()).optional(),
 });
 export const GetMasterSchema = z.object({
-    id: z.number().int().positive()
+    id: z.preprocess(
+        (a) => parseInt(z.string().parse(a), 10),
+        z.number().int().positive()
+    )
 });
 export const GetMasterOrdersSchema = z.object({
     limit: z.preprocess(
@@ -44,7 +47,7 @@ export const GetMasterOrdersSchema = z.object({
         z.number().int().positive()
     ).optional(),
     sortedField: z.string().refine(field => [...Object.keys(Order.getAttributes()), 'city', 'client'].includes(field)).optional(),
-    isDirectedASC: z.boolean().optional()
+    isDirectedASC: z.enum(['true', 'false']).transform(isDirectedASC => isDirectedASC === 'true').optional(),
 });
 export const UpdateMasterSchema = z.object({
     name: z.string().trim().min(3).max(255),
@@ -53,7 +56,10 @@ export const UpdateMasterSchema = z.object({
     status: z.nativeEnum(MASTER_STATUSES)
 });
 export const DeleteMasterSchema = z.object({
-    id: z.number().int().positive()
+    id: z.preprocess(
+        (a) => parseInt(z.string().parse(a), 10),
+        z.number().int().positive()
+    )
 });
 export const GetFreeMastersSchema = z.object({
     cityId: z.preprocess(

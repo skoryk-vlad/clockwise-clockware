@@ -94,12 +94,7 @@ export default class MasterController {
     }
     async getMasters(req: Request, res: Response): Promise<Response> {
         try {
-            let statusesQuery: string[], citiesQuery: number[], mastersQuery: number[];
-            if (req.query.statuses) statusesQuery = req.query.statuses.toString().split(',');
-            if (req.query.cities) citiesQuery = req.query.cities.toString().split(',').map(cityId => +cityId);
-            if (req.query.masters) mastersQuery = req.query.masters.toString().split(',').map(masterId => +masterId);
-
-            const { limit, page, cities, statuses, sortedField, isDirectedASC, name, masters } = GetMastersSchema.parse({ ...req.query, statuses: statusesQuery, cities: citiesQuery, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true, masters: mastersQuery });
+            const { limit, page, cities, statuses, sortedField, isDirectedASC, name, masters } = GetMastersSchema.parse(req.query);
 
             const config: FindAndCountOptions<Attributes<Model<MasterAttributes, MasterCreationAttributes>>> = {
                 attributes: { include: [[sequelize.col('User.email'), 'email']] },
@@ -161,7 +156,7 @@ export default class MasterController {
     }
     async getMasterById(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetMasterSchema.parse({ id: +req.params.id });
+            const { id } = GetMasterSchema.parse(req.params);
             const master = await Master.findByPk(id, {
                 attributes: { include: [[sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 2), 'rating']] },
                 include: [City, {
@@ -180,12 +175,12 @@ export default class MasterController {
     }
     async getMasterOrdersById(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetMasterSchema.parse({ id: +req.params.id });
+            const { id } = GetMasterSchema.parse(req.params);
 
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
 
-            const { limit, page, sortedField, isDirectedASC } = GetMasterOrdersSchema.parse({ ...req.query, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
+            const { limit, page, sortedField, isDirectedASC } = GetMasterOrdersSchema.parse(req.query);
 
             const { count, rows } = await Order.findAndCountAll({
                 where: {
@@ -265,7 +260,7 @@ export default class MasterController {
     async updateMaster(req: Request, res: Response): Promise<Response> {
         const updateMasterTransaction = await sequelize.transaction();
         try {
-            const { id } = GetMasterSchema.parse({ id: +req.params.id });
+            const { id } = GetMasterSchema.parse(req.params);
 
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
@@ -304,7 +299,7 @@ export default class MasterController {
     async deleteMaster(req: Request, res: Response): Promise<Response> {
         const deleteMasterTransaction = await sequelize.transaction();
         try {
-            const { id } = DeleteMasterSchema.parse({ id: +req.params.id });
+            const { id } = DeleteMasterSchema.parse(req.params);
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
 
@@ -328,7 +323,7 @@ export default class MasterController {
     }
     async getMasterReviews(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetMasterSchema.parse({ id: +req.params.id });
+            const { id } = GetMasterSchema.parse(req.params);
 
             const master = await Master.findByPk(id);
             if (!master) return res.status(404).json('No such master');
