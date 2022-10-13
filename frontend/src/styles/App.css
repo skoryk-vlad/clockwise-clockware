@@ -51,6 +51,7 @@
   border-radius: 4px;
   width: 120px;
 }
+
 .admin-body__btns button:not(:last-child) {
   margin: 0px 0px 5px 0px;
 }
@@ -341,6 +342,22 @@
   color: red;
   font-size: 14px;
   margin: 0px 0px 1px 10px;
+}
+
+.carousel {
+  width: 1024px;
+  height: 576px;
+  margin: 10px;
+}
+
+.carousel button:before {
+  color: #505050;
+}
+
+.carousel_item img {
+  width: 1024px;
+  height: 576px;
+  object-fit: contain;
 }
 
 .orderDetails {

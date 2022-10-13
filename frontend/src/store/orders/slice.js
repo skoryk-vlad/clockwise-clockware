@@ -25,7 +25,8 @@ const initialState = {
     totalPages: 0,
     priceBoundaries: [0, 0],
     currentOrder: null,
-    isModalOpened: false
+    isModalOpened: false,
+    imageUrls: []
 }
 
 const ordersSlice = createSlice({
@@ -46,6 +47,9 @@ const ordersSlice = createSlice({
         },
         setIsModalOpened: (state, action) => {
             state.isModalOpened = action.payload;
+        },
+        setImageUrls: (state, action) => {
+            state.imageUrls = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -83,7 +87,8 @@ export const {
     setSortByField,
     setFilters,
     setCurrentOrder,
-    setIsModalOpened
+    setIsModalOpened,
+    setImageUrls
 } = actions;
 
 export default reducer;

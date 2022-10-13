@@ -1,10 +1,9 @@
 import { CLIENT_STATUSES } from './../models/client.model';
 import { sequelize } from './../sequelize';
-import { sendUserLoginInfoMail, sendConfirmationUserMail } from './../mailer';
+import { sendUserLoginInfoMail, sendConfirmationUserMail, sendResetedPasswordMail } from '../services/mailer';
 import { Master, MASTER_STATUSES } from './../models/master.model';
 import { GetUserSchema } from './../validationSchemas/user.schema';
 import { generatePassword, encryptPassword } from '../password';
-import { sendResetedPasswordMail } from '../mailer';
 import { ROLES, User } from '../models/user.model';
 import { Client } from '../models/client.model';
 import { Request, Response } from 'express';

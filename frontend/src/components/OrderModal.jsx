@@ -18,7 +18,8 @@ const defaultOrder = {
     cityId: null,
     date: "",
     time: null,
-    status: ORDER_STATUSES.AWAITING_PAYMENT
+    status: ORDER_STATUSES.AWAITING_PAYMENT,
+    images: []
 };
 
 export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, register }) => {
@@ -52,7 +53,12 @@ export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, r
     }, [isOrderModalOpened]);
 
     const addOrder = async (chosenMaster) => {
-        const orderReturned = await OrderService.addOrder({ ...order, masterId: chosenMaster });
+        const formData = new FormData();
+        Array.from(order.images).map(image => formData.append(`images`, image));
+        Object.entries(order).forEach(([key, value]) => formData.append(key, value));
+        formData.append("masterId", chosenMaster);
+        
+        const orderReturned = await OrderService.addOrder(formData);
         setOrderReturned(orderReturned);
         setIsFormOpened(true);
         notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен!');

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ClientService, OrderService } from '../../API/Server';
 import { Navbar } from '../../components/Navbar/Navbar';
 import { Loader } from '../../components/Loader/Loader';
@@ -12,8 +12,20 @@ import { ColumnHead } from '../../components/Table/ColumnHead';
 import { OrderFilterForm } from '../../components/Forms/OrderFilterForm';
 import { useSelector, useDispatch } from 'react-redux';
 import { addOrderThunk, deleteOrderThunk, getOrdersMinAndMaxPricesThunk, getOrdersThunk, updateOrderThunk } from '../../store/orders/thunks';
-import { setCurrentOrder, setFilters, setIsModalOpened, setPagination, setSortByField } from '../../store/orders/slice';
+import { setCurrentOrder, setFilters, setImageUrls, setIsModalOpened, setPagination, setSortByField } from '../../store/orders/slice';
 import { notify, NOTIFY_TYPES } from '../../components/Notifications';
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
+const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    adaptiveHeight: true
+};
 
 const defaultOrder = {
     clientId: null,
@@ -37,6 +49,7 @@ const tableHeaders = [
     { value: 'master', title: 'Мастер', sortable: true },
     { value: 'status', title: 'Статус', sortable: true },
     { value: 'price', title: 'Цена', sortable: true },
+    { value: 'images', title: 'Фото', sortable: false },
     { value: 'change', title: 'Изменение', sortable: false },
     { value: 'delete', title: 'Удаление', sortable: false }
 ];
@@ -44,7 +57,7 @@ const tableHeaders = [
 export const Orders = () => {
     const dispatch = useDispatch();
 
-    const { orders, totalPages, filters, pagination, sortByField, isLoading, error, prices, currentOrder, isModalOpened } = useSelector(state => ({
+    const { orders, totalPages, filters, pagination, sortByField, isLoading, error, prices, currentOrder, isModalOpened, imageUrls } = useSelector(state => ({
         orders: state.orders.orders,
         filters: state.orders.filters,
         pagination: state.orders.pagination,
@@ -55,6 +68,7 @@ export const Orders = () => {
         prices: state.orders.priceBoundaries,
         currentOrder: state.orders.currentOrder,
         isModalOpened: state.orders.isModalOpened,
+        imageUrls: state.orders.imageUrls
     }));
 
     useEffect(() => {
@@ -72,8 +86,10 @@ export const Orders = () => {
     }, [totalPages]);
 
     useEffect(() => {
-        if (!isModalOpened)
+        if (!isModalOpened) {
             dispatch(setCurrentOrder(null));
+            dispatch(setImageUrls([]));
+        }
     }, [isModalOpened]);
 
     const deleteOrder = async (id) => {
@@ -111,7 +127,7 @@ export const Orders = () => {
                             Добавить
                         </AdminButton>
                         <AdminButton onClick={async () => await OrderService.createReport({ ...filters, ...sortByField })}>
-                            Отчет
+                            Экспорт
                         </AdminButton>
                     </div>
                 </div>
@@ -119,6 +135,9 @@ export const Orders = () => {
                 <MyModal visible={isModalOpened} setVisible={isModalOpened => dispatch(setIsModalOpened(isModalOpened))}>
                     {currentOrder && <OrderForm order={currentOrder} onClick={currentOrder?.id ? updateOrder : addOrder}
                         btnTitle={currentOrder?.id ? 'Изменить' : 'Добавить'}></OrderForm>}
+                    {imageUrls.length > 0 && <Slider {...settings} className='carousel'>
+                        {imageUrls.map((imageUrl, index) => <div className='carousel_item' key={index}><img src={imageUrl} alt='Фото заказа' /></div>)}
+                    </Slider>}
                 </MyModal>
 
                 <Table changeLimit={limit => dispatch(setPagination({ ...pagination, limit }))}
@@ -146,23 +165,27 @@ export const Orders = () => {
                             <td>{order.master}</td>
                             <td>{ORDER_STATUSES_TRANSLATE[order.status]}</td>
                             <td>{order.price}</td>
+                            <td className='tableLink' onClick={order.imagesLinks && order.imagesLinks.length ? () => { dispatch(setImageUrls(order.imagesLinks)); dispatch(setIsModalOpened(true)); } : () => { }}>
+                                {order.imagesLinks && order.imagesLinks.length ? <span>Смотреть</span> : '-'}</td>
                             <td className='tableLink' onClick={() => { dispatch(setIsModalOpened(true)); dispatch(setCurrentOrder(orders.find(orderToFind => orderToFind.id === order.id))) }}><span>Изменить</span></td>
                             <td className='tableLink' onClick={() => deleteOrder(order.id)}><span>Удалить</span></td>
-                        </tr>
+                        </tr >
                         )}
-                    </tbody>
-                </Table>
+                    </tbody >
+                </Table >
 
                 {error &&
                     <h2 className='adminError'>Произошла ошибка "{error}"</h2>
                 }
-                {orders.length === 0 && !isLoading && !error &&
+                {
+                    orders.length === 0 && !isLoading && !error &&
                     <h2 className='adminError'>Отсутствуют записи</h2>
                 }
-                {isLoading &&
+                {
+                    isLoading &&
                     <Loader />
                 }
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }
