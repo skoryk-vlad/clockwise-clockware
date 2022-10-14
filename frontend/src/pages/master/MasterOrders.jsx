@@ -20,7 +20,8 @@ const tableHeaders = [
     { value: 'endTime', title: 'Время конца', sortable: true },
     { value: 'price', title: 'Цена', sortable: true },
     { value: 'status', title: 'Статус', sortable: true },
-    { value: 'change', title: 'Статус', sortable: false }
+    { value: 'change', title: 'Статус', sortable: false },
+    { value: 'images', title: 'Фото', sortable: false }
 ];
 const defaultPagination = {
     page: 1,
@@ -75,6 +76,14 @@ export const MasterOrders = () => {
         });
     };
 
+    const downloadImages = async (id) => {
+        try {
+            await OrderService.getOrderImages(id);
+        } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
+        }
+    }
+
     return (
         <div className='admin-container'>
             <Navbar role={ROLES.MASTER} />
@@ -107,6 +116,8 @@ export const MasterOrders = () => {
                             <td className='tableLink' onClick={order.status !== ORDER_MASTER_STATUSES.COMPLETED && order.status !== ORDER_MASTER_STATUSES.CANCELED ? () => changeStatus(order.id) : () => { }}>
                                 {order.status !== ORDER_MASTER_STATUSES.COMPLETED && order.status !== ORDER_MASTER_STATUSES.CANCELED ? <span>Отметить</span> : `-`}
                             </td>
+                            <td className='tableLink' onClick={order.imagesLinks && order.imagesLinks.length ? () => downloadImages(order.id) : () => { }}>
+                                {order.imagesLinks && order.imagesLinks.length ? <span>Скачать</span> : '-'}</td>
                         </tr>
                         )}
                     </tbody>

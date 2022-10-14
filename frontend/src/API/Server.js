@@ -165,6 +165,16 @@ export class OrderService {
 
         return data;
     }
+    static async getOrderImages(id) {
+        const { data } = await api.get(`/order-images/${id}`);
+        
+        const link = document.createElement('a');
+        link.href = data;
+        link.download = 'Фото.zip';
+        link.click();
+
+        return data;
+    }
 }
 export class UserService {
     static async resetPassword(email) {

@@ -1,4 +1,4 @@
-import { uploadStream } from './../services/cloudinary';
+import cloudinary, { uploadStream } from './../services/cloudinary';
 import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
 import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema, addReviewSchema, addImagesSchema } from './../validationSchemas/order.schema';
@@ -403,6 +403,38 @@ export default class OrderController {
             return res.status(200).send(report);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async getOrderImages(req: Request, res: Response): Promise<Response | void> {
+        try {
+            const { id } = GetOrderSchema.parse({ id: +req.params.id });
+
+            const order = await Order.findByPk(id);
+            if (!order) return res.status(404).json('No such order');
+
+            const imagesLinks = (await Order.findByPk(id, {
+                attributes: ['imagesLinks']
+            })).getDataValue('imagesLinks');
+
+            if (!imagesLinks || !imagesLinks.length) return res.status(404).json('Order does not have images');
+
+            // Convert Cloudinary links from DB to public_ids
+            // https://res.cloudinary.com/da2dn0rta/image/upload/v1665408175/local/zcxjsvtv7g5iwihmjxcd.jpg -> local/zcxjsvtv7g5iwihmjxcd
+            const publicIds = imagesLinks.map(link => {
+                const parts = link.split('/').splice(-2);
+                return `${parts[0]}/${parts[1].split('.')[0]}`;
+            });
+
+            const archiveUrl = cloudinary.utils.download_zip_url({
+                public_ids: publicIds,
+                flatten_folders: true,
+                target_public_id: 'Фото',
+                use_original_filename: true
+            });
+
+            return res.status(200).send(archiveUrl);
+        } catch (error) {
             return res.sendStatus(500);
         }
     }
