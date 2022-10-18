@@ -13,7 +13,7 @@ export default class AuthController {
         const user = await User.findOne({ where: { email } });
         if (!user) return res.status(404).json('Email or password is incorrect');
         
-        if (!user.getDataValue('password')) return res.status(403).json(`User don't have a password`);
+        if (!user.getDataValue('password')) return res.status(403).json(`User doesn't have a password`);
 
         if (bcrypt.compareSync(password, user.getDataValue('password'))) {
             let id = null;
@@ -26,7 +26,7 @@ export default class AuthController {
             } else if (user.getDataValue('role') === ROLES.MASTER) {
                 const master = await Master.findOne({ where: { userId: user.getDataValue('id') } });
                 if (master.getDataValue('status') === MASTER_STATUSES.NOT_CONFIRMED) return res.status(403).json('Email is not verified');
-                if (master.getDataValue('status') !== MASTER_STATUSES.APPROVED) return res.status(403).json('Master not yet approved');
+                if (master.getDataValue('status') !== MASTER_STATUSES.APPROVED) return res.status(403).json('Master is not yet approved');
                 id = master.getDataValue('id');
             }
 

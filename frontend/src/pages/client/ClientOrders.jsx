@@ -15,6 +15,7 @@ import { Table } from '../../components/Table/Table';
 import { WATCH_SIZES, ORDER_STATUSES, ROLES, ORDER_STATUSES_TRANSLATE, WATCH_SIZES_TRANSLATE } from '../../constants';
 import { useFetching } from '../../hooks/useFetching';
 import '../../styles/App.css';
+import { useSelector } from 'react-redux';
 
 const defaultOrder = {
     masterId: null,
@@ -70,15 +71,19 @@ export const ClientOrders = () => {
         orderId: null
     });
 
+    const { id } = useSelector(state => ({
+        id: state.auth.id
+    }));
+
     const [fetchOrders, isLoading, Error] = useFetching(async () => {
-        const payload = jwtPayload(localStorage.getItem('token'));
-        const orders = await ClientService.getClientOrders(payload.id, { ...pagination, ...sortByField });
+        const clientId = id || jwtPayload(localStorage.getItem('token')).id;
+        const orders = await ClientService.getClientOrders(clientId, { ...pagination, ...sortByField });
         setTotalPages(Math.ceil(orders.count / pagination.limit));
         setOrders(orders.rows);
     });
     const [fetchAdditionalData] = useFetching(async () => {
-        const payload = jwtPayload(localStorage.getItem('token'));
-        const client = await ClientService.getClientById(payload.id);
+        const clientId = id || jwtPayload(localStorage.getItem('token')).id;
+        const client = await ClientService.getClientById(clientId);
         const cities = await CityService.getCities();
 
         setClient(client);

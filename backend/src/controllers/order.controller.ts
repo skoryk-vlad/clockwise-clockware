@@ -100,8 +100,14 @@ export default class OrderController {
 
             let include = [
                 { model: City, as: 'City', where: {} },
-                { model: Master, as: 'Master', where: {} },
-                { model: Client, as: 'Client', where: {} }
+                {
+                    model: Master, as: 'Master', where: {},
+                    include: [{ model: User, attributes: ['email'] }]
+                },
+                {
+                    model: Client, as: 'Client', where: {},
+                    include: [{ model: User, attributes: ['email'] }]
+                }
             ];
 
             if (cities) {
@@ -121,7 +127,8 @@ export default class OrderController {
                     as: 'Master',
                     where: {
                         id: masters
-                    }
+                    },
+                    include: [{ model: User, attributes: ['email'] }]
                 }]
             }
             if (clients) {
@@ -131,7 +138,8 @@ export default class OrderController {
                     as: 'Client',
                     where: {
                         id: clients
-                    }
+                    },
+                    include: [{ model: User, attributes: ['email'] }]
                 }]
             }
             const config: FindAndCountOptions<Attributes<Model<OrderAttributes, OrderCreationAttributes>>> = {
@@ -406,9 +414,9 @@ export default class OrderController {
             return res.sendStatus(500);
         }
     }
-    async getOrderImages(req: Request, res: Response): Promise<Response | void> {
+    async getOrderImages(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetOrderSchema.parse({ id: +req.params.id });
+            const { id } = GetOrderSchema.parse(req.params);
 
             const order = await Order.findByPk(id);
             if (!order) return res.status(404).json('No such order');

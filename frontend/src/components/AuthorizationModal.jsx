@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { AuthService, CityService, ClientService, MasterService, UserService } from '../API/Server';
+import { CityService, ClientService, MasterService, UserService } from '../API/Server';
 import { CLIENT_STATUSES } from '../constants';
 import { useFetching } from '../hooks/useFetching';
 import { ConfirmationModal } from './ConfirmationModal/ConfirmationModal';
 import { LoginForm } from './Forms/LoginForm';
 import { RegistrationForm } from './Forms/RegistrationForm';
 import { notify, NOTIFY_TYPES } from './Notifications';
-import { jwtPayload } from './PrivateRoute';
+import { useDispatch } from 'react-redux';
+import { loginThunk } from '../store/auth/thunks';
 
 const defaultUser = {
     name: '',
@@ -20,6 +21,8 @@ const defaultUser = {
 }
 
 export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsAuthorizationModalOpened }) => {
+    const dispatch = useDispatch();
+
     const [redirect, setRedirect] = useState({ isRedirect: false, path: '' });
 
     const [isConfirmationModalOpened, setIsConfirmationModalOpened] = useState(false);
@@ -56,37 +59,32 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
         }
     }
     const loginUser = async (loginInfo) => {
-        try {
-            const loginResponse = await AuthService.auth(loginInfo);
-            if (loginResponse.token) {
-                localStorage.setItem('token', loginResponse.token);
-                if (needRedirect) {
-                    setRedirect({ path: jwtPayload(loginResponse.token).role, isRedirect: true });
-                }
-                setIsAuthorizationModalOpened(false);
-            } else {
-                if(loginResponse?.response?.data === 'Email or password is incorrect')
-                    notify(NOTIFY_TYPES.ERROR, 'Электронный адрес или пароль введены неверно!');
-                else if(loginResponse?.response?.data === 'Master not yet approved')
-                    notify(NOTIFY_TYPES.ERROR, 'Администратор еще Вас не одобрил!');
-                else if (loginResponse?.response?.data === "User don't have a password") {
-                    setIsConfirmationModalOpened(true);
-                    setConfirmationModalInfo({
-                        text: 'У Вас отсутствует пароль для входа. Желаете получить его на свою почту?',
-                        onAccept: async () => {
-                            await UserService.createPassword(loginInfo.email);
-                            setIsConfirmationModalOpened(false);
-                            notify(NOTIFY_TYPES.SUCCESS, 'Пароль успешно отправлен!');
-                        },
-                        onReject: () => setIsConfirmationModalOpened(false)
-                    });
-                }
-                else
-                    notify(NOTIFY_TYPES.ERROR);
+        const response = await dispatch(loginThunk(loginInfo));
+
+        if (!response.error) {
+            if (needRedirect) {
+                setRedirect({ path: response.payload.role, isRedirect: true });
             }
-        } catch (error) {
-            notify(NOTIFY_TYPES.ERROR);
-            console.log(error.response.data);
+            setIsAuthorizationModalOpened(false);
+        } else {
+            if (response.payload === 'Email or password is incorrect')
+                notify(NOTIFY_TYPES.ERROR, 'Электронный адрес или пароль введены неверно!');
+            else if (response.payload === 'Master is not yet approved')
+                notify(NOTIFY_TYPES.ERROR, 'Администратор еще Вас не одобрил!');
+            else if (response.payload === "User doesn't have a password") {
+                setIsConfirmationModalOpened(true);
+                setConfirmationModalInfo({
+                    text: 'У Вас отсутствует пароль для входа. Желаете получить его на свою почту?',
+                    onAccept: async () => {
+                        await UserService.createPassword(loginInfo.email);
+                        setIsConfirmationModalOpened(false);
+                        notify(NOTIFY_TYPES.SUCCESS, 'Пароль успешно отправлен!');
+                    },
+                    onReject: () => setIsConfirmationModalOpened(false)
+                });
+            }
+            else
+                notify(NOTIFY_TYPES.ERROR);
         }
     }
 
