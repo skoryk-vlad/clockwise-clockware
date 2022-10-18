@@ -17,7 +17,7 @@ export default class CityController {
     }
     async getCities(req: Request, res: Response): Promise<Response> {
         try {
-            const { limit, page, sortedField, isDirectedASC, name } = GetCitiesSchema.parse({ ...req.query, isDirectedASC: req.query.isDirectedASC === 'false' ? false : true });
+            const { limit, page, sortedField, isDirectedASC, name } = GetCitiesSchema.parse(req.query);
 
             const { count, rows } = await City.findAndCountAll({
                 include: Master,
@@ -39,7 +39,7 @@ export default class CityController {
     }
     async getCityById(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetCitySchema.parse({ id: +req.params.id });
+            const { id } = GetCitySchema.parse(req.params);
             const city = await City.findByPk(id);
             if (!city) return res.status(404).json('No such city');
             return res.status(200).json(city);
@@ -51,7 +51,7 @@ export default class CityController {
 
     async updateCity(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = GetCitySchema.parse({ id: +req.params.id });
+            const { id } = GetCitySchema.parse(req.params);
 
             const city = await City.findByPk(id);
             if (!city) return res.status(404).json('No such city');
@@ -68,7 +68,7 @@ export default class CityController {
 
     async deleteCity(req: Request, res: Response): Promise<Response> {
         try {
-            const { id } = DeleteCitySchema.parse({ id: +req.params.id });
+            const { id } = DeleteCitySchema.parse(req.params);
             const city = await City.findByPk(id);
             if (!city) return res.status(404).json('No such city');
             await city.destroy();

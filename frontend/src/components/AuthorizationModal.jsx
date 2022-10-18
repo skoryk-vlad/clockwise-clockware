@@ -69,9 +69,9 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
         } else {
             if (response.payload === 'Email or password is incorrect')
                 notify(NOTIFY_TYPES.ERROR, 'Электронный адрес или пароль введены неверно!');
-            else if (response.payload === 'Master not yet approved')
+            else if (response.payload === 'Master is not yet approved')
                 notify(NOTIFY_TYPES.ERROR, 'Администратор еще Вас не одобрил!');
-            else if (response.payload === "User don't have a password") {
+            else if (response.payload === "User doesn't have a password") {
                 setIsConfirmationModalOpened(true);
                 setConfirmationModalInfo({
                     text: 'У Вас отсутствует пароль для входа. Желаете получить его на свою почту?',
