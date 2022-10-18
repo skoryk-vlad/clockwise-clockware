@@ -8,6 +8,8 @@ import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
 import { ORDER_STATUSES, ORDER_STATUSES_TRANSLATE, WATCH_SIZES, WATCH_SIZES_TRANSLATE } from '../../constants';
+import { Lookup, splitBySubstring } from '../Lookup/Lookup';
+import { CityService, ClientService, MasterService } from '../../API/Server';
 
 const OrderSchema = z.object({
     watchSize: z.nativeEnum(WATCH_SIZES),
@@ -33,7 +35,7 @@ const OrderSchema = z.object({
     }
 });
 
-export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
+export const OrderForm = ({ order, onClick, btnTitle }) => {
     const { control, handleSubmit, getValues, watch, formState: { errors, isSubmitted, isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
@@ -55,15 +57,21 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="clientId"
                     render={({
-                        field: { onChange, value, name },
-                        fieldState: { error }
+                        field: { onChange, value }
                     }) => (
-                        <MySelect
-                            name={name}
-                            onChange={(value) => onChange(+value)}
-                            value={value || ''}
-                            error={error}
-                            options={clients.map(client => ({ value: client.id, name: `${client.name} (${client.email})` }))}
+                        <Lookup getOptions={ClientService.getClients}
+                            value={value} onChange={onChange}
+                            defaultValue={order.Client && { value: order.Client.id, label: `${order.Client.name} (${order.Client.User.email})` }}
+                            placeholder="Выбор клиента..." defaultOptions
+                            label={(client) => `${client.name} (${client.email})`}
+                            formatOptionLabel={(label, inputValue) => {
+                                const labelArr = label.split(' ');
+                                const emailParts = splitBySubstring(labelArr.pop(), inputValue);
+                                const nameParts = splitBySubstring(labelArr.join(' '), inputValue);
+                                return (<div>
+                                    {nameParts[0]}<span className={classes.searched}>{nameParts[1]}</span>{nameParts[2]} <span className={classes.email}>{emailParts[0]}<span className={classes.searched}>{emailParts[1]}</span>{emailParts[2]}</span>
+                                </div>)
+                            }}
                         />
                     )}
                 />
@@ -79,15 +87,19 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="cityId"
                     render={({
-                        field: { onChange, value, name },
-                        fieldState: { error }
+                        field: { onChange, value }
                     }) => (
-                        <MySelect
-                            name={name}
-                            onChange={(value) => onChange(+value)}
-                            value={value || ''}
-                            error={error}
-                            options={cities.map(city => ({ value: city.id, name: city.name }))}
+                        <Lookup getOptions={CityService.getCities}
+                            value={value} onChange={onChange}
+                            defaultValue={order.City && { value: order.City.id, label: order.City.name }}
+                            placeholder="Выбор города..." defaultOptions
+                            label={city => city.name}
+                            formatOptionLabel={(label, inputValue) => {
+                                const parts = splitBySubstring(label, inputValue);
+                                return (<div>
+                                    {parts[0]}<span className={classes.searched}>{parts[1]}</span>{parts[2]}
+                                </div>)
+                            }}
                         />
                     )}
                 />
@@ -103,15 +115,21 @@ export const OrderForm = ({ order, onClick, btnTitle, cities, clients }) => {
                     control={control}
                     name="masterId"
                     render={({
-                        field: { onChange, value, name },
-                        fieldState: { error }
+                        field: { onChange, value }
                     }) => (
-                        <MySelect
-                            name={name}
-                            onChange={(value) => onChange(+value)}
-                            value={value || ''}
-                            error={error}
-                            options={cities.find(city => city.id === watch('cityId')) ? cities.find(city => city.id === watch('cityId')).Masters.map(master => ({ value: master.id, name: master.name })) : []}
+                        <Lookup getOptions={attributes => watch("cityId") && MasterService.getMasters({ ...attributes, cities: [watch("cityId")] })}
+                            value={value} onChange={onChange} key={watch("cityId")}
+                            defaultValue={order.Master && { value: order.Master.id, label: `${order.Master.name} (${order.Master.User.email})` }}
+                            placeholder="Выбор мастера..." defaultOptions
+                            label={(master) => `${master.name} (${master.email})`}
+                            formatOptionLabel={(label, inputValue) => {
+                                const labelArr = label.split(' ');
+                                const emailParts = splitBySubstring(labelArr.pop(), inputValue);
+                                const nameParts = splitBySubstring(labelArr.join(' '), inputValue);
+                                return (<div>
+                                    {nameParts[0]}<span className={classes.searched}>{nameParts[1]}</span>{nameParts[2]} <span className={classes.email}>{emailParts[0]}<span className={classes.searched}>{emailParts[1]}</span>{emailParts[2]}</span>
+                                </div>)
+                            }}
                         />
                     )}
                 />
