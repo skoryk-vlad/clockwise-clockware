@@ -5,11 +5,11 @@ import { sendConfirmationUserMail, sendMasterApprovedMail } from '../services/ma
 import { encryptPassword } from './../password';
 import { User, ROLES } from './../models/user.model';
 import { City } from './../models/city.model';
-import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, AddMasterByAdminSchema, GetMastersSchema, GetMasterOrdersSchema } from './../validationSchemas/master.schema';
+import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, AddMasterByAdminSchema, GetMastersSchema, GetMasterOrdersSchema, GetMastersStatisticsSchema } from './../validationSchemas/master.schema';
 import { Order, WatchSizes } from './../models/order.model';
 import { Master, MASTER_STATUSES, MasterAttributes, MasterCreationAttributes } from './../models/master.model';
 import { Request, Response } from 'express';
-import { Attributes, FindAndCountOptions, Op, Model } from 'sequelize';
+import { Attributes, FindAndCountOptions, Op, Model, QueryTypes } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export default class MasterController {
@@ -341,6 +341,34 @@ export default class MasterController {
             })
 
             return res.status(200).json(reviews);
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async getMastersStatistics(req: Request, res: Response): Promise<Response> {
+        try {
+            const { page, limit, sortedField, isDirectedASC } = GetMastersStatisticsSchema.parse(req.query);
+
+            const query = `select count(*) from "Master"; select "Master".id, "Master".name,
+                count("Order"."watchSize") filter (where "Order"."watchSize" = 'small') "small",
+                count("Order"."watchSize") filter (where "Order"."watchSize" = 'medium') "medium",
+                count("Order"."watchSize") filter (where "Order"."watchSize" = 'big') "big",
+                count("Order".status) filter (where "Order".status = 'completed') "completed",
+                count("Order".status) filter (where "Order".status != 'completed') "notCompleted",
+                round(avg("Order".rating) filter (where "Order".rating != 0), 1) "rating",
+                sum("Order".price) filter (where "Order".status = 'completed') "earned"
+            from "Order"
+            join "Master" on "Master".id = "Order"."masterId"
+            group by "Master"."name", "Master".id order by "${sortedField || 'id'}" ${isDirectedASC ? 'ASC NULLS FIRST' : 'DESC NULLS LAST'}
+            limit :limit offset :offset;`;
+            
+            const masters = await sequelize.query(query, {
+                replacements: { offset: limit * (page - 1) || 0, limit: limit || 25 },
+                type: QueryTypes.SELECT
+            });
+
+            return res.status(200).send({ ...masters.shift(), rows: masters });
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);

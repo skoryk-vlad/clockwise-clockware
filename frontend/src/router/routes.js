@@ -8,6 +8,7 @@ import { ClientOrders } from "../pages/client/ClientOrders";
 import { MasterOrders } from "../pages/master/MasterOrders";
 import { MessageFromEmail } from "../pages/MessageFromEmail";
 import { Review } from "../pages/Review";
+import { Statistics } from "../pages/admin/Statistics";
 
 export const publicRoutes = [
     { path: '/', element: <Landing /> },
@@ -29,6 +30,7 @@ export const adminRoutes = [
     { path: '/admin/masters', element: <Masters /> },
     { path: '/admin/clients', element: <Clients /> },
     { path: '/admin/orders', element: <Orders /> },
+    { path: '/admin/statistics', element: <Statistics /> },
 ]
 export const clientRoutes = [
     { path: '/client/main', element: <ClientOrders /> },

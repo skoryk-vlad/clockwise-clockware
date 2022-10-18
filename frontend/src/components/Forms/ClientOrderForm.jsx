@@ -211,9 +211,6 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="images">Фото</label>
-                    {errors.time && !isValid && (
-                        <div className={classes.errorMessage}>{errors.time.message}</div>
-                    )}
                 </div>
                 <Controller
                     name="images"

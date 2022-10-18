@@ -85,6 +85,10 @@ export class MasterService {
         const { data } = await api.get(`/master-reviews/${id}`);
         return data;
     }
+    static async getMasterStatistics(attributes = {}) {
+        const { data } = await api.get(`/statistics/master?${createSearchParams(attributes)}`);
+        return data;
+    }
 }
 
 export class ClientService {
@@ -167,12 +171,24 @@ export class OrderService {
     }
     static async getOrderImages(id) {
         const { data } = await api.get(`/order-images/${id}`);
-        
+
         const link = document.createElement('a');
         link.href = data;
         link.download = 'Фото.zip';
         link.click();
 
+        return data;
+    }
+    static async getOrderCityStatistics(attributes = {}) {
+        const { data } = await api.get(`/statistics/order-city?${createSearchParams(attributes)}`);
+        return data;
+    }
+    static async getOrderMasterStatistics(attributes = {}) {
+        const { data } = await api.get(`/statistics/order-masters?${createSearchParams(attributes)}`);
+        return data;
+    }
+    static async getOrderDateStatistics(attributes = {}) {
+        const { data } = await api.get(`/statistics/order-dates?${createSearchParams(attributes)}`);
         return data;
     }
 }

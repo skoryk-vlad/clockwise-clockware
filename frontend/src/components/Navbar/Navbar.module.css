@@ -11,6 +11,7 @@
     flex-direction: column;
     flex: 1 1 auto;
     margin: 10px 0px;
+    font-family: sans-serif;
 }
 .navbar__link {
     font-size: 20px;

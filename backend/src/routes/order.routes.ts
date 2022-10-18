@@ -23,5 +23,8 @@ router.get('/order-review/:reviewToken', orderController.redirectToReview);
 router.post('/add-order-review/:reviewToken', orderController.addReview);
 router.get('/order-report', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.createReport);
 router.get('/order-images/:id', isJwtNotExpired, hasRoles([ROLES.MASTER]), orderController.getOrderImages);
+router.get('/statistics/order-city', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getOrderCityStatistics);
+router.get('/statistics/order-masters', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getOrderMastersStatistics);
+router.get('/statistics/order-dates', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getOrderDatesStatistics);
 
 export default router;

@@ -226,3 +226,11 @@ label {
     text-align: center;
     border: dashed 2px #ccc;
 }
+
+.statisticsButtons {
+    margin: 10px 0px 0px 0px;
+}
+
+.statisticsButtons *:not(:last-child) {
+    margin: 0px 5px 0px 0px;
+}

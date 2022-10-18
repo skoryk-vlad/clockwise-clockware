@@ -4,7 +4,7 @@ import classes from './Table.module.css';
 const availableLimit = [10, 25, 50];
 const defaultValue = availableLimit[0];
 
-export const Table = ({ children, changeLimit, changePage, currentPage, totalPages }) => {
+export const Table = ({ children, changeLimit, changePage, currentPage, totalPages, ...props }) => {
     let pages = [];
     if (!totalPages) {
         pages = [1];
@@ -17,7 +17,7 @@ export const Table = ({ children, changeLimit, changePage, currentPage, totalPag
     }
 
     return (
-        <div>
+        <div {...props}>
             <table className={classes.table}>
                 {children}
             </table>

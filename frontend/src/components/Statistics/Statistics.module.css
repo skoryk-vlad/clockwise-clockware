@@ -1,0 +1,15 @@
+.statistics {
+    position: relative;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+}
+.statistics__table {
+    width: 100%;
+    padding: 10px;
+}
+
+.statistics_item {
+    position: relative;
+    flex: 0 0 45%;
+}

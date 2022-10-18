@@ -1,9 +1,9 @@
 import cloudinary, { uploadStream } from './../services/cloudinary';
 import { ROLES, User } from './../models/user.model';
 import { CityMaster } from './../models/cityMaster.model';
-import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema, addReviewSchema, addImagesSchema } from './../validationSchemas/order.schema';
+import { AddOrderSchema, ChangeStatusSchema, DeleteOrderSchema, GetOrderSchema, UpdateOrderSchema, SetRatingSchema, GetOrdersSchema, addReviewSchema, addImagesSchema, GetCityOrMasterbyDateSchema, GetOrderDatesStatisticsSchema } from './../validationSchemas/order.schema';
 import { sequelize } from './../sequelize';
-import { Model, Op, FindAndCountOptions, Attributes, FindOptions } from 'sequelize';
+import { Model, Op, FindAndCountOptions, Attributes, FindOptions, QueryTypes } from 'sequelize';
 import { Master } from './../models/master.model';
 import { Client, CLIENT_STATUSES, ClientAttributes, ClientCreationAttributes } from './../models/client.model';
 import { City } from './../models/city.model';
@@ -435,6 +435,106 @@ export default class OrderController {
 
             return res.status(200).send(archiveUrl);
         } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async getOrderCityStatistics(req: Request, res: Response): Promise<Response> {
+        try {
+            const { dateStart, dateEnd } = GetCityOrMasterbyDateSchema.parse(req.query);
+
+            const selectCount = `select count(*) from "Order"`;
+            const select = `select "City".name, count("Order"."cityId") from "Order" join "City" on "City".id = "Order"."cityId"`;
+            const group = `group by "City"."name"`;
+
+            const filters = [];
+            if (dateStart) filters.push(`"Order".date >= :dateStart`);
+            if (dateEnd) filters.push(`"Order".date <= :dateEnd`);
+
+            let where = '';
+            if (filters.length > 0) {
+                where = `where ${filters.join(' and ')}`;
+            }
+            const query = `${selectCount} ${where}; ${select} ${where} ${group};`;
+
+            const cities = await sequelize.query(query, {
+                replacements: { dateStart, dateEnd },
+                type: QueryTypes.SELECT
+            });
+
+            return res.status(200).send({ ...cities.shift(), rows: cities });
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async getOrderMastersStatistics(req: Request, res: Response): Promise<Response> {
+        try {
+            const { dateStart, dateEnd } = GetCityOrMasterbyDateSchema.parse(req.query);
+
+            const selectCount = `select count(*) from "Order"`;
+            const select1 = `select * from (select "Master".name, count("Order"."masterId") from "Order" join "Master" on "Master".id = "Order"."masterId"`;
+            const group1 = `group by "Master"."name"`;
+            const select2 = `union select 'Остальные', sum(count) from (select count("Order"."masterId") from "Order" join "Master" on "Master".id = "Order"."masterId"`;
+            const group2 = `group by "Master"."name" order by count desc offset 3) as Others(count) order by count desc limit 4) as Masters where count is not null`;
+
+            const filters = [];
+            if (dateStart) filters.push(`"Order".date >= :dateStart`);
+            if (dateEnd) filters.push(`"Order".date <= :dateEnd`);
+
+            let where = '';
+            if (filters.length > 0) {
+                where = `where ${filters.join(' and ')}`;
+            }
+            const query = `${selectCount} ${where}; ${select1} ${where} ${group1} ${select2} ${where} ${group2};`;
+
+            const masters = await sequelize.query(query, {
+                replacements: { dateStart, dateEnd },
+                type: QueryTypes.SELECT
+            });
+
+            return res.status(200).send({ ...masters.shift(), rows: masters });
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async getOrderDatesStatistics(req: Request, res: Response): Promise<Response> {
+        try {
+            let { dateStart, dateEnd, masters, cities } = GetOrderDatesStatisticsSchema.parse(req.query);
+
+            if (!dateStart || !dateEnd) {
+                const minAndMaxDates: { min: string; max: string; }[] = await sequelize.query(`select min(date), max(date) from "Order";`, {
+                    type: QueryTypes.SELECT
+                });
+                if(!dateStart) dateStart = minAndMaxDates[0].min;
+                if(!dateEnd) dateEnd = minAndMaxDates[0].max;
+            }
+
+            const select = `SELECT "Dates".date::date, count("Order".*)
+            FROM generate_series(:dateStart::timestamp, :dateEnd::timestamp, '1 day'::interval) "Dates"(date)
+            left outer join "Order" on "Dates".date = "Order".date::timestamp`;
+            const group = `group by "Dates".date`;
+            const order = `order by "Dates".date`;
+
+            const filters = [];
+            if (masters) filters.push(`"Order"."masterId" in (:masters)`);
+            if (cities) filters.push(`"Order"."cityId" in (:cities)`);
+
+            let filterQuery = '';
+            if (filters.length > 0) {
+                filterQuery = `and ${filters.join(' and ')}`;
+            }
+            const query = `${select} ${filterQuery} ${group} ${order};`;
+
+            const orders = await sequelize.query(query, {
+                replacements: { dateStart, dateEnd, masters, cities },
+                type: QueryTypes.SELECT
+            });
+
+            return res.status(200).send(orders);
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
     }

@@ -1,0 +1,27 @@
+.tabTitles {
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid #000;
+}
+.tabTitle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ccc;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 5px;
+    transition: .3s ease;
+    border-radius: 5px 5px 0 0;
+    margin: 5px 5px 0;
+    border: 1px solid #000;
+    border-bottom: 0;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+.tabTitle:hover {
+    background-color: #aaa;
+}
+.tabActive {
+    background-color: #bbb;
+}
