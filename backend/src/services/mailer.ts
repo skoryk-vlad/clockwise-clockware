@@ -157,7 +157,7 @@ export const sendResetedPasswordMail = async (email: string, password: string, n
     });
 };
 
-export const sendOrderCompletedMail = async (email: string, name: string, reviewToken: string): Promise<SentMessageInfo> => {
+export const sendOrderCompletedMail = async (email: string, name: string, reviewToken: string, receipt: string): Promise<SentMessageInfo> => {
     const reviewLink: string = `${process.env.BASE_LINK}/api/order-review/${reviewToken}`;
 
     const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
@@ -183,7 +183,11 @@ export const sendOrderCompletedMail = async (email: string, name: string, review
         from: `"Clockwise Clockware" <${process.env.MAIL_USER}>`,
         to: email,
         subject: 'Заказ успешно выполнен - Clockwise Clockware',
-        html: htmlMessage
+        html: htmlMessage,
+        attachments: [{
+            path: receipt,
+            filename: 'Чек.pdf'
+        }]
     });
 };
 

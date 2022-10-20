@@ -12,6 +12,7 @@ import { Request, Response } from 'express';
 import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../services/mailer';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 import { createOrderReport } from '../reports';
+import { createReceipt } from '../receipt';
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
@@ -253,16 +254,27 @@ export default class OrderController {
         try {
             const { id } = GetOrderSchema.parse(req.params);
 
-            const order = await Order.findByPk(id);
+            const order = await Order.findByPk(id, {
+                attributes: {
+                    include: [[sequelize.col('City.name'), 'city'],
+                    [sequelize.col('Client.name'), 'client'],
+                    [sequelize.col('Master.name'), 'master'],
+                    [sequelize.col('Client.User.email'), 'clientEmail'],
+                    [sequelize.col('Master.User.email'), 'masterEmail'],]
+                },
+                include: [{ model: City, attributes: [] },
+                { model: Client, attributes: [], include: [{ model: User, attributes: [] }] },
+                { model: Master, attributes: [], include: [{ model: User, attributes: [] }] }]
+            });
             if (!order) return res.status(404).json('No such order');
 
             const { status } = ChangeStatusSchema.parse(req.body);
             const oldStatus = order.getDataValue('status');
             await order.update({ status });
 
-            const client = await Client.findByPk(order.getDataValue('clientId'));
-            const user = await User.findByPk(client.getDataValue('userId'));
-            if (oldStatus !== status && status === ORDER_STATUSES.COMPLETED) await sendOrderCompletedMail(user.getDataValue('email'), client.getDataValue('name'), order.getDataValue('reviewToken'));
+            const receipt = await createReceipt(order.get());
+
+            if (oldStatus !== status && status === ORDER_STATUSES.COMPLETED) await sendOrderCompletedMail(order.get()['clientEmail'], order.get()['client'], order.getDataValue('reviewToken'), receipt);
 
             return res.status(200).json(order);
         } catch (error) {
@@ -442,6 +454,32 @@ export default class OrderController {
             });
 
             return res.status(200).send(archiveUrl);
+        } catch (error) {
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async createReceipt(req: Request, res: Response): Promise<Response> {
+        try {
+            const { id } = GetOrderSchema.parse(req.params);
+
+            const order = await Order.findByPk(id, {
+                attributes: {
+                    include: [[sequelize.col('City.name'), 'city'],
+                    [sequelize.col('Client.name'), 'client'],
+                    [sequelize.col('Master.name'), 'master'],
+                    [sequelize.col('Client.User.email'), 'clientEmail'],
+                    [sequelize.col('Master.User.email'), 'masterEmail'],]
+                },
+                include: [{ model: City, attributes: [] },
+                { model: Client, attributes: [], include: [{ model: User, attributes: [] }] },
+                { model: Master, attributes: [], include: [{ model: User, attributes: [] }] }]
+            });
+            if (!order) return res.status(404).json('No such order');
+
+            const receipt = await createReceipt(order.get());
+
+            return res.status(200).send(receipt);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
