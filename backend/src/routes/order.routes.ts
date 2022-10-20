@@ -23,5 +23,6 @@ router.get('/order-review/:reviewToken', orderController.redirectToReview);
 router.post('/add-order-review/:reviewToken', orderController.addReview);
 router.get('/order-report', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.createReport);
 router.get('/order-images/:id', isJwtNotExpired, hasRoles([ROLES.MASTER]), orderController.getOrderImages);
+router.get('/order-receipt/:id', isJwtNotExpired, hasRoles([ROLES.MASTER]), orderController.createReceipt);
 
 export default router;

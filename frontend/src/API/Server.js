@@ -33,6 +33,13 @@ const createSearchParams = (attributes) => {
     return new URLSearchParams(attributes);
 };
 
+const downloadFile = (href, filename) => {
+    const link = document.createElement('a');
+    link.href = href;
+    link.download = filename;
+    link.click();
+};
+
 export class CityService {
     static async getCities(attributes = {}) {
         const { data } = await api.get(`/city?${createSearchParams(attributes)}`);
@@ -157,21 +164,22 @@ export class OrderService {
         });
 
         const href = URL.createObjectURL(data);
-        const link = document.createElement('a');
-        link.href = href;
-        link.download = 'Заказы.xlsx';
-        link.click();
+        downloadFile(href, 'Заказы.xlsx');
         URL.revokeObjectURL(href);
 
         return data;
     }
     static async getOrderImages(id) {
         const { data } = await api.get(`/order-images/${id}`);
-        
-        const link = document.createElement('a');
-        link.href = data;
-        link.download = 'Фото.zip';
-        link.click();
+
+        downloadFile(data, 'Фото.zip');
+
+        return data;
+    }
+    static async createReceipt(id) {
+        const { data } = await api.get(`/order-receipt/${id}`);
+
+        downloadFile(data, 'Чек.pdf');
 
         return data;
     }

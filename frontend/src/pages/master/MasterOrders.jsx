@@ -21,7 +21,8 @@ const tableHeaders = [
     { value: 'price', title: 'Цена', sortable: true },
     { value: 'status', title: 'Статус', sortable: true },
     { value: 'change', title: 'Статус', sortable: false },
-    { value: 'images', title: 'Фото', sortable: false }
+    { value: 'images', title: 'Фото', sortable: false },
+    { value: 'receipt', title: 'Чек', sortable: false }
 ];
 const defaultPagination = {
     page: 1,
@@ -83,6 +84,13 @@ export const MasterOrders = () => {
             notify(NOTIFY_TYPES.ERROR);
         }
     }
+    const downloadReceipt = async (id) => {
+        try {
+            await OrderService.createReceipt(id);
+        } catch (error) {
+            notify(NOTIFY_TYPES.ERROR);
+        }
+    }
 
     return (
         <div className='admin-container'>
@@ -118,6 +126,8 @@ export const MasterOrders = () => {
                             </td>
                             <td className='tableLink' onClick={order.imagesLinks && order.imagesLinks.length ? () => downloadImages(order.id) : () => { }}>
                                 {order.imagesLinks && order.imagesLinks.length ? <span>Скачать</span> : '-'}</td>
+                            <td className='tableLink' onClick={order.status === ORDER_STATUSES.COMPLETED ? () => downloadReceipt(order.id) : () => { }}>
+                                {order.status === ORDER_STATUSES.COMPLETED ? <span>Скачать</span> : '-'}</td>
                         </tr>
                         )}
                     </tbody>
