@@ -1,4 +1,4 @@
-import { OrderAttributes, WatchSizesTranslate } from './models/order.model';
+import { OrderAttributes, WatchSizesTranslate } from '../models/order.model';
 import { generateQR } from './qrcode';
 import fs from 'fs';
 import jsPDF from 'jspdf';

@@ -11,8 +11,8 @@ import { Order, ORDER_STATUSES, WatchSizes, OrderAttributes, OrderCreationAttrib
 import { Request, Response } from 'express';
 import { sendConfirmationOrderMail, sendOrderCompletedMail } from '../services/mailer';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
-import { createOrderReport } from '../reports';
-import { createReceipt } from '../receipt';
+import { createOrderReport } from '../services/reports';
+import { createReceipt } from '../services/receipt';
 
 export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
@@ -274,7 +274,7 @@ export default class OrderController {
 
             const receipt = await createReceipt(order.get());
 
-            if (oldStatus !== status && status === ORDER_STATUSES.COMPLETED) await sendOrderCompletedMail(order.get()['clientEmail'], order.get()['client'], order.getDataValue('reviewToken'), receipt);
+            if (oldStatus !== status && status === ORDER_STATUSES.COMPLETED) await sendOrderCompletedMail(order.get(), receipt);
 
             return res.status(200).json(order);
         } catch (error) {

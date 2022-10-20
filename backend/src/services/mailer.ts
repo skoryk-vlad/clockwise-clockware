@@ -157,8 +157,8 @@ export const sendResetedPasswordMail = async (email: string, password: string, n
     });
 };
 
-export const sendOrderCompletedMail = async (email: string, name: string, reviewToken: string, receipt: string): Promise<SentMessageInfo> => {
-    const reviewLink: string = `${process.env.BASE_LINK}/api/order-review/${reviewToken}`;
+export const sendOrderCompletedMail = async (order: OrderAttributes, receipt: string): Promise<SentMessageInfo> => {
+    const reviewLink: string = `${process.env.BASE_LINK}/api/order-review/${order.reviewToken}`;
 
     const htmlMessage: string = `<div style="background-color: #f2f2f2; padding: 10px; width: 100%; color: #000">
     <div style="max-width: 600px; background-color: #fff; margin: auto; border: 1px solid lightgray; border-radius: 2px;">
@@ -169,7 +169,7 @@ export const sendOrderCompletedMail = async (email: string, name: string, review
             <a href="${process.env.CLIENT_LINK}" style="margin: 0px 0px 0px 10px; color: #000; cursor: pointer; text-decoration: none; font-size: 20px; line-height: 20px;">Clockwise <br /> Clockware</a>
         </div>
         <div style="padding: 10px;">
-            <div style="font-weight: bold; text-align: center; font-size: 22px; margin-top: 10px;">Здравствуйте, ${name}!</div>
+            <div style="font-weight: bold; text-align: center; font-size: 22px; margin-top: 10px;">Здравствуйте, ${order['client']}!</div>
             <div style="font-size: 17px; margin-top: 15px;">Поздравляем! Мастер отметил заказ выполненным. Теперь Вы можете оценить его выполнение и оставить отзыв:</div>
             <a href="${reviewLink}" style="padding: 10px 20px; color: #fff; font-size: 20px; background-color: #6F2CFF; text-decoration: none;
             border: 1px solid #6F2CFF; cursor: pointer; border-radius: 20px; display: inline-block; margin-top: 10px; ">
@@ -181,12 +181,12 @@ export const sendOrderCompletedMail = async (email: string, name: string, review
 
     return await transporter.sendMail({
         from: `"Clockwise Clockware" <${process.env.MAIL_USER}>`,
-        to: email,
+        to: order['clientEmail'],
         subject: 'Заказ успешно выполнен - Clockwise Clockware',
         html: htmlMessage,
         attachments: [{
             path: receipt,
-            filename: 'Чек.pdf'
+            filename: `Чек о выполнении заказа №${order.id}.pdf`
         }]
     });
 };
