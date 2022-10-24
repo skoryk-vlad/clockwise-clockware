@@ -451,10 +451,6 @@ export default class OrderController {
         try {
             const { dateStart, dateEnd } = GetCityOrMasterbyDateSchema.parse(req.query);
 
-            const selectCount = `select count(*) from "Order"`;
-            const select = `select "City".name, count("Order"."cityId") from "Order" join "City" on "City".id = "Order"."cityId"`;
-            const group = `group by "City"."name"`;
-
             const filters = [];
             if (dateStart) filters.push(`"Order".date >= :dateStart`);
             if (dateEnd) filters.push(`"Order".date <= :dateEnd`);
@@ -463,7 +459,10 @@ export default class OrderController {
             if (filters.length > 0) {
                 where = `where ${filters.join(' and ')}`;
             }
-            const query = `${selectCount} ${where}; ${select} ${where} ${group};`;
+            const query = `select count(*) from "Order" ${where};
+            select "City".name, count("Order"."cityId") from "Order"
+            join "City" on "City".id = "Order"."cityId" ${where}
+            group by "City"."name";`;
 
             const cities = await sequelize.query(query, {
                 replacements: { dateStart, dateEnd },
@@ -480,12 +479,6 @@ export default class OrderController {
         try {
             const { dateStart, dateEnd } = GetCityOrMasterbyDateSchema.parse(req.query);
 
-            const selectCount = `select count(*) from "Order"`;
-            const select1 = `select * from (select "Master".name, count("Order"."masterId") from "Order" join "Master" on "Master".id = "Order"."masterId"`;
-            const group1 = `group by "Master"."name"`;
-            const select2 = `union select 'Остальные', sum(count) from (select count("Order"."masterId") from "Order" join "Master" on "Master".id = "Order"."masterId"`;
-            const group2 = `group by "Master"."name" order by count desc offset 3) as Others(count) order by count desc limit 4) as Masters where count is not null`;
-
             const filters = [];
             if (dateStart) filters.push(`"Order".date >= :dateStart`);
             if (dateEnd) filters.push(`"Order".date <= :dateEnd`);
@@ -494,7 +487,14 @@ export default class OrderController {
             if (filters.length > 0) {
                 where = `where ${filters.join(' and ')}`;
             }
-            const query = `${selectCount} ${where}; ${select1} ${where} ${group1} ${select2} ${where} ${group2};`;
+            const query = `select count(*) from "Order" ${where};
+            select * from (select "Master".name, count("Order"."masterId") from "Order"
+            join "Master" on "Master".id = "Order"."masterId" ${where}
+            group by "Master"."name"
+            union select 'Остальные', sum(count) from (select count("Order"."masterId") from "Order"
+            join "Master" on "Master".id = "Order"."masterId" ${where}
+            group by "Master"."name" order by count desc offset 3) as Others(count)
+            order by count desc limit 4) as Masters where count is not null;`;
 
             const masters = await sequelize.query(query, {
                 replacements: { dateStart, dateEnd },
@@ -519,21 +519,18 @@ export default class OrderController {
                 if(!dateEnd) dateEnd = minAndMaxDates[0].max;
             }
 
-            const select = `SELECT "Dates".date::date, count("Order".*)
-            FROM generate_series(:dateStart::timestamp, :dateEnd::timestamp, '1 day'::interval) "Dates"(date)
-            left outer join "Order" on "Dates".date = "Order".date::timestamp`;
-            const group = `group by "Dates".date`;
-            const order = `order by "Dates".date`;
-
             const filters = [];
             if (masters) filters.push(`"Order"."masterId" in (:masters)`);
             if (cities) filters.push(`"Order"."cityId" in (:cities)`);
 
-            let filterQuery = '';
+            let where = '';
             if (filters.length > 0) {
-                filterQuery = `and ${filters.join(' and ')}`;
+                where = `and ${filters.join(' and ')}`;
             }
-            const query = `${select} ${filterQuery} ${group} ${order};`;
+            const query = `select "Dates".date::date, count("Order".*)
+            from generate_series(:dateStart::timestamp, :dateEnd::timestamp, '1 day'::interval) "Dates"(date)
+            left outer join "Order" on "Dates".date = "Order".date::timestamp ${where}
+            group by "Dates".date order by "Dates".date;`;
 
             const orders = await sequelize.query(query, {
                 replacements: { dateStart, dateEnd, masters, cities },
