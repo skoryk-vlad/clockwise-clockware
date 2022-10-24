@@ -1,4 +1,4 @@
-import { WatchSizesTranslate, OrderStatusesTranslate, OrderAttributes, OrderReportAttributes, OrderReportType, OrderTableColumn, WATCH_SIZES, ORDER_STATUSES } from './models/order.model';
+import { WatchSizesTranslate, OrderStatusesTranslate, OrderAttributes, OrderReportAttributes, OrderReportType, OrderTableColumn, WATCH_SIZES, ORDER_STATUSES } from '../models/order.model';
 import XLSX from 'xlsx';
 
 const tableColumns: OrderTableColumn[] = [

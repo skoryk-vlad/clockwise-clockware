@@ -1,4 +1,5 @@
 import { MASTER_STATISTICS_FIELDS } from './../types';
+import { formatISO } from 'date-fns';
 import { MASTER_STATUSES, Master } from './../models/master.model';
 import { WATCH_SIZES, Order } from './../models/order.model';
 import { z } from 'zod';
@@ -72,7 +73,8 @@ export const GetFreeMastersSchema = z.object({
         (a) => parseInt(z.string().parse(a), 10),
         z.number().int().min(10).max(18)
     ),
-    date: z.string().regex(/([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))/),
+    date: z.preprocess(value => (typeof value === "string" || value instanceof Date) && new Date(value),
+        z.date()).transform(date => formatISO(date, { representation: 'date' }))
 });
 export const GetMastersStatisticsSchema = z.object({
     limit: z.preprocess(

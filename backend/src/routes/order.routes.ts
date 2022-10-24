@@ -26,5 +26,6 @@ router.get('/order-images/:id', isJwtNotExpired, hasRoles([ROLES.MASTER]), order
 router.get('/statistics/order-city', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getOrderCityStatistics);
 router.get('/statistics/order-masters', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getOrderMastersStatistics);
 router.get('/statistics/order-dates', isJwtNotExpired, hasRoles([ROLES.ADMIN]), orderController.getOrderDatesStatistics);
+router.get('/order-receipt/:id', isJwtNotExpired, hasRoles([ROLES.MASTER]), orderController.createReceipt);
 
 export default router;
