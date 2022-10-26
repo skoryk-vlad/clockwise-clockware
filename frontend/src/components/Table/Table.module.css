@@ -107,6 +107,10 @@
     border-collapse: collapse;
 }
 
+.table th {
+    font-family: sans-serif;
+}
+
 .table th,
 .table td {
     padding: 5px 10px;
@@ -119,7 +123,7 @@
     border-right: 1px solid #000;
 }
 
-.table tr:nth-child(even) {
+.table tbody tr:nth-child(even) {
     background-color: #eee;
 }
 
@@ -129,4 +133,8 @@
 
 .table thead {
     background-color: #aaa;
+}
+
+.table th[colSpan] {
+    border-bottom: 1px solid #000;
 }

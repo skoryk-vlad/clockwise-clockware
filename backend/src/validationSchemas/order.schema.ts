@@ -1,6 +1,7 @@
 import { formatISO } from 'date-fns';
 import { WATCH_SIZES, ORDER_STATUSES, Order } from './../models/order.model';
 import { z } from 'zod';
+import { isAfter } from 'date-fns';
 
 export const AddOrderSchema = z.object({
     name: z.string().trim().min(3).max(255),
@@ -77,3 +78,21 @@ export const addReviewSchema = z.object({
     review: z.string().max(1000).optional()
 });
 export const addImagesSchema = z.array(z.any().refine(file => file.mimetype.includes('image/') && file.size <= 1048576, 'The file must be an image and less than 1 MB in size')).optional();
+export const GetCityOrMasterbyDateSchema = z.object({
+    dateStart: z.preprocess(value => (typeof value === "string" || value instanceof Date) && new Date(value),
+        z.date()).transform(date => formatISO(date, { representation: 'date' })).optional(),
+    dateEnd: z.preprocess(value => (typeof value === "string" || value instanceof Date) && new Date(value),
+        z.date()).transform(date => formatISO(date, { representation: 'date' })).optional(),
+}).refine(value => !value.dateStart || !value.dateEnd || !isAfter(new Date(value.dateStart), new Date(value.dateEnd)), {
+    path: ['dateStart'], message: 'End date must be after start date'
+});
+export const GetOrderDatesStatisticsSchema = z.object({
+    dateStart: z.preprocess(value => (typeof value === "string" || value instanceof Date) && new Date(value),
+        z.date()).transform(date => formatISO(date, { representation: 'date' })).optional(),
+    dateEnd: z.preprocess(value => (typeof value === "string" || value instanceof Date) && new Date(value),
+        z.date()).transform(date => formatISO(date, { representation: 'date' })).optional(),
+    masters: z.preprocess(value => String(value).split(',').map(id => +id), z.array(z.number().int().positive())).optional(),
+    cities: z.preprocess(value => String(value).split(',').map(id => +id), z.array(z.number().int().positive())).optional(),
+}).refine(value => !value.dateStart || !value.dateEnd || !isAfter(new Date(value.dateStart), new Date(value.dateEnd)), {
+    path: ['dateStart'], message: 'End date must be after start date'
+});

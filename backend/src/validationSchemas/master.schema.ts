@@ -1,3 +1,4 @@
+import { MASTER_STATISTICS_FIELDS } from './../types';
 import { formatISO } from 'date-fns';
 import { MASTER_STATUSES, Master } from './../models/master.model';
 import { WATCH_SIZES, Order } from './../models/order.model';
@@ -74,4 +75,16 @@ export const GetFreeMastersSchema = z.object({
     ),
     date: z.preprocess(value => (typeof value === "string" || value instanceof Date) && new Date(value),
         z.date()).transform(date => formatISO(date, { representation: 'date' }))
+});
+export const GetMastersStatisticsSchema = z.object({
+    limit: z.preprocess(
+        (a) => parseInt(z.string().parse(a), 10),
+        z.number().int().positive()
+    ).optional(),
+    page: z.preprocess(
+        (a) => parseInt(z.string().parse(a), 10),
+        z.number().int().positive()
+    ).optional(),
+    sortedField: z.nativeEnum(MASTER_STATISTICS_FIELDS).optional(),
+    isDirectedASC: z.enum(['true', 'false']).transform(isDirectedASC => isDirectedASC === 'true').optional(),
 });
