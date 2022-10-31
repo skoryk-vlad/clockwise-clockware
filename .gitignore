@@ -7,3 +7,12 @@
 /frontend/build
 /frontend/.env.production
 /frontend/.env.development
+
+/landing-vue/node_modules
+/landing-vue/.nuxt
+/landing-vue/*.log*
+/landing-vue/.nitro
+/landing-vue/.cache
+/landing-vue/.output
+/landing-vue/.env
+/landing-vue/dist

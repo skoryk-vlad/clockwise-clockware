@@ -1,0 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=Catamaran:wght@400;900&family=Open+Sans:wght@300;400;600;700&display=swap");
+
+$OpenSans: "Open Sans", sans-serif;
+$Catamaran: Catamaran, sans-serif;
+$black: #1e1e1e;
+$charcoal: #1a1d1a;
+$white: #efefef;
+$watermelon: #ea5256;
+$pale-orange: #f79369;
+$sand-yellow: #f9d367;
+$red: #f40000;
+$egg-shell: #ebebd3;
+$brownish-orange-50: #d05826;
+$twilight-blue: #083d77;
+$twilight-blue-hover: #073464;
+
+@mixin Title-Style($font-size, $letter-spacing) {
+  font-family: Catamaran;
+  font-size: $font-size;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: $letter-spacing;
+  color: $black;
+  text-transform: uppercase;
+  font-style: normal;
+  font-stretch: normal;
+}
+@mixin Text-Style($font-size, $letter-spacing) {
+  font-size: $font-size;
+  letter-spacing: $letter-spacing;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+}
