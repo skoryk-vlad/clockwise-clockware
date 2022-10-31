@@ -19,12 +19,15 @@
   display: flex;
   background-color: #eee;
   height: 100vh;
+  overflow: auto;
 }
 
 .admin-body {
   position: relative;
   width: 100%;
+  overflow: auto;
   margin: 0px 0px 0px 200px;
+  min-width: fit-content;
 }
 
 .admin-body__title {
