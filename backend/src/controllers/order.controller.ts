@@ -449,7 +449,7 @@ export default class OrderController {
             const archiveUrl = cloudinary.utils.download_zip_url({
                 public_ids: publicIds,
                 flatten_folders: true,
-                target_public_id: 'Фото',
+                target_public_id: `Фото к заказу №${id}`,
                 use_original_filename: true
             });
 
@@ -575,7 +575,7 @@ export default class OrderController {
 
             const receipt = await createReceipt(order.get());
 
-            return res.status(200).send(receipt);
+            return res.status(200).send({ receipt, id });
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);

@@ -33,7 +33,7 @@ const createSearchParams = (attributes) => {
     return new URLSearchParams(attributes);
 };
 
-const downloadFile = (href, filename) => {
+const downloadFile = (href, filename = '') => {
     const link = document.createElement('a');
     link.href = href;
     link.download = filename;
@@ -176,14 +176,14 @@ export class OrderService {
     static async getOrderImages(id) {
         const { data } = await api.get(`/order-images/${id}`);
 
-        downloadFile(data, 'Фото.zip');
+        downloadFile(data);
 
         return data;
     }
     static async createReceipt(id) {
         const { data } = await api.get(`/order-receipt/${id}`);
 
-        downloadFile(data, 'Чек.pdf');
+        downloadFile(data.receipt, `Чек о выполнении заказа №${data.id}.pdf`);
 
         return data;
     }
