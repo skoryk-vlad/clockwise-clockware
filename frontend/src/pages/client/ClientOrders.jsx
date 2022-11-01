@@ -205,14 +205,15 @@ export const ClientOrders = () => {
                             <td>{order.endTime}</td>
                             <td>{order.price}</td>
                             <td>{ORDER_STATUSES_TRANSLATE[order.status]}</td>
-                            <td className='tableLink' onClick={!order.rating ? () => {
-                                if (orders.find(orderToFind => orderToFind.id === order.id).status === 'completed') {
-                                    setOrderId(order.id); setIsSetRatingOpened(true); setIsModalOpened(true)
-                                } else {
-                                    notify(NOTIFY_TYPES.ERROR, 'Заказ еще не выполнен!');
-                                }
-                            } : () => { }}>{!order.rating ? <span>Выставить</span> : order.rating}</td>
-                            <td className='tableLink' onClick={order.status === ORDER_STATUSES.AWAITING_PAYMENT ? (() => createPayment(order.price, WATCH_SIZES_TRANSLATE[order.watchSize], order.id)) : () => { }}>{order.status === ORDER_STATUSES.AWAITING_PAYMENT ? <span>Оплатить</span> : `\u2714`}</td>
+                            <td className='tableLink' onClick={!order.rating && order.status === ORDER_STATUSES.COMPLETED
+                                ? () => { setOrderId(order.id); setIsSetRatingOpened(true); setIsModalOpened(true) }
+                                : () => { }}>{order.status === ORDER_STATUSES.CANCELED ? '-'
+                                    : order.status === ORDER_STATUSES.COMPLETED ? !order.rating
+                                        ? <span>Выставить</span> : order.rating : '-'}</td>
+                            <td className='tableLink' onClick={order.status === ORDER_STATUSES.AWAITING_PAYMENT
+                                ? (() => createPayment(order.price, WATCH_SIZES_TRANSLATE[order.watchSize], order.id))
+                                : () => { }}>{order.status !== ORDER_STATUSES.AWAITING_PAYMENT
+                                    ? order.status === ORDER_STATUSES.CANCELED ? '-' : `\u2714` : <span>Оплатить</span>}</td>
                         </tr>
                         )}
                     </tbody>

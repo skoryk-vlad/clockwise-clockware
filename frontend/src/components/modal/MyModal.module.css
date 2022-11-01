@@ -7,6 +7,8 @@
     display: none;
     background: rgba(0, 0, 0, 0.5);
     z-index: 100;
+    overflow: auto;
+    padding: 10px;
 }
 
 .myModalContent {

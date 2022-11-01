@@ -7,19 +7,21 @@ import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 
 const SetRatingSchema = z.object({
-    rating: z.number({ invalid_type_error: 'Рейтинг должен быть числом' }).int().min(1, 'Рейтинг должен находиться в диапазоне 1-5').max(5, 'Рейтинг должен находиться в диапазоне 1-5')
+    rating: z.preprocess(val => +val,
+        z.number({ invalid_type_error: 'Рейтинг должен быть числом' })
+        .int().min(1, 'Рейтинг должен находиться в диапазоне 1-5').max(5, 'Рейтинг должен находиться в диапазоне 1-5'))
 });
 
 export const SetRatingForm = ({ onClick }) => {
-    const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
+    const { control, handleSubmit, formState: { errors, isSubmitted, isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
         defaultValues: {
-            rating: 0
+            rating: ''
         },
         resolver: zodResolver(SetRatingSchema)
     });
-    const onSubmit = () => onClick(getValues());
+    const onSubmit = (values) => onClick(values);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
@@ -39,7 +41,7 @@ export const SetRatingForm = ({ onClick }) => {
                     }) => (
                         <MyInput
                             name={name} type="number"
-                            onChange={event => onChange(+event.target.value)}
+                            onChange={onChange}
                             value={value}
                             error={error}
                             placeholder="Рейтинг..."

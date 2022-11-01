@@ -16,7 +16,9 @@ const OrderSchema = z.object({
     date: z.preprocess(value => ((typeof value === "string" || value instanceof Date) && value !== '') && new Date(value),
         z.date({ invalid_type_error: 'Требуется выбрать дату' })),
     time: z.number({ invalid_type_error: 'Требуется выбрать время' }).int().min(10).max(18),
-    rating: z.number({ invalid_type_error: 'Рейтинг должен быть числом' }).int().min(0, 'Рейтинг должен находиться в диапазоне 0-5').max(5, 'Рейтинг должен находиться в диапазоне 0-5'),
+    rating: z.preprocess(val => +val,
+        z.number({ invalid_type_error: 'Рейтинг должен быть числом' })
+            .int().min(0, 'Рейтинг должен находиться в диапазоне 0-5').max(5, 'Рейтинг должен находиться в диапазоне 0-5')),
     clientId: z.number({ invalid_type_error: 'Требуется выбрать клиента' }).int().positive(),
     masterId: z.number({ invalid_type_error: 'Требуется выбрать мастера' }).int().positive(),
     cityId: z.number({ invalid_type_error: 'Требуется выбрать город' }).int().positive(),
@@ -43,7 +45,7 @@ export const OrderForm = ({ order, onClick, btnTitle }) => {
         defaultValues: order,
         resolver: zodResolver(OrderSchema)
     });
-    const onSubmit = () => onClick(getValues());
+    const onSubmit = () => onClick({ ...getValues(), rating: +getValues().rating });
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
@@ -222,7 +224,7 @@ export const OrderForm = ({ order, onClick, btnTitle }) => {
                     }) => (
                         <MyInput
                             name={name} type="number"
-                            onChange={event => onChange(+event.target.value)}
+                            onChange={onChange}
                             value={value}
                             error={error}
                             placeholder="Рейтинг..."
