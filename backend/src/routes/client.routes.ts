@@ -7,6 +7,7 @@ const router: Router = Router();
 const clientController: ClientController = new ClientController();
 
 router.post('/client/user', clientController.addClient);
+router.post('/client/service', clientController.addClientByService);
 router.post('/client/admin', isJwtNotExpired, hasRoles([ROLES.ADMIN]), clientController.addClientByAdmin);
 router.get('/client', isJwtNotExpired, hasRoles([ROLES.ADMIN]), clientController.getClients);
 router.get('/client/:id', clientController.getClientById);

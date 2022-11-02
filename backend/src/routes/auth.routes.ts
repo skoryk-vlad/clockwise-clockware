@@ -32,5 +32,6 @@ export const hasRoles = (roles: ROLES[]) => {
 };
 
 router.post('/auth', authController.login);
+router.post('/auth/service', authController.loginByService);
 
 export default router;
