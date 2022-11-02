@@ -73,7 +73,7 @@
       </div>
       <different-section
         class="benefits__different"
-        @setIsModalOpened="this.$emit('setIsModalOpened', $event)"
+        @set-is-modal-opened="this.$emit('setIsModalOpened', $event)"
       />
     </div>
   </section>
@@ -134,9 +134,11 @@ export default {
   height: 608px;
   z-index: 1;
 }
-.image-benefits img {
-  width: 100%;
-  height: 100%;
+.image-benefits {
+  img {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .list {
@@ -226,8 +228,10 @@ export default {
     width: 960px;
     transform: rotate(-270deg);
   }
-  .benefits__image img {
-    object-fit: contain;
+  .benefits__image {
+    img {
+      object-fit: contain;
+    }
   }
   .list {
     width: 100%;

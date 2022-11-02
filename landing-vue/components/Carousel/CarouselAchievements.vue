@@ -5,8 +5,8 @@
         <div class="carousel__buttons buttons">
           <carousel-button
             @click="prev"
-            :direction="'left'"
-            :isDisabled="currentSlide === 0"
+            :direction="CarouselButtonDirections.LEFT"
+            :is-disabled="currentSlide === 0"
           >
           </carousel-button>
           <div class="carousel__slide-points slide-points">
@@ -20,28 +20,19 @@
           </div>
           <carousel-button
             @click="next"
-            :direction="'right'"
-            :isDisabled="currentSlide === slides.length - 1"
+            :direction="CarouselButtonDirections.RIGHT"
+            :is-disabled="currentSlide === slides.length - 1"
           >
           </carousel-button>
         </div>
       </div>
     </div>
 
-    <Carousel :items-to-show="1" v-model="currentSlide">
-      <Slide v-for="slide in slides" :key="slide">
-        <achievements-item v-if="slide">
-          <div class="achievements-item__column">
-            <div class="achievements-item__image">
-              <img :src="slide.imageSrc" :alt="slide.imageTitle" />
-            </div>
-            <div class="achievements-item__image-title">
-              {{ slide.imageTitle }}
-            </div>
-          </div>
-        </achievements-item>
-      </Slide>
-    </Carousel>
+    <carousel :items-to-show="1" v-model="currentSlide">
+      <slide v-for="slide in slides" :key="slide">
+        <achievements-item v-if="slide" :slide="slide" />
+      </slide>
+    </carousel>
   </div>
 </template>
   
@@ -49,7 +40,7 @@
 import { Carousel, Navigation, Slide, Pagination } from "vue3-carousel";
 import AchievementsItem from "./AchievementsItem.vue";
 
-import CarouselButton from "./CarouselButton.vue";
+import CarouselButton, { CarouselButtonDirections } from "./CarouselButton.vue";
 import IssueItem from "./IssueItem.vue";
 
 export default {
@@ -79,6 +70,7 @@ export default {
           imageTitle: "Double truck day load capacity increase",
         },
       ],
+      CarouselButtonDirections,
     };
   },
   methods: {
@@ -104,22 +96,6 @@ export default {
 .carousel__slide-points {
   margin: 0px 60px;
 }
-.carousel__track {
-  display: flex;
-  position: relative;
-}
-.carousel__sr-only {
-  display: none;
-}
-.carousel__slide {
-  scroll-snap-stop: auto;
-  flex-shrink: 0;
-  margin: 0;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
 .slide-points {
   display: flex;
   align-items: center;
@@ -131,15 +107,16 @@ export default {
   border-radius: 50%;
   opacity: 0.25;
   transition: 0.3s ease;
-}
-.slide-points__item:not(:last-child) {
-  margin: 0px 16px 0px 0px;
+
+  &:not(:last-child) {
+    margin: 0px 16px 0px 0px;
+  }
+  &:hover {
+    background: #000000;
+  }
 }
 .slide-points__item_active {
   opacity: 1;
-}
-.slide-points__item:hover {
-  background: #000000;
 }
 
 .buttons {

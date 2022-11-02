@@ -1,11 +1,11 @@
 <template>
   <main id="main">
-    <top-section @setIsModalOpened="this.$emit('setIsModalOpened', $event)" />
+    <top-section @set-is-modal-opened="this.$emit('setIsModalOpened', $event)" />
     <issues-section />
     <expenses-section />
-    <benefits-section @setIsModalOpened="this.$emit('setIsModalOpened', $event)" />
+    <benefits-section @set-is-modal-opened="this.$emit('setIsModalOpened', $event)" />
     <advantages-section />
-    <achievements-section @setIsModalOpened="this.$emit('setIsModalOpened', $event)" />
+    <achievements-section @set-is-modal-opened="this.$emit('setIsModalOpened', $event)" />
   </main>
 </template>
 

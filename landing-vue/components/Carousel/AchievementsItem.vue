@@ -1,14 +1,31 @@
 <template>
   <div class="achievements-item">
-    <slot></slot>
+    <div class="achievements-item__column">
+      <div class="achievements-item__image">
+        <img :src="slide.imageSrc" :alt="slide.imageTitle" />
+      </div>
+      <div class="achievements-item__image-title">
+        {{ slide.imageTitle }}
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-export default {};
+export default {
+  props: {
+    slide: {
+      type: Object,
+      default: {
+        title: "Title",
+        imageSrc: "imageSrc",
+      },
+    },
+  },
+};
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .achievements-item {
   width: 915px;
   max-height: 520px;
@@ -19,10 +36,11 @@ export default {};
   margin: 0px 0px 1px 0px;
   display: flex;
   justify-content: center;
-}
-.achievements-item__image img {
-  width: 100%;
-  object-fit: contain;
+
+  img {
+    width: 100%;
+    object-fit: contain;
+  }
 }
 .achievements-item__image-title {
   @include Title-Style(15px, -0.38px);

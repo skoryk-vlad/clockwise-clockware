@@ -1,10 +1,10 @@
 <template>
   <div>
-    <main-block @setIsModalOpened="setIsModalOpened" />
+    <main-block @set-is-modal-opened="setIsModalOpened" />
     <modal v-model:show="isModalOpened"
-      ><popup-form @setIsModalOpened="setIsModalOpened"
+      ><popup-form @set-is-modal-opened="setIsModalOpened"
     /></modal>
-    <left-block @scrollToNext="scrollToNext" />
+    <left-block @scroll-to-next="scrollToNext" />
   </div>
 </template>
 

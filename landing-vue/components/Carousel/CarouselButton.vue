@@ -19,11 +19,15 @@
 </template>
 
 <script>
+export const CarouselButtonDirections = {
+  LEFT: "left",
+  RIGHT: "right",
+};
 export default {
   props: {
     direction: {
       type: String,
-      default: "left",
+      default: CarouselButtonDirections.LEFT,
     },
     isDisabled: {
       type: Boolean,
@@ -43,37 +47,39 @@ export default {
   z-index: 3;
   height: 70px;
   width: 70px;
-}
-.carousel-button img {
-  width: 100%;
-}
-.carousel-button::before {
-  content: "";
-  position: absolute;
-  bottom: -0.5px;
-  left: 50%;
-  transform: translateX(-50%);
-  filter: blur(5px);
-  background-color: $brownish-orange-50;
-  width: 60px;
-  height: 60px;
-  transition: opacity 0.3s ease;
-  z-index: -1;
-}
-.carousel-button:hover {
-  opacity: 0.8;
-}
-.carousel-button:hover::before {
-  opacity: 0.25;
+
+  img {
+    width: 100%;
+  }
+  &::before {
+    content: "";
+    position: absolute;
+    bottom: -0.5px;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: blur(5px);
+    background-color: $brownish-orange-50;
+    width: 60px;
+    height: 60px;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+  &:hover {
+    opacity: 0.8;
+    &::before {
+      opacity: 0.25;
+    }
+  }
 }
 .carousel-button_disabled {
   opacity: 0.25;
   cursor: default;
-}
-.carousel-button_disabled::before {
-  opacity: 0;
-}
-.carousel-button_disabled:hover {
-  opacity: 0.25;
+
+  &::before {
+    opacity: 0;
+  }
+  &:hover {
+    opacity: 0.25;
+  }
 }
 </style>

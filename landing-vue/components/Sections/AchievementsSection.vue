@@ -112,8 +112,10 @@ export default {
   transform: rotate(-180deg);
   overflow: hidden;
 }
-.image-achievements img {
-  height: 100%;
+.image-achievements {
+  img {
+    height: 100%;
+  }
 }
 .info {
   display: flex;
@@ -129,8 +131,10 @@ export default {
   @include Text-Style(17px, -0.43px);
   margin: 0px 20px 0px 0px;
 }
-.info__text > p {
-  margin: 0px 0px 10px 0px;
+.info__text {
+  > p {
+    margin: 0px 0px 10px 0px;
+  }
 }
 .discuss {
   display: flex;

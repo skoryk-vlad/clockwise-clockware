@@ -15,7 +15,7 @@
 export default {};
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .navbar {
   overflow: auto;
   border-bottom: 1px solid #000;
@@ -29,8 +29,9 @@ export default {};
   margin: 0px 5px 0px 0px;
   padding: 5px;
   transition: 0.3s ease;
-}
-.navbar__link:hover {
-  background: gainsboro;
+  
+  &:hover {
+    background: gainsboro;
+  }
 }
 </style>

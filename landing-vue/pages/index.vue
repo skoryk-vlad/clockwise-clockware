@@ -1,19 +1,19 @@
 <template>
   <div class="page" :class="{ page_disabled: isModalOpened || isMenuOpened }">
     <header-block
-      @callback="setLanguage"
-      :currentLanguage="currentLanguage"
-      :isMenuOpened="isMenuOpened"
-      @setIsMenuOpened="setIsMenuOpened"
-      :isModalOpened="isModalOpened"
-      @setIsModalOpened="setIsModalOpened"
+      @set-language="setLanguage"
+      :current-language="currentLanguage"
+      :is-menu-opened="isMenuOpened"
+      @set-is-menu-opened="setIsMenuOpened"
+      :is-modal-opened="isModalOpened"
+      @set-is-modal-opened="setIsModalOpened"
     />
-    <main-block @setIsModalOpened="setIsModalOpened" />
+    <main-block @set-is-modal-opened="setIsModalOpened" />
     <footer-block />
     <modal v-model:show="isModalOpened"
-      ><popup-form @setIsModalOpened="setIsModalOpened"
+      ><popup-form @set-is-modal-opened="setIsModalOpened"
     /></modal>
-    <left-block @scrollToNext="scrollToNext" />
+    <left-block @scroll-to-next="scrollToNext" />
   </div>
 </template>
 
@@ -77,7 +77,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .page_disabled {
   position: relative;
   overflow: hidden;

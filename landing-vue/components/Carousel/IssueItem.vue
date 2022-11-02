@@ -1,14 +1,29 @@
 <template>
   <div class="issue-item">
-    <slot></slot>
+    <div class="issue-item__title">
+      {{ slide.title }}
+    </div>
+    <div class="issue-item__text">
+      {{ slide.text }}
+    </div>
   </div>
 </template>
 
 <script>
-export default {};
+export default {
+  props: {
+    slide: {
+      type: Object,
+      default: {
+        title: "Title",
+        text: "Text",
+      },
+    },
+  },
+};
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .issue-item {
   margin: 0px 15px 0px 0px;
   box-shadow: 0 10px 30px 0 rgba(8, 61, 119, 0.25);

@@ -64,9 +64,10 @@ export default {
   top: 0;
   right: 0;
   transition: 0.3s ease;
-}
-.popup__close:hover {
-  opacity: 0.8;
+
+  &:hover {
+    opacity: 0.8;
+  }
 }
 .popup__title {
   @include Title-Style(25px, -0.63px);
@@ -90,51 +91,56 @@ export default {
   display: flex;
   flex-wrap: wrap;
   margin: 0 -12px;
-}
-.popup__inputs > div {
-  flex: 1 1 50%;
-  padding: 0 12px;
+
+  > div {
+    flex: 1 1 50%;
+    padding: 0 12px;
+  }
 }
 .popup__input {
   margin: 0px 0px 25px 0px;
   display: flex;
   flex-direction: column;
-}
-.popup__input label {
-  @include Text-Style(13px, -0.33px);
-  margin: 0px 0px 0px 24px;
-}
-.popup__input input {
-  padding: 10px 24px;
-  border: solid 1px rgba(30, 30, 30, 0.25);
-  border-radius: 72px;
-  background: transparent;
-}
-.popup__input input::placeholder {
-  opacity: 0.25;
-  @include Text-Style(17px, -0.43px);
+
+  label {
+    @include Text-Style(13px, -0.33px);
+    margin: 0px 0px 0px 24px;
+  }
+  input {
+    padding: 10px 24px;
+    border: solid 1px rgba(30, 30, 30, 0.25);
+    border-radius: 72px;
+    background: transparent;
+
+    &::placeholder {
+      opacity: 0.25;
+      @include Text-Style(17px, -0.43px);
+    }
+  }
 }
 .popup__textarea {
   width: 100%;
   margin: 0px 0px 25px 0px;
   display: flex;
   flex-direction: column;
-}
-.popup__textarea label {
-  @include Text-Style(13px, -0.33px);
-  margin: 0px 0px 0px 24px;
-}
-.popup__textarea textarea {
-  padding: 10px 24px;
-  border: solid 1px rgba(30, 30, 30, 0.25);
-  border-radius: 22px;
-  height: 132px;
-  resize: none;
-  background: transparent;
-}
-.popup__textarea textarea::placeholder {
-  opacity: 0.25;
-  @include Text-Style(17px, -0.43px);
+
+  label {
+    @include Text-Style(13px, -0.33px);
+    margin: 0px 0px 0px 24px;
+  }
+  textarea {
+    padding: 10px 24px;
+    border: solid 1px rgba(30, 30, 30, 0.25);
+    border-radius: 22px;
+    height: 132px;
+    resize: none;
+    background: transparent;
+
+    &::placeholder {
+      opacity: 0.25;
+      @include Text-Style(17px, -0.43px);
+    }
+  }
 }
 .popup__button {
   display: flex;

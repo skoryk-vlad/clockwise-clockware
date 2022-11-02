@@ -34,9 +34,7 @@
       <nav class="header__navbar navbar">
         <ul class="navbar__list">
           <li class="navbar__item">
-            <nuxt-link to="#benefits" class="navbar__link"
-              >Benefits</nuxt-link
-            >
+            <nuxt-link to="#benefits" class="navbar__link">Benefits</nuxt-link>
           </li>
           <li class="navbar__item">
             <nuxt-link to="#advantages" class="navbar__link"
@@ -55,13 +53,13 @@
           class="lang__item"
           :class="{ lang__item_active: currentLanguage === 'DE' }"
         >
-          <button @click="$emit('callback', 'DE')">DE</button>
+          <button @click="$emit('setLanguage', 'DE')">DE</button>
         </div>
         <div
           class="lang__item"
           :class="{ lang__item_active: currentLanguage === 'EN' }"
         >
-          <button @click="$emit('callback', 'EN')">EN</button>
+          <button @click="$emit('setLanguage', 'EN')">EN</button>
         </div>
       </div>
     </div>
@@ -72,9 +70,7 @@
       <nav class="mobile-menu__navbar mobile-navbar">
         <ul class="mobile-navbar__list">
           <li class="mobile-navbar__item">
-            <nuxt-link to="#benefits" class="navbar__link"
-              >Benefits</nuxt-link
-            >
+            <nuxt-link to="#benefits" class="navbar__link">Benefits</nuxt-link>
           </li>
           <li class="mobile-navbar__item">
             <nuxt-link to="#advantages" class="navbar__link"
@@ -100,13 +96,13 @@
             class="mobile-lang__item"
             :class="{ 'mobile-lang__item_active': currentLanguage === 'DE' }"
           >
-            <button @click="$emit('callback', 'DE')">DE</button>
+            <button @click="$emit('setLanguage', 'DE')">DE</button>
           </div>
           <div
             class="mobile-lang__item"
             :class="{ 'mobile-lang__item_active': currentLanguage === 'EN' }"
           >
-            <button @click="$emit('callback', 'EN')">EN</button>
+            <button @click="$emit('setLanguage', 'EN')">EN</button>
           </div>
         </div>
       </div>
@@ -158,8 +154,10 @@ export default {
   z-index: 10;
   background: #fff;
 }
-.header > div {
-  flex: 0 1 33.333%;
+.header {
+  > div {
+    flex: 0 1 33.333%;
+  }
 }
 .header__logo {
   height: 64px;
@@ -167,10 +165,11 @@ export default {
   margin: 0px 25px 0px 0px;
   position: relative;
   z-index: 6;
-}
-.header__logo img {
-  height: 100%;
-  object-fit: contain;
+
+  img {
+    height: 100%;
+    object-fit: contain;
+  }
 }
 .header__1440 {
   display: block;
@@ -195,8 +194,10 @@ export default {
   display: flex;
   justify-content: space-between;
 }
-.navbar__item:not(:last-child) {
-  margin: 0px 20px 0px 0px;
+.navbar__item {
+  &:not(:last-child) {
+    margin: 0px 20px 0px 0px;
+  }
 }
 .navbar__link {
   font-weight: 600;
@@ -255,14 +256,15 @@ export default {
   border: solid 1px #f3f3f3;
   border-left: 0;
   border-right: 0;
-}
-.mobile-navbar__item:not(:first-child) {
-  border-top: 0;
-}
-.mobile-navbar__item a {
-  font-family: $Catamaran;
-  @include Text-Style(21px, -0.53px);
-  font-weight: bold;
+
+  &:not(:first-child) {
+    border-top: 0;
+  }
+  a {
+    font-family: $Catamaran;
+    @include Text-Style(21px, -0.53px);
+    font-weight: bold;
+  }
 }
 
 .mobile-lang {
@@ -288,11 +290,12 @@ export default {
   width: 56px;
   opacity: 0.25;
   text-align: center;
-}
-.mobile-lang__item button {
-  @include Text-Style(17px, 0.13px);
-  font-weight: 600;
-  text-align: center;
+
+  button {
+    @include Text-Style(17px, 0.13px);
+    font-weight: 600;
+    text-align: center;
+  }
 }
 .mobile-lang__item_active {
   opacity: 1;
@@ -355,9 +358,10 @@ export default {
 @media (max-width: 350px) {
   .mobile-navbar__item {
     height: 48px;
-  }
-  .mobile-navbar__item a {
-    font-size: 19px;
+    
+    a {
+      font-size: 19px;
+    }
   }
 }
 </style>

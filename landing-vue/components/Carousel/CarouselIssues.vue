@@ -1,31 +1,24 @@
 <template>
   <div>
-    <Carousel :items-to-show="1" v-model="currentSlide">
-      <Slide v-for="slide in slides" :key="slide">
-        <issue-item v-if="slide">
-          <div class="issue-item__title">
-            {{ slide.title }}
-          </div>
-          <div class="issue-item__text">
-            {{ slide.text }}
-          </div>
-        </issue-item>
-      </Slide>
-    </Carousel>
+    <carousel :items-to-show="1" v-model="currentSlide">
+      <slide v-for="slide in slides" :key="slide">
+        <issue-item v-if="slide" :slide="slide" />
+      </slide>
+    </carousel>
 
     <div>
       <div class="carousel__bottom">
         <div class="carousel__buttons buttons">
           <carousel-button
             @click="prev"
-            :direction="'left'"
-            :isDisabled="currentSlide === 0"
+            :direction="CarouselButtonDirections.LEFT"
+            :is-disabled="currentSlide === 0"
           >
           </carousel-button>
           <carousel-button
             @click="next"
-            :direction="'right'"
-            :isDisabled="currentSlide === slides.length - 1"
+            :direction="CarouselButtonDirections.RIGHT"
+            :is-disabled="currentSlide === slides.length - 1"
           >
           </carousel-button>
         </div>
@@ -45,7 +38,7 @@
   
 <script>
 import { Carousel, Navigation, Slide, Pagination } from "vue3-carousel";
-import CarouselButton from "./CarouselButton.vue";
+import CarouselButton, { CarouselButtonDirections } from "./CarouselButton.vue";
 
 import IssueItem from "./IssueItem.vue";
 
@@ -76,6 +69,7 @@ export default {
           text: "Without dynamic truck load scheduling, your company misses up to 50% of the potential loading capability",
         },
       ],
+      CarouselButtonDirections,
     };
   },
   methods: {
@@ -92,7 +86,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .carousel__bottom {
   display: flex;
   height: 70px;
@@ -100,21 +94,6 @@ export default {
 .carousel__slide-points {
   margin: 0px 0px 0px 290px;
 }
-.carousel__track {
-  display: flex;
-  position: relative;
-}
-.carousel__sr-only {
-  display: none;
-}
-.carousel__slide {
-  scroll-snap-stop: auto;
-  flex-shrink: 0;
-  margin: 0;
-  position: relative;
-  display: flex;
-}
-
 .slide-points {
   display: flex;
   align-items: center;
@@ -126,18 +105,20 @@ export default {
   border-radius: 50%;
   opacity: 0.25;
   transition: 0.3s ease;
-}
-.slide-points__item:hover {
-  opacity: 0.4;
-}
-.slide-points__item:not(:last-child) {
-  margin: 0px 16px 0px 0px;
+
+  &:hover {
+    opacity: 0.4;
+  }
+  &:not(:last-child) {
+    margin: 0px 16px 0px 0px;
+  }
 }
 .slide-points__item_active {
   opacity: 1;
-}
-.slide-points__item_active:hover {
-  opacity: 1;
+
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .buttons {

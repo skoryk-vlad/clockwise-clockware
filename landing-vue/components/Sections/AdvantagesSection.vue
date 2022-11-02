@@ -120,15 +120,14 @@ export default {
 }
 .body-advantages__column {
   width: 46.46%;
-}
-.body-advantages__column:nth-child(2) {
-  width: 53.28%;
+
+  &:nth-child(2) {
+    width: 53.28%;
+  }
 }
 .body-advantages__title {
   @include Title-Style(44px, -0.88px);
   margin: 0px 0px 52px 0px;
-}
-.body-advantages__list {
 }
 .body-advantages__reviews {
   padding: 96px 178px 40px 40px;
@@ -140,16 +139,17 @@ export default {
   position: relative;
   margin: 0px 0px 26px 0px;
   padding: 0px 0px 0px 75px;
-}
-.list-advantages__item::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: $watermelon;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: $watermelon;
+  }
 }
 .list-advantages__title {
   @include Title-Style(21px, -0.53px);
@@ -168,8 +168,10 @@ export default {
   background-image: linear-gradient(140deg, #fff, $white);
   height: 100%;
 }
-.reviews-advantages__review:not(:last-child) {
-  padding: 0px 0px 70px;
+.reviews-advantages__review {
+  &:not(:last-child) {
+    padding: 0px 0px 70px;
+  }
 }
 .review__text {
   @include Text-Style(17px, -0.43px);
@@ -194,9 +196,10 @@ export default {
   height: 44px;
   margin: 0px 0px 0px 15px;
   filter: grayscale(100%);
-}
-.reviewer__image img {
-  width: 100%;
+
+  img {
+    width: 100%;
+  }
 }
 @media (max-width: 1220px) {
   .advantages__container {
@@ -215,9 +218,10 @@ export default {
     display: flex;
     justify-content: center;
     flex-direction: column;
-  }
-  .body-advantages__column:nth-child(2) {
-    width: 100%;
+
+    &:nth-child(2) {
+      width: 100%;
+    }
   }
   .body-advantages__reviews {
     padding: 90px 100px;
@@ -246,8 +250,10 @@ export default {
     font-size: 15px;
     letter-spacing: -0.38px;
   }
-  .reviews-advantages__review:not(:last-child) {
-    padding: 0px 0px 50px;
+  .reviews-advantages__review {
+    &:not(:last-child) {
+      padding: 0px 0px 50px;
+    }
   }
 }
 </style>

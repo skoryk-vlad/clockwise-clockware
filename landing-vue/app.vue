@@ -24,4 +24,18 @@
   margin: 0 auto;
   overflow: hidden;
 }
+.carousel__track {
+  display: flex;
+  position: relative;
+}
+.carousel__sr-only {
+  display: none;
+}
+.carousel__slide {
+  scroll-snap-stop: auto;
+  flex-shrink: 0;
+  margin: 0;
+  position: relative;
+  display: flex;
+}
 </style>

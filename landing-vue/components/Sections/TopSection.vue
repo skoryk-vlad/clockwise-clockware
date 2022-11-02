@@ -80,8 +80,10 @@ export default {
   z-index: 1;
   overflow: hidden;
 }
-.image-top img {
-  height: 100%;
+.image-top {
+  img {
+    height: 100%;
+  }
 }
 
 @media (max-width: 1024px) {
