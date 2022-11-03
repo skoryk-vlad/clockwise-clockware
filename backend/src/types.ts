@@ -1,7 +1,11 @@
 import { ROLES } from './models/user.model';
-export type AuthInfo = {
+export type UserInfo = {
     email: string,
-    password: string
+    name: string
+}
+export enum AUTH_SERVICES {
+    GOOGLE = 'google',
+    FACEBOOK = 'facebook'
 }
 
 export interface JWTUserPayload {

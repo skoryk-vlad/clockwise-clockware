@@ -1,3 +1,4 @@
+import { getUserInfo } from './auth.controller';
 import { Master } from './../models/master.model';
 import { Order } from './../models/order.model';
 import { encryptPassword } from './../password';
@@ -6,8 +7,7 @@ import { sequelize } from './../sequelize';
 import { Op } from 'sequelize';
 import { ROLES, User } from './../models/user.model';
 import { AddClientSchema, DeleteClientSchema, GetClientSchema, UpdateClientSchema, AddClientByAdminSchema, GetClientsSchema, GetClientOrdersSchema } from './../validationSchemas/client.schema';
-import { Client } from './../models/client.model';
-
+import { Client, CLIENT_STATUSES } from './../models/client.model';
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -34,11 +34,41 @@ export default class ClientController {
             });
 
             await sendConfirmationUserMail(email, confirmationToken, name);
-            
+
             await addClientTransaction.commit();
             return res.status(201).json(client);
         } catch (error) {
             await addClientTransaction.rollback();
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async addClientByService(req: Request, res: Response): Promise<Response> {
+        const addClientTransaction = await sequelize.transaction();
+        try {
+            const { token, service } = req.body;
+            const { name, email } = await getUserInfo(token, service);
+
+            const existUser = await User.findOne({ where: { email } });
+            if (existUser) return res.status(409).json('User with this email exist');
+
+            const confirmationToken = uuidv4();
+
+            const user = await User.create({
+                email, role: ROLES.CLIENT, confirmationToken
+            }, {
+                transaction: addClientTransaction
+            });
+
+            const client = await Client.create({ name, userId: user.getDataValue('id'), status: CLIENT_STATUSES.CONFIRMED }, {
+                transaction: addClientTransaction
+            });
+
+            await addClientTransaction.commit();
+            return res.status(201).json(client);
+        } catch (error) {
+            await addClientTransaction.rollback();
+            if (error.message === 'Service not found') return res.status(404).json(error.message);
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
