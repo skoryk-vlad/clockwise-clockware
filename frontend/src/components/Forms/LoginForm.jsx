@@ -6,14 +6,17 @@ import { z } from 'zod';
 import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import { Password } from '../Password/Password';
+import { useTranslation } from 'react-i18next';
 
 const LoginSchema = z.object({
-    email: z.string().trim().min(1, 'Требуется почта').email('Неверный формат почты').max(255),
-    password: z.string().min(1, 'Требуется пароль').min(8, 'Слишком короткий'),
+    email: z.string().trim().min(1, 'errors.email').email('errors.emailFormat').max(255),
+    password: z.string().min(1, 'errors.password').min(8, 'errors.passwordLength'),
 });
 
 
-export const LoginForm = ({ user, onClick, btnTitle }) => {
+export const LoginForm = ({ user, onClick }) => {
+    const { t } = useTranslation();
+
     const { control, handleSubmit, formState: { errors, isSubmitted, isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
@@ -26,9 +29,9 @@ export const LoginForm = ({ user, onClick, btnTitle }) => {
         <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
-                    <label htmlFor="email">Почта</label>
+                    <label htmlFor="email">{t('authForm.email')}</label>
                     {errors.email && (
-                        <div className={classes.errorMessage}>{errors.email.message}</div>
+                        <div className={classes.errorMessage}>{t(errors.email.message)}</div>
                     )}
                 </div>
                 <Controller
@@ -43,16 +46,16 @@ export const LoginForm = ({ user, onClick, btnTitle }) => {
                             onChange={onChange}
                             value={value}
                             error={error}
-                            placeholder="Почта..."
+                            placeholder={t('authForm.email')}
                         />
                     )}
                 />
             </div>
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
-                    <label htmlFor="password">Пароль</label>
+                    <label htmlFor="password">{t('authForm.password')}</label>
                     {errors.password && (
-                        <div className={classes.errorMessage}>{errors.password.message}</div>
+                        <div className={classes.errorMessage}>{t(errors.password.message)}</div>
                     )}
                 </div>
                 <Controller
@@ -67,14 +70,14 @@ export const LoginForm = ({ user, onClick, btnTitle }) => {
                             onChange={onChange}
                             value={value}
                             error={error}
-                            placeholder="Пароль..."
+                            placeholder={t('authForm.password')}
                         />
                     )}
                 />
             </div>
 
             <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
-                disabled={(isSubmitted && !isValid)}>{btnTitle}</AdminButton>
+                disabled={(isSubmitted && !isValid)}>{t('authForm.loginButton')}</AdminButton>
         </form>
     )
 }

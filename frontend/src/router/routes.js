@@ -12,16 +12,14 @@ import { Statistics } from "../pages/admin/Statistics";
 
 export const publicRoutes = [
     { path: '/', element: <Landing /> },
-    { path: '/message/success', element: <MessageFromEmail>Подтверждение прошло успешно!</MessageFromEmail> },
-    { path: '/message/master/success', element: <MessageFromEmail>Благодарим за подтверждение Вашего e-mail! Ожидайте одобрения от администратора. Мы уведомим Вас по указаному электронному адресу.</MessageFromEmail> },
-    { path: '/message/already-confirmed', element: <MessageFromEmail>Подтверждение уже было произведено!</MessageFromEmail> },
-    { path: '/message/error', element: <MessageFromEmail>Произошла ошибка!</MessageFromEmail> },
-    { path: '/message/order-not-exist', element: <MessageFromEmail>Произошла ошибка! Такого заказа не существует!</MessageFromEmail> },
-    { path: '/message/order-not-completed', element: <MessageFromEmail>Произошла ошибка! Заказ еще не выполнен!</MessageFromEmail> },
-    { path: '/message/order-already-reviewed', element: <MessageFromEmail>Произошла ошибка! Заказ уже имеет отзыв!</MessageFromEmail> },
-    { path: '/message/payment/success', element: <MessageFromEmail>Спасибо! Оплата прошла успешно!</MessageFromEmail> },
-    { path: '/message/payment/already-paid', element: <MessageFromEmail>Произошла ошибка! Заказ уже оплачен!</MessageFromEmail> },
-    { path: '/order-review', element: <Review/> }
+    { path: '/message/success', element: <MessageFromEmail messageKey={'messages.success'} /> },
+    { path: '/message/master/success', element: <MessageFromEmail messageKey={'messages.masterSuccess'} /> },
+    { path: '/message/already-confirmed', element: <MessageFromEmail messageKey={'messages.alreadyConfirmed'} /> },
+    { path: '/message/error', element: <MessageFromEmail messageKey={'messages.error'} /> },
+    { path: '/message/order-not-exist', element: <MessageFromEmail messageKey={'messages.orderNotExist'} /> },
+    { path: '/message/order-not-completed', element: <MessageFromEmail messageKey={'messages.orderNotCompleted'} /> },
+    { path: '/message/order-already-reviewed', element: <MessageFromEmail messageKey={'messages.orderAlreadyReviewed'} /> },
+    { path: '/order-review', element: <Review /> }
 ]
 
 export const adminRoutes = [

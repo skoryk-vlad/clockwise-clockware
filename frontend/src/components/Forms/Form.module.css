@@ -15,6 +15,10 @@ label {
     font-size: 20px;
 }
 
+.select {
+    margin: 5px 0px 0px 0px;
+}
+
 .errorMessage {
     color: red;
     font-size: 14px;
@@ -219,6 +223,7 @@ label {
 }
 
 .fileUpload label {
+    margin: 5px 0px;
     cursor: pointer;
     display: inline-block;
     width: 100%;

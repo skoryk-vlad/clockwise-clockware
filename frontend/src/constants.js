@@ -58,3 +58,8 @@ export const ROLES = {
     MASTER: 'master',
     CLIENT: 'client'
 }
+
+export const supportedLanguages = {
+    en: 'English',
+    ru: 'Русский'
+}

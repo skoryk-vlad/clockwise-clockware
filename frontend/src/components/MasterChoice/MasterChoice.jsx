@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MasterService } from '../../API/Server';
 import { OrderButton } from '../OrderButton/OrderButton';
 import classes from './MasterChoice.module.css';
 
 export const MasterChoice = ({ freeMasters, returnForm, addOrder, price }) => {
+    const { t } = useTranslation();
+
     const [chosenMaster, setChosenMaster] = useState(null);
     const [reviewsInfo, setReviewsInfo] = useState({
         masterName: '',
@@ -26,15 +29,15 @@ export const MasterChoice = ({ freeMasters, returnForm, addOrder, price }) => {
                     freeMasters.map(master =>
                         <div key={master.id} id={master.id} className={`${classes.masterItem} mstr_itm ${+chosenMaster === master.id ? classes.active : ''}`}>
                             <div className={classes.masterName}>{master.name}</div>
-                            <div className={classes.masterRating}>Рейтинг: {master.rating}</div>
-                            <div className={classes.masterRating}>Отзывы: {master.reviews} {master.reviews > 0 && <span onClick={getReviews} className={classes.showReviews}>(Показать)</span>}</div>
-                            <OrderButton onClick={event => setChosenMaster(+event.target.closest(`.mstr_itm`).id)} className={classes.masterBtn}>Выбрать</OrderButton>
+                            <div className={classes.masterRating}>{t('orderForm.masterRating')}: {master.rating}</div>
+                            <div className={classes.masterRating}>{t('orderForm.masterReviews')}: {master.reviews} {master.reviews > 0 && <span onClick={getReviews} className={classes.showReviews}>({t('orderForm.show')})</span>}</div>
+                            <OrderButton onClick={event => setChosenMaster(+event.target.closest(`.mstr_itm`).id)} className={classes.masterBtn}>{t('orderForm.masterChoose')}</OrderButton>
                         </div>
                     )
                 }
                 {
                     freeMasters.length === 0 &&
-                    <div className={classes.warning}>К сожалению, мастеров на это время в этот день нет. Выберите другое время или дату.</div>
+                    <div className={classes.warning}>{t('orderForm.noMasters')}</div>
                 }
             </div>
             <div className={classes.return} onClick={returnForm}>
@@ -42,11 +45,11 @@ export const MasterChoice = ({ freeMasters, returnForm, addOrder, price }) => {
             </div>
             <div className={classes.formBottom}>
                 <OrderButton onClick={() => addOrder(chosenMaster)} className={(chosenMaster === null ? "disabledBtn" : '')}
-                    disabled={chosenMaster === null}>Оформить заказ</OrderButton>
-                <div className={classes.orderPrice}>Цена: {price || 0}</div>
+                    disabled={chosenMaster === null}>{t('orderForm.submitButton')}</OrderButton>
+                <div className={classes.orderPrice}>{t('orderForm.price')}: {price || 0}</div>
             </div>
             {reviewsInfo.reviews.length > 0 && <div className={classes.reviews}>
-                <h3>Отзывы о мастере <div className={classes.masterName}>{reviewsInfo.masterName}</div></h3>
+                <h3>{t('orderForm.masterReviewsTitle')} <div className={classes.masterName}>{reviewsInfo.masterName}</div></h3>
                 {reviewsInfo.reviews.map(review => <div key={review.id} className={classes.masterReview}>
                     <div className={classes.masterReviewTop}>
                         <div className={classes.masterReviewName}>{review.client}</div>

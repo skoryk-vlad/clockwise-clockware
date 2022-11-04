@@ -7,17 +7,19 @@ import { Footer } from '../components/Landing/Footer/Footer';
 import { TopButton } from '../components/Landing/TopButton/TopButton';
 import { OrderModal } from '../components/OrderModal';
 import { AuthorizationModal } from '../components/AuthorizationModal';
+import { useTranslation } from 'react-i18next';
 
 export const Landing = () => {
+    const { t, i18n } = useTranslation();
     const [isOrderModalOpened, setIsOrderModalOpened] = useState(false);
     const [isAuthorizationModalOpened, setIsAuthorizationModalOpened] = useState(false);
     const [isRegistration, setIsRegistration] = useState(true);
     const [needRedirect, setNeedRedirect] = useState(true);
-
+    
     useEffect(() => {
-        document.title = "Ремонт напольных часов - Clockwise Clockware";
-    }, []);
-
+        document.title = `${t('title')} - Clockwise Clockware`;
+    }, [i18n.language]);
+    
     return (
         <div className="wrapper">
             <Header register={() => { setIsAuthorizationModalOpened(true); setIsRegistration(true) }}
