@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { CityService, MasterService, OrderService, UserService } from '../API/Server';
 import { useFetching } from '../hooks/useFetching';
 import { ClientOrderForm } from './Forms/ClientOrderForm';
-import { WATCH_SIZES, ORDER_STATUSES, ROLES, WATCH_SIZES_TRANSLATE } from '../constants';
+import { WATCH_SIZES, ORDER_STATUSES, ROLES } from '../constants';
 import { ConfirmationModal } from './ConfirmationModal/ConfirmationModal';
 import { jwtPayload } from './PrivateRoute';
 import { notify, NOTIFY_TYPES } from './Notifications';
@@ -10,6 +10,7 @@ import { MasterChoice } from './MasterChoice/MasterChoice';
 import { OrderButton } from './OrderButton/OrderButton';
 import { PayPal } from './PayPal';
 import { MyModal } from './modal/MyModal';
+import { useTranslation } from 'react-i18next';
 
 const defaultOrder = {
     name: "",
@@ -23,6 +24,8 @@ const defaultOrder = {
 };
 
 export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, register }) => {
+    const { t } = useTranslation();
+
     const [isFormOpened, setIsFormOpened] = useState(true);
     const [freeMasters, setFreeMasters] = useState([]);
     const [order, setOrder] = useState(defaultOrder);
@@ -49,7 +52,7 @@ export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, r
         fetchCities();
     }, []);
     useEffect(() => {
-        if(isOrderModalOpened === false) refusePayment();
+        if (isOrderModalOpened === false) refusePayment();
     }, [isOrderModalOpened]);
 
     const addOrder = async (chosenMaster) => {
@@ -57,11 +60,11 @@ export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, r
         Array.from(order.images).map(image => formData.append(`images`, image));
         Object.entries(order).forEach(([key, value]) => formData.append(key, value));
         formData.append("masterId", chosenMaster);
-        
+
         const orderReturned = await OrderService.addOrder(formData);
         setOrderReturned(orderReturned);
         setIsFormOpened(true);
-        notify(NOTIFY_TYPES.SUCCESS, 'Заказ успешно получен!');
+        notify(NOTIFY_TYPES.SUCCESS, t('notifications.orderReceived'));
         setOrder(defaultOrder);
         setIsOrderDetailsOpened(true);
     }
@@ -71,7 +74,7 @@ export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, r
         if (!client) {
             setIsConfirmationModalOpened(true);
             setConfirmationModalInfo({
-                text: 'Вы желаете зарегистрироваться для просмотра истории заказов?',
+                text: t('notifications.wantSignUp'),
                 onAccept: () => registerClient(),
                 onReject: () => findMasters(order)
             });
@@ -82,14 +85,14 @@ export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, r
                 if (order.name !== client.name) {
                     setIsConfirmationModalOpened(true);
                     setConfirmationModalInfo({
-                        text: `В системе Ваша учетная запись сохранена с именем ${client.name}, а Вы сейчас ввели ${order.name}. Желаете заменить?`,
+                        text: t('notifications.wantChangeName', { clientName: client.name, orderName: order.name }),
                         onAccept: () => { setIsConfirmationModalOpened(false); login(); },
                         onReject: () => { setOrder({ ...order, name: client.name }); setIsConfirmationModalOpened(false); login(); }
                     });
                 } else {
                     login();
                 }
-                notify(NOTIFY_TYPES.ERROR, 'Для оформления заказа сперва авторизуйтесь!');
+                notify(NOTIFY_TYPES.ERROR, t('notifications.loginFirst'));
             }
         }
     }
@@ -122,19 +125,19 @@ export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, r
                 isOrderDetailsOpened
                     ?
                     <div className='orderDetails'>
-                        <h3 className='orderDetails__title'>Спасибо за оформление заказа!</h3>
-                        <div className='orderDetails__text'>Детали:</div>
-                        <div className='orderDetails__item'><span className='orderDetails__bold'>Дата и время:</span> {orderReturned.date} {orderReturned.time}:00-{orderReturned.endTime}:00</div>
-                        <div className='orderDetails__item'><span className='orderDetails__bold'>Размер часов:</span> {WATCH_SIZES_TRANSLATE[orderReturned.watchSize]}</div>
-                        <div className='orderDetails__item'><span className='orderDetails__bold'>Цена:</span> {orderReturned.price}</div>
-                        <div className='orderDetails__text'>Вы можете оплатить заказ сейчас или же наличными мастеру перед выполнением.</div>
+                        <h3 className='orderDetails__title'>{t('orderForm.thankForOrder')}</h3>
+                        <div className='orderDetails__text'>{t('orderForm.details')}:</div>
+                        <div className='orderDetails__item'><span className='orderDetails__bold'>{t('orderForm.dateAndTime')}:</span> {orderReturned.date} {orderReturned.time}:00-{orderReturned.endTime}:00</div>
+                        <div className='orderDetails__item'><span className='orderDetails__bold'>{t('orderForm.watchSize')}:</span> {t(`watchSizes.${orderReturned.watchSize}`)}</div>
+                        <div className='orderDetails__item'><span className='orderDetails__bold'>{t('orderForm.price')}:</span> {orderReturned.price}</div>
+                        <div className='orderDetails__text'>{t('orderForm.howToPay')}</div>
                         {orderPaid
                             ?
-                            <div className='orderDetails__text'><span className='orderDetails__bold'>Спасибо! Оплата прошла успешно. Ожидайте выполнение заказа мастером.</span></div>
+                            <div className='orderDetails__text'><span className='orderDetails__bold'>{t('orderForm.paymentSuccess')}</span></div>
                             :
                             <div className="orderDetails__buttons">
-                                <OrderButton onClick={() => setCheckout(true)}>Оплатить сейчас</OrderButton>
-                                <OrderButton onClick={refusePayment}>На месте</OrderButton>
+                                <OrderButton onClick={() => setCheckout(true)}>{t('orderForm.payNow')}</OrderButton>
+                                <OrderButton onClick={refusePayment}>{t('orderForm.payLater')}</OrderButton>
                             </div>
                         }
 
@@ -147,7 +150,7 @@ export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, r
                         <MasterChoice freeMasters={freeMasters} returnForm={returnForm} price={order.price} addOrder={addOrder}></MasterChoice>
             }
             <MyModal visible={checkout} setVisible={setCheckout}>
-                {checkout && <PayPal price={orderReturned.price} watchSize={WATCH_SIZES_TRANSLATE[orderReturned.watchSize]} orderId={orderReturned.id} setCheckout={setCheckout} onApprove={() => setOrderPaid(true)} />}
+                {checkout && <PayPal price={orderReturned.price} watchSize={t(`watchSizes.${orderReturned.watchSize}`)} orderId={orderReturned.id} setCheckout={setCheckout} onApprove={() => setOrderPaid(true)} />}
             </MyModal>
         </div>
     )

@@ -7,22 +7,25 @@ import classes from './Form.module.css';
 import { AdminButton } from '../AdminButton/AdminButton';
 import Select from 'react-select';
 import { Password } from '../Password/Password';
+import { useTranslation } from 'react-i18next';
 import { Socials } from '../Socials/Socials';
 
 const RegistrationSchema = z.object({
-    name: z.string().trim().min(1, 'Требуется имя')
-        .min(3, 'Название должно быть не короче 3-х букв').max(255),
-    email: z.string().trim().min(1, 'Требуется почта').email('Неверный формат почты').max(255),
-    password: z.string().min(1, 'Требуется пароль').min(8, 'Слишком короткий'),
-    isAgree: z.boolean().refine(isAgree => isAgree === true, 'Необходимо согласиться с условиями'),
+    name: z.string().trim().min(1, 'errors.name')
+        .min(3, 'errors.nameLength').max(255),
+    email: z.string().trim().min(1, 'errors.email').email('errors.emailFormat').max(255),
+    password: z.string().min(1, 'errors.password').min(8, 'errors.passwordLength'),
+    isAgree: z.boolean().refine(isAgree => isAgree === true, 'errors.agreeWithTerms'),
     isMaster: z.boolean().optional(),
     cities: z.array(z.number().int().positive())
 }).refine(account => (account.isMaster && account.cities.length > 0) || !account.isMaster, {
     path: ['cities'],
-    message: 'Выберите хотя бы один город'
+    message: 'errors.cities'
 });
 
-export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerByService, onError }) => {
+export const RegistrationForm = ({ user, onClick, cities, registerByService, onError }) => {
+    const { t } = useTranslation();
+
     const { control, handleSubmit, getValues, watch, formState: { errors, isSubmitted, isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
@@ -34,11 +37,11 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerBySe
     return (
         <div>
             <form onSubmit={handleSubmit(onSubmit)} className={classes.form}>
-                <div className={classes.formRow}>
+            <div className={classes.formRow}>
                     <div className={classes.rowTop}>
-                        <label htmlFor="name">Имя</label>
+                        <label htmlFor="name">{t('authForm.name')}</label>
                         {errors.name && (
-                            <div className={classes.errorMessage}>{errors.name.message}</div>
+                            <div className={classes.errorMessage}>{t(errors.name.message)}</div>
                         )}
                     </div>
                     <Controller
@@ -48,21 +51,21 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerBySe
                             field: { onChange, value, name },
                             fieldState: { error }
                         }) => (
-                            <MyInput
+                            <MyInput id={name}
                                 type="text" name={name}
                                 onChange={onChange}
                                 value={value}
                                 error={error}
-                                placeholder="Имя..."
+                                placeholder={t('authForm.name')}
                             />
                         )}
                     />
                 </div>
                 <div className={classes.formRow}>
                     <div className={classes.rowTop}>
-                        <label htmlFor="email">Почта</label>
+                        <label htmlFor="email">{t('authForm.email')}</label>
                         {errors.email && (
-                            <div className={classes.errorMessage}>{errors.email.message}</div>
+                            <div className={classes.errorMessage}>{t(errors.email.message)}</div>
                         )}
                     </div>
                     <Controller
@@ -72,21 +75,21 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerBySe
                             field: { onChange, value, name },
                             fieldState: { error },
                         }) => (
-                            <MyInput
+                            <MyInput id={name}
                                 type="text" name={name}
                                 onChange={onChange}
                                 value={value}
                                 error={error}
-                                placeholder="Почта..."
+                                placeholder={t('authForm.email')}
                             />
                         )}
                     />
                 </div>
                 <div className={classes.formRow}>
                     <div className={classes.rowTop}>
-                        <label htmlFor="password">Пароль</label>
+                        <label htmlFor="password">{t('authForm.password')}</label>
                         {errors.password && (
-                            <div className={classes.errorMessage}>{errors.password.message}</div>
+                            <div className={classes.errorMessage}>{t(errors.password.message)}</div>
                         )}
                     </div>
                     <Controller
@@ -96,12 +99,12 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerBySe
                             field: { onChange, value, name },
                             fieldState: { error },
                         }) => (
-                            <Password
+                            <Password id={name}
                                 name={name}
                                 onChange={onChange}
                                 value={value}
                                 error={error}
-                                placeholder="Пароль..."
+                                placeholder={t('authForm.password')}
                             />
                         )}
                     />
@@ -115,7 +118,7 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerBySe
                                 field: { onChange, value, name },
                                 fieldState: { error },
                             }) => (
-                                <MyInput
+                                <MyInput id={name}
                                     type="checkbox" name={name}
                                     onChange={onChange}
                                     value={value}
@@ -123,7 +126,7 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerBySe
                                 />
                             )}
                         />
-                        <label htmlFor="isMaster">Зарегистрироваться как мастер</label>
+                        <label htmlFor="isMaster">{t('authForm.asMaster')}</label>
                         {errors.isMaster && (
                             <div className={classes.checkboxError}>{errors.isMaster.message}</div>
                         )}
@@ -133,9 +136,9 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerBySe
                 {watch('isMaster') &&
                     <div className={classes.formRow}>
                         <div className={classes.rowTop}>
-                            <label htmlFor="cities">Города</label>
+                            <label htmlFor="cities">{t('authForm.cities')}</label>
                             {errors.cities && (
-                                <div className={classes.errorMessage}>{errors.cities.message}</div>
+                                <div className={classes.errorMessage}>{t(errors.cities.message)}</div>
                             )}
                         </div>
                         <Controller
@@ -145,14 +148,14 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerBySe
                                 field: { onChange },
                                 fieldState: { error },
                             }) => (
-                                <Select
+                                <Select className={classes.select}
                                     closeMenuOnSelect={false}
                                     value={cities.filter(city => watch('cities').includes(city.id)).map(city => ({ value: city.id, label: city.name }))}
                                     isMulti
                                     error={error}
                                     onChange={options => onChange(options.map(option => option.value))}
                                     options={cities.map(city => ({ value: city.id, label: city.name }))}
-                                    placeholder='Выбор городов...'
+                                    placeholder={t('authForm.cities')}
                                 />
                             )}
                         />
@@ -168,7 +171,7 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerBySe
                                 field: { onChange, value, name },
                                 fieldState: { error },
                             }) => (
-                                <MyInput
+                                <MyInput id={name}
                                     type="checkbox" name={name}
                                     onChange={onChange}
                                     value={value}
@@ -176,20 +179,20 @@ export const RegistrationForm = ({ user, onClick, btnTitle, cities, registerBySe
                                 />
                             )}
                         />
-                        <label htmlFor="isAgree" className={classes.isAgreeMessage}>Согласен со всеми условиями</label>
+                        <label htmlFor="isAgree" className={classes.isAgreeMessage}>{t('authForm.agreeWithTerms')}</label>
                         {errors.isAgree && (
-                            <div className={classes.checkboxError}>{errors.isAgree.message}</div>
+                            <div className={classes.checkboxError}>{t(errors.isAgree.message)}</div>
                         )}
                     </div>
                 </div>
 
                 <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
-                    disabled={(isSubmitted && !isValid)}>{btnTitle}</AdminButton>
+                    disabled={(isSubmitted && !isValid)}>{t('authForm.signUpButton')}</AdminButton>
             </form>
             <Socials
                 onSuccess={userInfo => registerByService(userInfo, watch('isMaster'), watch('cities'))}
                 onError={onError}
-                title="Регистрация с помощью"
+                title={t('authForm.signUpByService')}
             />
         </div>
     )

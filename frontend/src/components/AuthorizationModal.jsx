@@ -9,6 +9,7 @@ import { RegistrationForm } from './Forms/RegistrationForm';
 import { notify, NOTIFY_TYPES } from './Notifications';
 import { useDispatch } from 'react-redux';
 import { loginThunk } from '../store/auth/thunks';
+import { useTranslation } from 'react-i18next';
 import { jwtPayload } from './PrivateRoute';
 
 const defaultUser = {
@@ -22,6 +23,8 @@ const defaultUser = {
 }
 
 export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsAuthorizationModalOpened }) => {
+    const { t } = useTranslation();
+
     const dispatch = useDispatch();
 
     const [redirect, setRedirect] = useState({ isRedirect: false, path: '' });
@@ -49,11 +52,11 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
             } else {
                 await ClientService.addClient(user);
             }
-            notify(NOTIFY_TYPES.SUCCESS, 'Регистрация прошла успешно! Для авторизации необходимо подтвердить почту!');
+            notify(NOTIFY_TYPES.SUCCESS, t('notifications.successRegistrationWithVerification'));
             setIsAuthorizationModalOpened(false);
         } catch (error) {
             if (error.response.data === 'User with this email exist')
-                notify(NOTIFY_TYPES.ERROR, 'Пользователь с таким электронным адресом уже существует!');
+                notify(NOTIFY_TYPES.ERROR, t('notifications.userExist'));
             else
                 notify(NOTIFY_TYPES.ERROR);
         }
@@ -66,19 +69,20 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
                 setRedirect({ path: response.payload.role, isRedirect: true });
             }
             setIsAuthorizationModalOpened(false);
+            notify(NOTIFY_TYPES.SUCCESS, t('notifications.successLogin'));
         } else {
             if (response.payload === 'Email or password is incorrect')
-                notify(NOTIFY_TYPES.ERROR, 'Электронный адрес или пароль введены неверно!');
+                notify(NOTIFY_TYPES.ERROR, t('notifications.loginError'));
             else if (response.payload === 'Master is not yet approved')
-                notify(NOTIFY_TYPES.ERROR, 'Администратор еще Вас не одобрил!');
+                notify(NOTIFY_TYPES.ERROR, t('notifications.notApproved'));
             else if (response.payload === "User doesn't have a password") {
                 setIsConfirmationModalOpened(true);
                 setConfirmationModalInfo({
-                    text: 'У Вас отсутствует пароль для входа. Желаете получить его на свою почту?',
+                    text: t('notifications.noPassword'),
                     onAccept: async () => {
                         await UserService.createPassword(loginInfo.email);
                         setIsConfirmationModalOpened(false);
-                        notify(NOTIFY_TYPES.SUCCESS, 'Пароль успешно отправлен!');
+                        notify(NOTIFY_TYPES.SUCCESS, t('notifications.passwordSended'));
                     },
                     onReject: () => setIsConfirmationModalOpened(false)
                 });
@@ -93,7 +97,7 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
             if (!isMaster || (isMaster && cities.length > 0)) {
                 if (isMaster) {
                     await MasterService.addMasterByService({ ...userInfo, cities });
-                    notify(NOTIFY_TYPES.SUCCESS, 'Регистрация прошла успешно! Ожидайте одобрения администратором!');
+                    notify(NOTIFY_TYPES.SUCCESS, t('notifications.successRegistrationWithApprove'));
                 } else {
                     await ClientService.addClientByService(userInfo);
                     const response = await AuthService.authByService(userInfo);
@@ -101,15 +105,15 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
                     if (needRedirect) {
                         setRedirect({ path: ROLES.CLIENT, isRedirect: true });
                     }
-                    notify(NOTIFY_TYPES.SUCCESS, 'Регистрация прошла успешно!');
+                    notify(NOTIFY_TYPES.SUCCESS, t('notifications.successRegistration'));
                 }
                 setIsAuthorizationModalOpened(false);
             } else {
-                notify(NOTIFY_TYPES.ERROR, 'Выберите как минимум один город!');
+                notify(NOTIFY_TYPES.ERROR, t('notifications.atLeastOneCity'));
             }
         } catch (error) {
             if (error.response.data === 'User with this email exist')
-                notify(NOTIFY_TYPES.ERROR, 'Пользователь с таким электронным адресом уже существует!');
+                notify(NOTIFY_TYPES.ERROR, t('notifications.userExist'));
             else
                 notify(NOTIFY_TYPES.ERROR);
         }
@@ -125,9 +129,9 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
             }
         } else {
             if (response.response.status === 404)
-                notify(NOTIFY_TYPES.ERROR, 'Пользователя с таким электронным адресом не существует!');
+                notify(NOTIFY_TYPES.ERROR, t('notifications.userNotExist'));
             else if (response.response.data === 'Master is not yet approved')
-                notify(NOTIFY_TYPES.ERROR, 'Администратор еще Вас не одобрил!');
+                notify(NOTIFY_TYPES.ERROR, t('notifications.notApproved'));
             else
                 notify(NOTIFY_TYPES.ERROR);
         }
@@ -144,8 +148,8 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
             <div>
                 {isConfirmationModalOpened && <ConfirmationModal text={confirmationModalInfo.text} onAccept={confirmationModalInfo.onAccept} onReject={confirmationModalInfo.onReject} />}
                 {isRegistration
-                    ? <RegistrationForm user={defaultUser} onClick={registerUser} cities={cities} btnTitle={'Регистрация'} registerByService={registerByService} onError={onError} ></RegistrationForm>
-                    : <LoginForm user={defaultUser} onClick={loginUser} btnTitle={'Вход'} loginByService={loginByService} onError={onError} ></LoginForm>
+                    ? <RegistrationForm user={defaultUser} onClick={registerUser} cities={cities} registerByService={registerByService} onError={onError} ></RegistrationForm>
+                    : <LoginForm user={defaultUser} onClick={loginUser} loginByService={loginByService} onError={onError} ></LoginForm>
                 }
             </div>
     )

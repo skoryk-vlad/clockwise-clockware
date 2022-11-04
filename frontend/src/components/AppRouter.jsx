@@ -1,17 +1,24 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next';
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { ROLES } from '../constants';
 import { publicRoutes, adminRoutes, clientRoutes, masterRoutes } from '../router/routes';
+import { LocaleRoute } from './LocaleRoute';
 import { PrivateRoute } from './PrivateRoute';
 
 export const AppRouter = () => {
+    const { i18n } = useTranslation();
+
     return (
         <Routes>
             <>
                 {publicRoutes.map(route =>
-                    <Route path={route.path} element={route.element} exact={route.exact} key={route.path} />
+                    <>
+                        <Route path={`/:locale${route.path}`} element={<LocaleRoute>{route.element}</LocaleRoute>} exact={route.exact} key={route.path} />
+                        <Route path={route.path} element={<Navigate replace={true} to={`/${i18n.language}${route.path}`} />} />
+                    </>
                 )}
-                <Route path="*" element={<Navigate replace to="/" />} />
+                <Route path="*" element={<Navigate replace={true} to={`/${i18n.language}`} />} />
             </>
             <>
                 {adminRoutes.map(route =>

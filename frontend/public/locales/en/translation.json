@@ -1,0 +1,153 @@
+{
+    "title": "Grandfather clock repairing",
+    "messageFromEmail": "Message",
+    "signUp": "Sign Up",
+    "logIn": "Log In",
+    "orderButton": "Order service",
+    "returnButton": "To homepage",
+    "header": {
+        "advantages": "Advantages",
+        "stages": "Stages"
+    },
+    "main": {
+        "subtitle": "Grandfather clock repairing",
+        "text": "Professional grandfather clock repairing with home visit"
+    },
+    "benefits": {
+        "title": "Why Clockwise Clockware?",
+        "subtitle": "Our advantages",
+        "item1": {
+            "title": "Any difficulty",
+            "text": "We repair grandfather clocks of any complexity, the master will repair and debug both modern and antique clock models, restore the movement of cuckoos, quartz, mechanical clocks with a regular or quarter strike."
+        },
+        "item2": {
+            "title": "Home visit",
+            "text": "Need to fix an old grandfather clock with a large, bulky case? The watchmaker will come to your house to deal with the breakdown!"
+        },
+        "item3": {
+            "title": "Quality",
+            "text": "The specialists of the center annually attend advanced trainings and use only the latest watch repair equipment. Therefore, our customers can be sure that their watches are in good hands."
+        }
+    },
+    "etaps": {
+        "title": "Watch repair steps",
+        "subtitle": "What needs to be done",
+        "item1": {
+            "title": "1. Order service",
+            "text": "Place an order with a choice of date, time, city and contact details."
+        },
+        "item2": {
+            "title": "2. Payment",
+            "text": "Payment for the order online or in cash to the master."
+        },
+        "item3": {
+            "title": "3. Repairing",
+            "text": "Fulfillment by the master of your order at the specified time."
+        }
+    },
+    "contacts": "Contacts",
+    "messages": {
+        "success": "Verification successful!",
+        "masterSuccess": "Thank you for confirming your e-mail! Wait for administrator approval. We will notify you at your email address.",
+        "alreadyConfirmed": "Confirmation has already been made!",
+        "error": "An error has occurred!",
+        "orderNotExist": "An error has occurred! This order does not exist.!",
+        "orderNotCompleted": "An error has occurred! Order not completed yet!",
+        "orderAlreadyReviewed": "An error has occurred! The order already has a review!"
+    },
+    "orderForm": {
+        "name": "Name",
+        "email": "Email",
+        "watchSize": "Watch size",
+        "city": "City",
+        "date": "Date",
+        "time": "Time",
+        "photo": "Photo",
+        "photoButton": "Attach photo",
+        "submitButton": "Checkout",
+        "price": "Price",
+        "thankForOrder": "Thank you for placing an order!",
+        "details": "Details",
+        "dateAndTime": "Date and time",
+        "howToPay": "You can pay for the order now or in cash to the master before repairing.",
+        "paymentSuccess": "Thank you! Payment was successful. Wait for the master to complete the order.",
+        "payNow": "Pay now",
+        "payLater": "Pay later",
+        "masterRating": "Rating",
+        "masterReviews": "Reviews",
+        "show": "Show",
+        "masterChoose": "Choose",
+        "noMasters": "Unfortunately, there are no masters at this time on this day. Please select a different time or date.",
+        "masterReviewsTitle": "Reviews about the master"
+    },
+    "watchSizes": {
+        "small": "Small",
+        "medium": "Medium",
+        "big": "Big"
+    },
+    "authForm": {
+        "name": "Name",
+        "email": "Email",
+        "password": "Password",
+        "asMaster": "Register as master",
+        "cities": "Cities",
+        "agreeWithTerms": "Agree with all terms",
+        "signUpButton": "Sign Up",
+        "loginButton": "Log In",
+        "signUpByService": "Sign Up with",
+        "logInByService": "Log In with"
+    },
+    "errors": {
+        "nameLength": "The name must be at least 3 letters long",
+        "name": "Name is required",
+        "email": "Email is required",
+        "emailFormat": "Invalid mail format",
+        "password": "Password is required",
+        "passwordLength": "Too short",
+        "cities": "Select at least one city",
+        "agreeWithTerms": "You must agree to the terms",
+        "cityId": "City is required",
+        "date": "Date is required",
+        "time": "Time is required",
+        "timeWatchSize": "Wrong time or watch size selected",
+        "timeDate": "Wrong time or watch size selected for current date",
+        "rating": "Rating is required",
+        "ratingBorders": "Rating must be in the range of 1-5",
+        "reviewLength": "Review must be no longer than 1000 characters"
+    },
+    "notifications": {
+        "yes": "Yes",
+        "no": "No",
+        "error": "An error has occurred!",
+        "orderReceived": "Order successfully received!",
+        "wantSignUp": "Would you like to register to view your order history?",
+        "wantChangeName": "Your account is saved in the system with name {{clientName}} and now you have entered {{orderName}}. Would you like to replace?",
+        "loginFirst": "To place an order, please login first!",
+        "successRegistrationWithVerification": "Registration completed successfully! For authorization, you must confirm the mail!",
+        "userExist": "User with this email address already exists!",
+        "successLogin": "Authorization successful!",
+        "loginError": "Email address or password incorrect!",
+        "notApproved": "You are not approved by admin yet!",
+        "noPassword": "You do not have a login password. Would you like to receive it in your mail?",
+        "passwordSended": "Password sent successfully!",
+        "reviewReceived": "Thank you! Review successfully received!",
+        "orderNotExist": "This order does not exist!",
+        "orderNotCompleted": "Order not completed yet!",
+        "orderHasReview": "Review has already been left!",
+        "successRegistrationWithApprove": "Registration completed successfully! Wait for admin approval!",
+        "successRegistration": "Registration completed successfully!",
+        "atLeastOneCity": "Select at least one city!",
+        "userNotExist": "User with this email address does not exist!"
+    },
+    "paypal": {
+        "description": "Grandfather clock repair",
+        "paymentSuccess": "Order successfully paid!",
+        "paymentCancel": "Payment has been canceled!"
+    },
+    "reviewPage": {
+        "title": "Order evaluation",
+        "rating": "Rating",
+        "review": "Review",
+        "submitButton": "Leave review"
+    }
+}
