@@ -1,0 +1,20 @@
+.socials__container {
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 16px;
+    background-color: #f6f6f6;
+}
+.socials__title {
+    text-align: center;
+    margin: 0px 0px 10px 0px;
+    font-size: 18px;
+}
+.socials {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.socials > div:not(:last-child) {
+    margin: 0px 20px 0px 0px;
+}

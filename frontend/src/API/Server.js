@@ -68,6 +68,10 @@ export class MasterService {
         const { data } = await api.post(`/master/user`, newClient);
         return data;
     }
+    static async addMasterByService(userInfo) {
+        const { data } = await api.post(`/master/service`, userInfo);
+        return data;
+    }
     static async addMasterByAdmin(newClient) {
         const { data } = await api.post(`/master/admin`, newClient);
         return data;
@@ -109,6 +113,10 @@ export class ClientService {
     }
     static async addClient(newClient) {
         const { data } = await api.post(`/client/user`, newClient);
+        return data;
+    }
+    static async addClientByService(userInfo) {
+        const { data } = await api.post(`/client/service`, userInfo);
         return data;
     }
     static async addClientByAdmin(newClient) {
@@ -219,6 +227,14 @@ export class AuthService {
     static async auth(authInfo) {
         try {
             const { data } = await api.post(`/auth`, authInfo);
+            return data;
+        } catch (error) {
+            return error;
+        }
+    }
+    static async authByService(userInfo) {
+        try {
+            const { data } = await api.post(`/auth/service`, userInfo);
             return data;
         } catch (error) {
             return error;

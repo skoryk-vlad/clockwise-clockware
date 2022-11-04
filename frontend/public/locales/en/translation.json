@@ -93,7 +93,9 @@
         "cities": "Cities",
         "agreeWithTerms": "Agree with all terms",
         "signUpButton": "Sign Up",
-        "loginButton": "Log In"
+        "loginButton": "Log In",
+        "signUpByService": "Sign Up with",
+        "logInByService": "Log In with"
     },
     "errors": {
         "nameLength": "The name must be at least 3 letters long",
@@ -121,7 +123,7 @@
         "wantSignUp": "Would you like to register to view your order history?",
         "wantChangeName": "Your account is saved in the system with name {{clientName}} and now you have entered {{orderName}}. Would you like to replace?",
         "loginFirst": "To place an order, please login first!",
-        "successRegistration": "Registration completed successfully! For authorization, you must confirm the mail!",
+        "successRegistrationWithVerification": "Registration completed successfully! For authorization, you must confirm the mail!",
         "userExist": "User with this email address already exists!",
         "successLogin": "Authorization successful!",
         "loginError": "Email address or password incorrect!",
@@ -131,7 +133,11 @@
         "reviewReceived": "Thank you! Review successfully received!",
         "orderNotExist": "This order does not exist!",
         "orderNotCompleted": "Order not completed yet!",
-        "orderHasReview": "Review has already been left!"
+        "orderHasReview": "Review has already been left!",
+        "successRegistrationWithApprove": "Registration completed successfully! Wait for admin approval!",
+        "successRegistration": "Registration completed successfully!",
+        "atLeastOneCity": "Select at least one city!",
+        "userNotExist": "User with this email address does not exist!"
     },
     "paypal": {
         "description": "Grandfather clock repair",

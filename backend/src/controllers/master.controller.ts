@@ -1,3 +1,4 @@
+import { getUserInfo } from './auth.controller';
 import { sequelize } from './../sequelize';
 import { CityMaster } from './../models/cityMaster.model';
 import { Client } from './../models/client.model';
@@ -44,6 +45,45 @@ export default class MasterController {
             });
 
             await sendConfirmationUserMail(email, confirmationToken, name);
+
+            await addMasterTransaction.commit();
+            return res.status(201).json(master);
+        } catch (error) {
+            await addMasterTransaction.rollback();
+            if (error.message === 'Service not found') return res.status(404).json(error.message);
+            if (error?.name === "ZodError") return res.status(400).json(error.issues);
+            return res.sendStatus(500);
+        }
+    }
+    async addMasterByService(req: Request, res: Response): Promise<Response> {
+        const addMasterTransaction = await sequelize.transaction();
+        try {
+            const { token, service, cities } = req.body;
+            const { name, email } = await getUserInfo(token, service);
+
+            const existUser = await User.findOne({ where: { email } });
+            if (existUser) return res.status(409).json('User with this email exist');
+
+            const confirmationToken = uuidv4();
+
+            const existCities = await City.findAll({
+                where: { id: cities }
+            });
+            if (existCities.length !== cities.length) return res.status(404).json('Some of the cities does not exist');
+
+            const user = await User.create({
+                email, role: ROLES.MASTER, confirmationToken
+            }, {
+                transaction: addMasterTransaction
+            });
+
+            const master = await Master.create({ name, userId: user.getDataValue('id'), status: MASTER_STATUSES.CONFIRMED }, {
+                transaction: addMasterTransaction
+            });
+            // @ts-ignore
+            await master.addCities(cities, {
+                transaction: addMasterTransaction
+            });
 
             await addMasterTransaction.commit();
             return res.status(201).json(master);
@@ -362,7 +402,7 @@ export default class MasterController {
             join "Master" on "Master".id = "Order"."masterId"
             group by "Master"."name", "Master".id order by "${sortedField || 'id'}" ${isDirectedASC ? 'ASC NULLS FIRST' : 'DESC NULLS LAST'}
             limit :limit offset :offset;`;
-            
+
             const masters = await sequelize.query(query, {
                 replacements: { offset: limit * (page - 1) || 0, limit: limit || 25 },
                 type: QueryTypes.SELECT

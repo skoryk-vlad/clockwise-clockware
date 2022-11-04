@@ -7,6 +7,7 @@ const router: Router = Router();
 const masterController: MasterController = new MasterController();
 
 router.post('/master/user', masterController.addMaster);
+router.post('/master/service', masterController.addMasterByService);
 router.post('/master/admin', isJwtNotExpired, hasRoles([ROLES.ADMIN]), masterController.addMasterByAdmin);
 router.get('/master', isJwtNotExpired, hasRoles([ROLES.ADMIN]), masterController.getMasters);
 router.get('/master/:id', isJwtNotExpired, hasRoles([ROLES.ADMIN]), masterController.getMasterById);
