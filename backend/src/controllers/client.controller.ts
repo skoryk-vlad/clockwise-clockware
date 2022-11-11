@@ -6,7 +6,7 @@ import { sendConfirmationUserMail } from '../services/mailer';
 import { sequelize } from './../sequelize';
 import { Op } from 'sequelize';
 import { ROLES, User } from './../models/user.model';
-import { AddClientSchema, DeleteClientSchema, GetClientSchema, UpdateClientSchema, AddClientByAdminSchema, GetClientsSchema, GetClientOrdersSchema } from './../validationSchemas/client.schema';
+import { AddClientSchema, DeleteClientSchema, GetClientSchema, UpdateClientSchema, AddClientByAdminSchema, GetClientsSchema, GetClientOrdersSchema, AddClientByServiceSchema } from './../validationSchemas/client.schema';
 import { Client, CLIENT_STATUSES } from './../models/client.model';
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,7 +15,7 @@ export default class ClientController {
     async addClient(req: Request, res: Response): Promise<Response> {
         const addClientTransaction = await sequelize.transaction();
         try {
-            const { name, email, password, status } = AddClientSchema.parse(req.body);
+            const { id, name, email, password, status } = AddClientSchema.parse(req.body);
 
             const existUser = await User.findOne({ where: { email } });
             if (existUser) return res.status(409).json('User with this email exist');
@@ -29,7 +29,7 @@ export default class ClientController {
                 transaction: addClientTransaction
             });
 
-            const client = await Client.create({ name, userId: user.getDataValue('id'), status }, {
+            const client = await Client.create({ id, name, userId: user.getDataValue('id'), status }, {
                 transaction: addClientTransaction
             });
 
@@ -46,7 +46,7 @@ export default class ClientController {
     async addClientByService(req: Request, res: Response): Promise<Response> {
         const addClientTransaction = await sequelize.transaction();
         try {
-            const { token, service } = req.body;
+            const { token, service } = AddClientByServiceSchema.parse(req.body);
             const { name, email } = await getUserInfo(token, service);
 
             const existUser = await User.findOne({ where: { email } });
@@ -76,7 +76,7 @@ export default class ClientController {
     async addClientByAdmin(req: Request, res: Response): Promise<Response> {
         const addClientTransaction = await sequelize.transaction();
         try {
-            const { name, email, status } = AddClientByAdminSchema.parse(req.body);
+            const { id, name, email, status } = AddClientByAdminSchema.parse(req.body);
 
             const existUser = await User.findOne({ where: { email } });
             if (existUser) return res.status(409).json('User with this email exist');
@@ -89,7 +89,7 @@ export default class ClientController {
                 transaction: addClientTransaction
             });
 
-            const client = await Client.create({ name, userId: user.getDataValue('id'), status }, {
+            const client = await Client.create({ id, name, userId: user.getDataValue('id'), status }, {
                 transaction: addClientTransaction
             });
 

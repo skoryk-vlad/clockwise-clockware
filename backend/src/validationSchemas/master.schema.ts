@@ -1,17 +1,25 @@
-import { MASTER_STATISTICS_FIELDS } from './../types';
+import { MASTER_STATISTICS_FIELDS, AUTH_SERVICES } from './../types';
 import { formatISO } from 'date-fns';
 import { MASTER_STATUSES, Master } from './../models/master.model';
 import { WATCH_SIZES, Order } from './../models/order.model';
 import { z } from 'zod';
 
 export const AddMasterSchema = z.object({
+    id: z.number().int().positive().optional(),
     name: z.string().trim().min(3).max(255),
     email: z.string().email().max(255),
     cities: z.array(z.number().int().positive()).nonempty(),
     status: z.nativeEnum(MASTER_STATUSES),
     password: z.string().min(8).max(30)
 });
+export const AddMasterByServiceSchema = z.object({
+    id: z.number().int().positive().optional(),
+    token: z.string(),
+    service: z.nativeEnum(AUTH_SERVICES),
+    cities: z.array(z.number().int().positive()).nonempty(),
+});
 export const AddMasterByAdminSchema = z.object({
+    id: z.number().int().positive().optional(),
     name: z.string().trim().min(3).max(255),
     email: z.string().email().max(255),
     cities: z.array(z.number().int().positive()).nonempty(),
