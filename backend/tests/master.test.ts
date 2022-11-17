@@ -18,79 +18,6 @@ const adminInfo = {
 const admin = {
     email: process.env.ADMIN_LOGIN, password: process.env.ADMIN_PASSWORD
 };
-const newMaster = {
-    id: 1,
-    name: 'Иван',
-    email: 'ivanivanovich@gmail.com',
-    password: 'ivanivanovich',
-    cities: [1],
-    status: MASTER_STATUSES.APPROVED
-};
-const newMaster2 = {
-    id: 2,
-    name: 'Богдан',
-    email: 'bogomdan@gmail.com',
-    password: 'sdf32Sggt278',
-    cities: [1, 2],
-    status: MASTER_STATUSES.NOT_CONFIRMED
-};
-const newMaster3 = {
-    id: 3,
-    name: 'Арсений',
-    email: 'arsen4ik@gmail.com',
-    password: '1ff3gafdtv58',
-    cities: [2],
-    status: MASTER_STATUSES.NOT_CONFIRMED
-};
-const newMaster4 = {
-    id: 4,
-    name: 'Светлана',
-    email: 'semisvetik123@gmail.com',
-    cities: [2],
-    status: MASTER_STATUSES.NOT_CONFIRMED
-};
-const newMasterByService = {
-    id: 15,
-    token: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjcxM2ZkNjhjOTY2ZTI5MzgwOTgxZWRjMDE2NGEyZjZjMDZjNTcwMmEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYmYiOjE2NjgxNTgxNTQsImF1ZCI6IjEwNjY3NDQ3NDk4MTMtOTh2Nzk1YmplM2M2aWw4NmRpM3FiNzYwbDRjZnQyamIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTAyMjU4NjA2MDk0NjQ1MDk0MTYiLCJlbWFpbCI6InZtczA3MDMwNEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMTA2Njc0NDc0OTgxMy05OHY3OTViamUzYzZpbDg2ZGkzcWI3NjBsNGNmdDJqYi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsIm5hbWUiOiJWbGFkIEtyYW1lciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UyR2UxMlN0NHl5TUZEVmJYZV9hemJxOGxmdTQtTHlTcFUzZm9qQj1zOTYtYyIsImdpdmVuX25hbWUiOiJWbGFkIiwiZmFtaWx5X25hbWUiOiJLcmFtZXIiLCJpYXQiOjE2NjgxNTg0NTQsImV4cCI6MTY2ODE2MjA1NCwianRpIjoiNmU4NTI3NWMxNWYzNjEzZTkyNDFhNTEyN2ZmYjk0OTE3ODZhMGVlYSJ9.f3U7SaNsUzGr19P4PjaxQsur7dr4HNgqrZdFk-ZXH-sFsBC09RgL4MoZO5QNPJt4wnfRfDE1qKP33yIpvDaYGKHvQYZTGGSDdwvoYOkKFpnmtUXU5pskMhg07I94wpb1H76ZC_R1PZ2niRlXVAcop4vJzpWX6rukzYeIDQyT2ADXL8GiGhGhWSE8MycLevB3dvOE26q9N9ICrQcQmZVm789vkNeHmSfP0orifvzshhM0jUlK2DFL2VoNKfbLalsFSXP0zTec-OvnpCcPRQP0Ym3bvnosTgQx4a6lLcu_EtPgpMcwl8hiJR1Sa3KWJ2I9SAtNj_G9P0_VZOldDZp-rQ",
-    service: AUTH_SERVICES.GOOGLE,
-    cities: [1]
-};
-const newMasterByServiceExpiredToken = {
-    token: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjcxM2ZkNjhjOTY2ZTI5MzgwOTgxZWRjMDE2NGEyZjZjMDZjNTcwMmEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYmYiOjE2NjgwNjU0NDUsImF1ZCI6IjEwNjY3NDQ3NDk4MTMtOTh2Nzk1YmplM2M2aWw4NmRpM3FiNzYwbDRjZnQyamIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTAyMjU4NjA2MDk0NjQ1MDk0MTYiLCJlbWFpbCI6InZtczA3MDMwNEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMTA2Njc0NDc0OTgxMy05OHY3OTViamUzYzZpbDg2ZGkzcWI3NjBsNGNmdDJqYi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsIm5hbWUiOiJWbGFkIEtyYW1lciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UyR2UxMlN0NHl5TUZEVmJYZV9hemJxOGxmdTQtTHlTcFUzZm9qQj1zOTYtYyIsImdpdmVuX25hbWUiOiJWbGFkIiwiZmFtaWx5X25hbWUiOiJLcmFtZXIiLCJpYXQiOjE2NjgwNjU3NDUsImV4cCI6MTY2ODA2OTM0NSwianRpIjoiMGJlMmJlYTc3OGFkY2U3YjUwN2YwMjQ2YThmYjE0ODFkMmYyMDZmZSJ9.BqwdSUP8vtMTATdGzmcK4e9s0lPYzzb6WEpSVvZbRZhOaegQlpn1RgywcolA1g2gLf2IHdOMWf7KeuQQFdVWaiYqnNJY87bjOlFvRBAxFi__lMK7erHlJ7fzH1Hw8PQt9nabnhv25umd6hljkJ3_Ku0ITXwFx-7MPrtmBntPMY5YXHpiRhKI12TslNUp2stxAozeXDcuKsxO4l4zaOtgVaNpmklCbC-bHjFJnx_aMWnt2wcxTQtFQyHcLQR4_WyAU0D0Dbea7yJqMVbGYtNjDYe_PLCi5Qt_hCcuioVwy_bzHgL4c6l7wHSGXpBHiQwj3VN_K3QoVYbJHkQxqisixQ',
-    service: AUTH_SERVICES.GOOGLE,
-    cities: [1]
-};
-const newMasterByServiceWrongToken = {
-    token: 'eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJ',
-    service: AUTH_SERVICES.GOOGLE,
-    cities: [1]
-};
-const newMasterByServiceWrongService = {
-    token: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjcxM2ZkNjhjOTY2ZTI5MzgwOTgxZWRjMDE2NGEyZjZjMDZjNTcwMmEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYmYiOjE2NjgwNjU0NDUsImF1ZCI6IjEwNjY3NDQ3NDk4MTMtOTh2Nzk1YmplM2M2aWw4NmRpM3FiNzYwbDRjZnQyamIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTAyMjU4NjA2MDk0NjQ1MDk0MTYiLCJlbWFpbCI6InZtczA3MDMwNEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMTA2Njc0NDc0OTgxMy05OHY3OTViamUzYzZpbDg2ZGkzcWI3NjBsNGNmdDJqYi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsIm5hbWUiOiJWbGFkIEtyYW1lciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UyR2UxMlN0NHl5TUZEVmJYZV9hemJxOGxmdTQtTHlTcFUzZm9qQj1zOTYtYyIsImdpdmVuX25hbWUiOiJWbGFkIiwiZmFtaWx5X25hbWUiOiJLcmFtZXIiLCJpYXQiOjE2NjgwNjU3NDUsImV4cCI6MTY2ODA2OTM0NSwianRpIjoiMGJlMmJlYTc3OGFkY2U3YjUwN2YwMjQ2YThmYjE0ODFkMmYyMDZmZSJ9.BqwdSUP8vtMTATdGzmcK4e9s0lPYzzb6WEpSVvZbRZhOaegQlpn1RgywcolA1g2gLf2IHdOMWf7KeuQQFdVWaiYqnNJY87bjOlFvRBAxFi__lMK7erHlJ7fzH1Hw8PQt9nabnhv25umd6hljkJ3_Ku0ITXwFx-7MPrtmBntPMY5YXHpiRhKI12TslNUp2stxAozeXDcuKsxO4l4zaOtgVaNpmklCbC-bHjFJnx_aMWnt2wcxTQtFQyHcLQR4_WyAU0D0Dbea7yJqMVbGYtNjDYe_PLCi5Qt_hCcuioVwy_bzHgL4c6l7wHSGXpBHiQwj3VN_K3QoVYbJHkQxqisixQ',
-    service: 'twitter',
-    cities: [1]
-};
-const newMasterErrorCity = {
-    id: 5,
-    name: 'Степан',
-    email: 'stepanh123@gmail.com',
-    password: 'stepanh123',
-    cities: [1, 3],
-    status: MASTER_STATUSES.CONFIRMED
-};
-const newMasterErrorEmail = {
-    id: 6,
-    name: 'Степан',
-    email: 'stepanh123com',
-    password: 'stepanh123',
-    cities: [1, 2],
-    status: MASTER_STATUSES.CONFIRMED
-};
-const newMasterError = {
-    id: 7,
-    name: 'Степан',
-    cities: [1, 2],
-};
 const newCity = {
     id: 1,
     name: 'Днепр',
@@ -100,6 +27,79 @@ const newCity2 = {
     id: 2,
     name: 'Киев',
     price: 150
+};
+const newMaster = {
+    id: 1,
+    name: 'Иван',
+    email: 'ivanivanovich@gmail.com',
+    password: 'ivanivanovich',
+    cities: [newCity.id],
+    status: MASTER_STATUSES.APPROVED
+};
+const newMaster2 = {
+    id: 2,
+    name: 'Богдан',
+    email: 'bogomdan@gmail.com',
+    password: 'sdf32Sggt278',
+    cities: [newCity.id, newCity2.id],
+    status: MASTER_STATUSES.NOT_CONFIRMED
+};
+const newMaster3 = {
+    id: 3,
+    name: 'Арсений',
+    email: 'arsen4ik@gmail.com',
+    password: '1ff3gafdtv58',
+    cities: [newCity2.id],
+    status: MASTER_STATUSES.NOT_CONFIRMED
+};
+const newMaster4 = {
+    id: 4,
+    name: 'Светлана',
+    email: 'semisvetik123@gmail.com',
+    cities: [newCity2.id],
+    status: MASTER_STATUSES.NOT_CONFIRMED
+};
+const newMasterByService = {
+    id: 15,
+    token: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjcxM2ZkNjhjOTY2ZTI5MzgwOTgxZWRjMDE2NGEyZjZjMDZjNTcwMmEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYmYiOjE2NjgxNTgxNTQsImF1ZCI6IjEwNjY3NDQ3NDk4MTMtOTh2Nzk1YmplM2M2aWw4NmRpM3FiNzYwbDRjZnQyamIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTAyMjU4NjA2MDk0NjQ1MDk0MTYiLCJlbWFpbCI6InZtczA3MDMwNEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMTA2Njc0NDc0OTgxMy05OHY3OTViamUzYzZpbDg2ZGkzcWI3NjBsNGNmdDJqYi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsIm5hbWUiOiJWbGFkIEtyYW1lciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UyR2UxMlN0NHl5TUZEVmJYZV9hemJxOGxmdTQtTHlTcFUzZm9qQj1zOTYtYyIsImdpdmVuX25hbWUiOiJWbGFkIiwiZmFtaWx5X25hbWUiOiJLcmFtZXIiLCJpYXQiOjE2NjgxNTg0NTQsImV4cCI6MTY2ODE2MjA1NCwianRpIjoiNmU4NTI3NWMxNWYzNjEzZTkyNDFhNTEyN2ZmYjk0OTE3ODZhMGVlYSJ9.f3U7SaNsUzGr19P4PjaxQsur7dr4HNgqrZdFk-ZXH-sFsBC09RgL4MoZO5QNPJt4wnfRfDE1qKP33yIpvDaYGKHvQYZTGGSDdwvoYOkKFpnmtUXU5pskMhg07I94wpb1H76ZC_R1PZ2niRlXVAcop4vJzpWX6rukzYeIDQyT2ADXL8GiGhGhWSE8MycLevB3dvOE26q9N9ICrQcQmZVm789vkNeHmSfP0orifvzshhM0jUlK2DFL2VoNKfbLalsFSXP0zTec-OvnpCcPRQP0Ym3bvnosTgQx4a6lLcu_EtPgpMcwl8hiJR1Sa3KWJ2I9SAtNj_G9P0_VZOldDZp-rQ",
+    service: AUTH_SERVICES.GOOGLE,
+    cities: [newCity.id]
+};
+const newMasterByServiceExpiredToken = {
+    token: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjcxM2ZkNjhjOTY2ZTI5MzgwOTgxZWRjMDE2NGEyZjZjMDZjNTcwMmEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYmYiOjE2NjgwNjU0NDUsImF1ZCI6IjEwNjY3NDQ3NDk4MTMtOTh2Nzk1YmplM2M2aWw4NmRpM3FiNzYwbDRjZnQyamIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTAyMjU4NjA2MDk0NjQ1MDk0MTYiLCJlbWFpbCI6InZtczA3MDMwNEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMTA2Njc0NDc0OTgxMy05OHY3OTViamUzYzZpbDg2ZGkzcWI3NjBsNGNmdDJqYi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsIm5hbWUiOiJWbGFkIEtyYW1lciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UyR2UxMlN0NHl5TUZEVmJYZV9hemJxOGxmdTQtTHlTcFUzZm9qQj1zOTYtYyIsImdpdmVuX25hbWUiOiJWbGFkIiwiZmFtaWx5X25hbWUiOiJLcmFtZXIiLCJpYXQiOjE2NjgwNjU3NDUsImV4cCI6MTY2ODA2OTM0NSwianRpIjoiMGJlMmJlYTc3OGFkY2U3YjUwN2YwMjQ2YThmYjE0ODFkMmYyMDZmZSJ9.BqwdSUP8vtMTATdGzmcK4e9s0lPYzzb6WEpSVvZbRZhOaegQlpn1RgywcolA1g2gLf2IHdOMWf7KeuQQFdVWaiYqnNJY87bjOlFvRBAxFi__lMK7erHlJ7fzH1Hw8PQt9nabnhv25umd6hljkJ3_Ku0ITXwFx-7MPrtmBntPMY5YXHpiRhKI12TslNUp2stxAozeXDcuKsxO4l4zaOtgVaNpmklCbC-bHjFJnx_aMWnt2wcxTQtFQyHcLQR4_WyAU0D0Dbea7yJqMVbGYtNjDYe_PLCi5Qt_hCcuioVwy_bzHgL4c6l7wHSGXpBHiQwj3VN_K3QoVYbJHkQxqisixQ',
+    service: AUTH_SERVICES.GOOGLE,
+    cities: [newCity.id]
+};
+const newMasterByServiceWrongToken = {
+    token: 'eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJ',
+    service: AUTH_SERVICES.GOOGLE,
+    cities: [newCity.id]
+};
+const newMasterByServiceWrongService = {
+    token: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjcxM2ZkNjhjOTY2ZTI5MzgwOTgxZWRjMDE2NGEyZjZjMDZjNTcwMmEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYmYiOjE2NjgwNjU0NDUsImF1ZCI6IjEwNjY3NDQ3NDk4MTMtOTh2Nzk1YmplM2M2aWw4NmRpM3FiNzYwbDRjZnQyamIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTAyMjU4NjA2MDk0NjQ1MDk0MTYiLCJlbWFpbCI6InZtczA3MDMwNEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMTA2Njc0NDc0OTgxMy05OHY3OTViamUzYzZpbDg2ZGkzcWI3NjBsNGNmdDJqYi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsIm5hbWUiOiJWbGFkIEtyYW1lciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UyR2UxMlN0NHl5TUZEVmJYZV9hemJxOGxmdTQtTHlTcFUzZm9qQj1zOTYtYyIsImdpdmVuX25hbWUiOiJWbGFkIiwiZmFtaWx5X25hbWUiOiJLcmFtZXIiLCJpYXQiOjE2NjgwNjU3NDUsImV4cCI6MTY2ODA2OTM0NSwianRpIjoiMGJlMmJlYTc3OGFkY2U3YjUwN2YwMjQ2YThmYjE0ODFkMmYyMDZmZSJ9.BqwdSUP8vtMTATdGzmcK4e9s0lPYzzb6WEpSVvZbRZhOaegQlpn1RgywcolA1g2gLf2IHdOMWf7KeuQQFdVWaiYqnNJY87bjOlFvRBAxFi__lMK7erHlJ7fzH1Hw8PQt9nabnhv25umd6hljkJ3_Ku0ITXwFx-7MPrtmBntPMY5YXHpiRhKI12TslNUp2stxAozeXDcuKsxO4l4zaOtgVaNpmklCbC-bHjFJnx_aMWnt2wcxTQtFQyHcLQR4_WyAU0D0Dbea7yJqMVbGYtNjDYe_PLCi5Qt_hCcuioVwy_bzHgL4c6l7wHSGXpBHiQwj3VN_K3QoVYbJHkQxqisixQ',
+    service: 'twitter',
+    cities: [newCity.id]
+};
+const newMasterErrorCity = {
+    id: 5,
+    name: 'Степан',
+    email: 'stepanh123@gmail.com',
+    password: 'stepanh123',
+    cities: [newCity.id, 3],
+    status: MASTER_STATUSES.CONFIRMED
+};
+const newMasterErrorEmail = {
+    id: 6,
+    name: 'Степан',
+    email: 'stepanh123com',
+    password: 'stepanh123',
+    cities: [newCity.id, newCity2.id],
+    status: MASTER_STATUSES.CONFIRMED
+};
+const newMasterError = {
+    id: 7,
+    name: 'Степан',
+    cities: [newCity.id, newCity2.id],
 };
 const newClient = {
     id: 1,
@@ -173,7 +173,7 @@ const newMaster20 = {
     name: 'Владимир',
     email: 'vladimir73927@gmail.com',
     password: 'sdfSggt27832',
-    cities: [3],
+    cities: [newCity3.id],
     status: MASTER_STATUSES.NOT_CONFIRMED
 };
 const newMaster21 = {
@@ -181,7 +181,7 @@ const newMaster21 = {
     name: 'Владимир',
     email: 'vladimir73@gmail.com',
     password: 'sdfSggt27832',
-    cities: [3],
+    cities: [newCity3.id],
     status: MASTER_STATUSES.NOT_CONFIRMED
 };
 const newOrder5 = {

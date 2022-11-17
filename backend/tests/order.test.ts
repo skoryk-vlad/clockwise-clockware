@@ -17,22 +17,6 @@ const adminInfo = {
 const admin = {
     email: process.env.ADMIN_LOGIN, password: process.env.ADMIN_PASSWORD
 };
-const newMaster = {
-    id: 1,
-    name: 'Иван',
-    email: 'ivanivanovich@gmail.com',
-    password: 'ivanivanovich',
-    cities: [1],
-    status: MASTER_STATUSES.APPROVED
-};
-const newMaster2 = {
-    id: 2,
-    name: 'Богдан',
-    email: 'bogomdan@gmail.com',
-    password: 'sdf32Sggt278',
-    cities: [2],
-    status: MASTER_STATUSES.NOT_CONFIRMED
-};
 const newCity = {
     id: 1,
     name: 'Днепр',
@@ -42,6 +26,22 @@ const newCity2 = {
     id: 2,
     name: 'Киев',
     price: 150
+};
+const newMaster = {
+    id: 1,
+    name: 'Иван',
+    email: 'ivanivanovich@gmail.com',
+    password: 'ivanivanovich',
+    cities: [newCity.id],
+    status: MASTER_STATUSES.APPROVED
+};
+const newMaster2 = {
+    id: 2,
+    name: 'Богдан',
+    email: 'bogomdan@gmail.com',
+    password: 'sdf32Sggt278',
+    cities: [newCity2.id],
+    status: MASTER_STATUSES.NOT_CONFIRMED
 };
 const newClient = {
     id: 1,
