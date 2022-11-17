@@ -41,7 +41,7 @@ export const MasterChoice = ({ freeMasters, returnForm, addOrder, price }) => {
                 }
             </div>
             <div className={classes.return} onClick={returnForm}>
-                <img src="/images/icons/top.png" alt="Назад" />
+                <img src="/images/icons/top.png" alt={t('orderForm.returnFormAltText')} />
             </div>
             <div className={classes.formBottom}>
                 <OrderButton onClick={() => addOrder(chosenMaster)} className={(chosenMaster === null ? "disabledBtn" : '')}
@@ -59,7 +59,7 @@ export const MasterChoice = ({ freeMasters, returnForm, addOrder, price }) => {
                     <div className={classes.masterReviewDate}>{review.date}</div>
                 </div>)}
                 <div className={`${classes.return} ${classes.close}`} onClick={() => setReviewsInfo({ masterName: '', reviews: [] })}>
-                    <img src="/images/icons/close.png" alt="Назад" />
+                    <img src="/images/icons/close.png" alt={t('orderForm.returnFormAltText')} />
                 </div>
             </div>}
         </div>
