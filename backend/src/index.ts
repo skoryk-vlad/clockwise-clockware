@@ -1,7 +1,7 @@
 import express, { Express } from 'express';
 import cors from 'cors';
-import * as dotenv from 'dotenv'
-dotenv.config({ path: `.env.${process.env.NODE_ENV[0] === 'l' ? 'local' : 'prod'}` })
+import * as dotenv from 'dotenv';
+dotenv.config({ path: `.env.${process.env.NODE_ENV.trim()}` });
 
 import authRouter from './routes/auth.routes';
 import cityRouter from './routes/city.routes';
@@ -33,4 +33,8 @@ app.get('/api/ping', (req, res) => {
     res.sendStatus(200);
 });
 
-app.listen(PORT, () => { console.log(`Server started on port ${PORT} in ${process.env.NODE_ENV}mode`); });
+if (process.env.NODE_ENV.trim() !== 'test') {
+    app.listen(PORT, () => { console.log(`Server started on port ${PORT} in ${process.env.NODE_ENV}mode`); });
+}
+
+export default app;

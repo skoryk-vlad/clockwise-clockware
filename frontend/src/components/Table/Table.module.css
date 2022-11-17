@@ -127,10 +127,6 @@
     background-color: #eee;
 }
 
-.table th:nth-child(1) {
-    width: 45px;
-}
-
 .table thead {
     background-color: #aaa;
 }

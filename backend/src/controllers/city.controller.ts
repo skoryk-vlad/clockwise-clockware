@@ -7,8 +7,8 @@ import { Request, Response } from 'express';
 export default class CityController {
     async addCity(req: Request, res: Response): Promise<Response> {
         try {
-            const { name, price } = AddCitySchema.parse(req.body);
-            const city = await City.create({ name, price });
+            const { id, name, price } = AddCitySchema.parse(req.body);
+            const city = await City.create({ id, name, price });
             return res.status(201).json(city);
         } catch (error) {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);

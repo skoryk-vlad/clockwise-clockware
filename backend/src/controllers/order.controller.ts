@@ -18,7 +18,7 @@ export default class OrderController {
     async addOrder(req: Request, res: Response): Promise<Response> {
         const addOrderTransaction = await sequelize.transaction();
         try {
-            const { name, email, masterId, cityId, watchSize, date, time, status } = AddOrderSchema.parse(req.body);
+            const { id, name, email, masterId, cityId, watchSize, date, time, status } = AddOrderSchema.parse(req.body);
 
             const existCity = await City.findByPk(cityId);
             if (!existCity) return res.status(404).json('No such city');
@@ -80,7 +80,7 @@ export default class OrderController {
             }
 
             const order = await Order.create({
-                watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, price, reviewToken, imagesLinks
+                id, watchSize, date, time, masterId, cityId, clientId: client.getDataValue('id'), status, endTime, price, reviewToken, imagesLinks
             }, {
                 transaction: addOrderTransaction
             });

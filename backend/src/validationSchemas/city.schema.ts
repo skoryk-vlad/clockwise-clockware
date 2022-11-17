@@ -2,6 +2,7 @@ import { City } from './../models/city.model';
 import { z } from 'zod';
 
 export const AddCitySchema = z.object({
+    id: z.number().int().positive().optional(),
     name: z.string().trim().min(3).max(255),
     price: z.number().int().positive()
 });

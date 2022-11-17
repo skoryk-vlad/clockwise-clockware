@@ -2,6 +2,7 @@
 /backend/build
 /backend/.env.prod
 /backend/.env.local
+/backend/.env.test
 
 /frontend/node_modules
 /frontend/build

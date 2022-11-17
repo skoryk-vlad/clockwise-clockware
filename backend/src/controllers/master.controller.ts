@@ -6,7 +6,7 @@ import { sendConfirmationUserMail, sendMasterApprovedMail } from '../services/ma
 import { encryptPassword } from './../password';
 import { User, ROLES } from './../models/user.model';
 import { City } from './../models/city.model';
-import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, AddMasterByAdminSchema, GetMastersSchema, GetMasterOrdersSchema, GetMastersStatisticsSchema } from './../validationSchemas/master.schema';
+import { AddMasterSchema, DeleteMasterSchema, GetMasterSchema, UpdateMasterSchema, GetFreeMastersSchema, AddMasterByAdminSchema, GetMastersSchema, GetMasterOrdersSchema, GetMastersStatisticsSchema, AddMasterByServiceSchema } from './../validationSchemas/master.schema';
 import { Order, WatchSizes } from './../models/order.model';
 import { Master, MASTER_STATUSES, MasterAttributes, MasterCreationAttributes } from './../models/master.model';
 import { Request, Response } from 'express';
@@ -17,7 +17,7 @@ export default class MasterController {
     async addMaster(req: Request, res: Response): Promise<Response> {
         const addMasterTransaction = await sequelize.transaction();
         try {
-            const { name, email, password, cities, status } = AddMasterSchema.parse(req.body);
+            const { id, name, email, password, cities, status } = AddMasterSchema.parse(req.body);
 
             const existUser = await User.findOne({ where: { email } });
             if (existUser) return res.status(409).json('User with this email exist');
@@ -36,7 +36,7 @@ export default class MasterController {
                 transaction: addMasterTransaction
             });
 
-            const master = await Master.create({ name, userId: user.getDataValue('id'), status }, {
+            const master = await Master.create({ id, name, userId: user.getDataValue('id'), status }, {
                 transaction: addMasterTransaction
             });
             // @ts-ignore
@@ -47,10 +47,10 @@ export default class MasterController {
             await sendConfirmationUserMail(email, confirmationToken, name);
 
             await addMasterTransaction.commit();
-            return res.status(201).json(master);
+
+            return res.status(201).json({ ...master.get(), email, cities });
         } catch (error) {
             await addMasterTransaction.rollback();
-            if (error.message === 'Service not found') return res.status(404).json(error.message);
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             return res.sendStatus(500);
         }
@@ -58,7 +58,7 @@ export default class MasterController {
     async addMasterByService(req: Request, res: Response): Promise<Response> {
         const addMasterTransaction = await sequelize.transaction();
         try {
-            const { token, service, cities } = req.body;
+            const { id, token, service, cities } = AddMasterByServiceSchema.parse(req.body);
             const { name, email } = await getUserInfo(token, service);
 
             const existUser = await User.findOne({ where: { email } });
@@ -77,7 +77,7 @@ export default class MasterController {
                 transaction: addMasterTransaction
             });
 
-            const master = await Master.create({ name, userId: user.getDataValue('id'), status: MASTER_STATUSES.CONFIRMED }, {
+            const master = await Master.create({ id, name, userId: user.getDataValue('id'), status: MASTER_STATUSES.CONFIRMED }, {
                 transaction: addMasterTransaction
             });
             // @ts-ignore
@@ -86,17 +86,19 @@ export default class MasterController {
             });
 
             await addMasterTransaction.commit();
-            return res.status(201).json(master);
+            return res.status(201).json({ ...master.get(), email, cities });
         } catch (error) {
             await addMasterTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
-            return res.sendStatus(500);
+            if (error?.message.includes("Wrong number of segments in token")) return res.status(400).json(error.message);
+            if (error?.message.includes("Token used too late")) return res.status(400).json("Token used too late");
+            return res.sendStatus(505);
         }
     }
     async addMasterByAdmin(req: Request, res: Response): Promise<Response> {
         const addMasterTransaction = await sequelize.transaction();
         try {
-            const { name, email, cities, status } = AddMasterByAdminSchema.parse(req.body);
+            const { id, name, email, cities, status } = AddMasterByAdminSchema.parse(req.body);
 
             const existUser = await User.findOne({ where: { email } });
             if (existUser) return res.status(409).json('User with this email exist');
@@ -114,7 +116,7 @@ export default class MasterController {
                 transaction: addMasterTransaction
             });
 
-            const master = await Master.create({ name, userId: user.getDataValue('id'), status }, {
+            const master = await Master.create({ id, name, userId: user.getDataValue('id'), status }, {
                 transaction: addMasterTransaction
             });
             // @ts-ignore
@@ -125,7 +127,7 @@ export default class MasterController {
             await sendConfirmationUserMail(email, confirmationToken, name);
 
             await addMasterTransaction.commit();
-            return res.status(201).json(master);
+            return res.status(201).json({ ...master.get(), email, cities });
         } catch (error) {
             await addMasterTransaction.rollback();
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
@@ -198,13 +200,17 @@ export default class MasterController {
         try {
             const { id } = GetMasterSchema.parse(req.params);
             const master = await Master.findByPk(id, {
-                attributes: { include: [[sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 2), 'rating']] },
+                attributes: { include: [[sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.fn('NULLIF', sequelize.col('rating'), 0)), 2), 'rating'], [sequelize.col('User.email'), 'email']] },
                 include: [City, {
                     model: Order,
                     as: 'Order',
                     attributes: []
-                }],
-                group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id']
+                }, {
+                        model: User,
+                        attributes: [],
+                        required: true
+                    }],
+                group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id', 'User.email']
             });
             if (!master) return res.status(404).json('No such master');
             return res.status(200).json(master);
@@ -288,7 +294,7 @@ export default class MasterController {
                     attributes: []
                 }],
                 group: ['Master.id', 'Cities.id', 'Cities->CityMaster.id'],
-                order: [['rating', 'DESC NULLS LAST']]
+                order: [['rating', 'DESC NULLS LAST'], 'id']
             });
 
             return res.status(200).json(freeMasters);

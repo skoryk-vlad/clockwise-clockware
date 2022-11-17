@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { isAfter } from 'date-fns';
 
 export const AddOrderSchema = z.object({
+    id: z.number().int().positive().optional(),
     name: z.string().trim().min(3).max(255),
     email: z.string().email().max(255),
     watchSize: z.nativeEnum(WATCH_SIZES),
@@ -21,8 +22,22 @@ export const AddOrderSchema = z.object({
         (a) => typeof a === 'string' ? parseInt(z.string().parse(a), 10) : a,
         z.number().int().positive()
     ),
-    status: z.nativeEnum(ORDER_STATUSES).optional()
-});
+    status: z.nativeEnum(ORDER_STATUSES)
+})
+.superRefine((order, ctx) => {
+    if (!(order.time + Object.values(WATCH_SIZES).indexOf(order.watchSize) + 1 < 20)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['time'],
+            message: "Wrong time or watch size selected",
+        });
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['watchSize'],
+            message: "Wrong time or watch size selected",
+        });
+    }
+});;
 export const GetOrdersSchema = z.object({
     limit: z.preprocess(
         (a) => parseInt(z.string().parse(a), 10),
