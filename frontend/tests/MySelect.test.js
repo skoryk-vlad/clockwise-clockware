@@ -18,7 +18,7 @@ const setup = (props) => {
     />);
 };
 
-describe("<OrderButton />", () => {
+describe("<MySelect />", () => {
     test('should correctly set default option', () => {
         setup();
         expect(screen.getByRole('option', { name: defaultOption.name }).selected).toBe(true);
