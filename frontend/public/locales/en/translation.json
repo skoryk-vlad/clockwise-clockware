@@ -78,7 +78,8 @@
         "show": "Show",
         "masterChoose": "Choose",
         "noMasters": "Unfortunately, there are no masters at this time on this day. Please select a different time or date.",
-        "masterReviewsTitle": "Reviews about the master"
+        "masterReviewsTitle": "Reviews about the master",
+        "returnFormAltText": "Back"
     },
     "watchSizes": {
         "small": "Small",

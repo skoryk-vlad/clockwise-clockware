@@ -1,10 +1,12 @@
 import React from 'react'
 import classes from './OrderButton.module.css';
 
-export const OrderButton = ({children, ...props}) => {
+export const OrderButton = ({ children, onClick, className, ...props }) => {
   return (
-    <button {...props} className={classes.myBtn + ' ' + props.className + ' ' + classes[props.className]}>
-        {children}
+    <button onClick={onClick} {...props}
+      className={`${classes.myBtn}${className ? ` ${className + ' ' + classes[className]}` : ''}`}
+    >
+      {children}
     </button>
   )
 }
