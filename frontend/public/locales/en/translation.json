@@ -81,7 +81,8 @@
         "masterReviewsTitle": "Reviews about the master",
         "isMasterToHouse": "Enter the address to call the master",
         "placeNotAvailable": "Not available",
-        "address": "Address"
+        "address": "Address",
+        "returnFormAltText": "Back"
     },
     "watchSizes": {
         "small": "Small",

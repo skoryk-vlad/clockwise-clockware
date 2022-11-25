@@ -131,7 +131,7 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="watchSize">{t('orderForm.watchSize')}</label>
-                    {errors.watchSize && !isValid && (
+                    {errors.watchSize && (
                         <div className={classes.errorMessage}>{t(errors.watchSize.message)}</div>
                     )}
                 </div>
@@ -241,7 +241,7 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="date">{t('orderForm.date')}</label>
-                    {errors.date && !isValid && (
+                    {errors.date && (
                         <div className={classes.errorMessage}>{t(errors.date.message)}</div>
                     )}
                 </div>
@@ -252,7 +252,7 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
                         field: { onChange, value, name },
                         fieldState: { error },
                     }) => (
-                        <MyInput
+                        <MyInput data-testid="dateInput"
                             type="date" name={name}
                             min={minDate}
                             onChange={onChange}
@@ -265,7 +265,7 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="time">{t('orderForm.time')}</label>
-                    {errors.time && !isValid && (
+                    {errors.time && (
                         <div className={classes.errorMessage}>{t(errors.time.message)}</div>
                     )}
                 </div>
@@ -301,7 +301,7 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
                         return (
                             <>
                                 <div className={classes.fileUpload}>
-                                    <input
+                                    <input data-testid="photoInput"
                                         type="file" id="images" multiple
                                         accept=".jpеg,.jpg,.png"
                                         value={value.filename}

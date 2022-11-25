@@ -81,7 +81,8 @@
         "masterReviewsTitle": "Отзывы о мастере",
         "isMasterToHouse": "Указать адрес для вызова мастера",
         "placeNotAvailable": "Недоступно",
-        "address": "Адрес"
+        "address": "Адрес",
+        "returnFormAltText": "Назад"
     },
     "watchSizes": {
         "small": "Маленькие",
