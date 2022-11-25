@@ -15,7 +15,7 @@ const CitySchema = z.object({
     price: z.number({ invalid_type_error: 'Цена должна быть числом' }).int().positive('Цена должна быть положительным числом'),
 });
 
-export const CityForm = ({ city, onClick, btnTitle }) => {
+export const CityForm = ({ city, onClick, btnTitle, openMap, mapBtnTitle }) => {
     const { control, handleSubmit, getValues, formState: { errors, isSubmitted, isValid } } = useForm({
         mode: 'onSubmit',
         reValidateMode: 'onChange',
@@ -74,6 +74,15 @@ export const CityForm = ({ city, onClick, btnTitle }) => {
                     )}
                 />
             </div>
+            {btnTitle !== 'Добавить' && <div className={classes.formRow}>
+                <div className={classes.rowTop}>
+                    <label htmlFor="price">Область для услуги "Вызов мастера на дом"</label>
+                    {errors.price && (
+                        <div className={classes.errorMessage}>{errors.price.message}</div>
+                    )}
+                </div>
+                <AdminButton type="button" onClick={openMap} className={classes.select}>{mapBtnTitle}</AdminButton>
+            </div>}
 
             <AdminButton type="submit" className={(isSubmitted && !isValid) ? "disabledBtn" : ""}
                 disabled={(isSubmitted && !isValid)}>{btnTitle}</AdminButton>

@@ -12,6 +12,7 @@ import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { Table } from '../../components/Table/Table';
 import { ColumnHead } from '../../components/Table/ColumnHead';
 import { CityFilterForm } from '../../components/Forms/CityFilterForm';
+import { AdminMap } from '../../components/Map/AdminMap';
 
 const defaultCity = {
     name: '',
@@ -42,6 +43,7 @@ export const Cities = () => {
 
     const [currentCity, setCurrentCity] = useState(defaultCity);
     const [isModalOpened, setIsModalOpened] = useState(false);
+    const [isMapOpened, setIsMapOpened] = useState(false);
 
     const [pagination, setPagination] = useState(defaultPagination);
     const [filters, setFilters] = useState(defaultFilters);
@@ -74,7 +76,11 @@ export const Cities = () => {
             notify(NOTIFY_TYPES.SUCCESS, 'Город успешно удален');
             fetchCities();
         } catch (error) {
-            notify(NOTIFY_TYPES.ERROR);
+            if(error.response.data === 'There are orders in this city') {
+                notify(NOTIFY_TYPES.ERROR, 'В данном городе есть заказы. Его удаление невозможно!');
+            } else {
+                notify(NOTIFY_TYPES.ERROR);
+            }
             console.log(error.response.data);
         }
     }
@@ -117,7 +123,14 @@ export const Cities = () => {
                 </div>
 
                 <MyModal visible={isModalOpened} setVisible={setIsModalOpened}>
-                    {currentCity && <CityForm city={currentCity} onClick={currentCity.id ? updateCity : addCity} btnTitle={currentCity.id ? 'Изменить' : 'Добавить'}></CityForm>}
+                    {currentCity && <CityForm city={currentCity}
+                        onClick={currentCity.id ? updateCity : addCity}
+                        btnTitle={currentCity.id ? 'Изменить' : 'Добавить'}
+                        mapBtnTitle={currentCity?.MapArea?.length ? 'Изменить область' : 'Добавить область'}
+                        openMap={() => setIsMapOpened(true)} />}
+                </MyModal>
+                <MyModal visible={isMapOpened} setVisible={setIsMapOpened}>
+                    {isMapOpened && <AdminMap onChange={() => { setIsMapOpened(false); fetchCities(); }} cityId={currentCity?.id} />}
                 </MyModal>
 
                 <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}

@@ -8,21 +8,28 @@ import { AdminButton } from '../AdminButton/AdminButton';
 import { MySelect } from '../select/MySelect';
 import { NumPicker } from '../NumPicker/NumPicker';
 import { formatISO, getHours, addHours } from 'date-fns'
-import { WATCH_SIZES } from '../../constants';
+import { CITY_COORDINATES, WATCH_SIZES } from '../../constants';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { notify, NOTIFY_TYPES } from '../Notifications';
 import { useTranslation } from 'react-i18next';
+import { ClientMap } from '../Map/ClientMap';
 
 const date = new Date();
 const minDate = formatISO(date, { representation: 'date' });
 const minTime = getHours(addHours(date, 2));
+
+const getCityCenter = (city) => {
+    return CITY_COORDINATES[city] || CITY_COORDINATES['default'];
+};
 
 const ClientOrderSchema = z.object({
     name: z.string().trim().min(1, { message: 'errors.name' }).min(3, { message: 'errors.nameLength' }).max(255),
     email: z.string().trim().min(1, { message: 'errors.email' }).email({ message: 'errors.emailFormat' }).max(255),
     watchSize: z.nativeEnum(WATCH_SIZES),
     cityId: z.number({ invalid_type_error: 'errors.cityId' }).int().positive(),
+    isMasterToHouse: z.boolean(),
+    address: z.string().trim().max(255).optional(),
     date: z.preprocess(value => ((typeof value === "string" || value instanceof Date) && value !== '') && new Date(value),
         z.date({ invalid_type_error: 'errors.date' })),
     time: z.number({ invalid_type_error: 'errors.time' }).int().min(10).max(18)
@@ -44,6 +51,13 @@ const ClientOrderSchema = z.object({
             code: z.ZodIssueCode.custom,
             path: ['date'],
             message: "errors.timeDate",
+        });
+    }
+    if (order.isMasterToHouse && !order.address) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['address'],
+            message: "errors.address",
         });
     }
 });
@@ -155,13 +169,74 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
                     }) => (
                         <MySelect
                             name={name}
-                            onChange={(value) => onChange(+value)}
+                            onChange={(value) => {
+                                onChange(+value);
+                                if (watch('cityId') ? cities.find(city => city.id === watch('cityId'))?.MapArea?.length === 0 : true) {
+                                    setValue('isMasterToHouse', false);
+                                }
+                                setValue('address', '');
+                                setValue('lngLat', []);
+                            }}
                             value={value || ''}
                             error={error}
                             options={cities.map(city => ({ value: city.id, name: city.name }))}
                         />
                     )}
                 />
+            </div>
+            <div>
+                <div className={classes.formRow}>
+                    <div className={classes.checkboxWrapper}>
+                        <Controller
+                            control={control}
+                            name="isMasterToHouse"
+                            render={({
+                                field: { onChange, value, name },
+                                fieldState: { error },
+                            }) => (
+                                cities.find(city => city.id === watch('cityId'))?.MapArea?.length !== 0 ? <MyInput id={name}
+                                    type="checkbox" name={name}
+                                    className={classes.checkbox}
+                                    disabled={watch('cityId') ? cities.find(city => city.id === watch('cityId'))?.MapArea?.length === 0 : true}
+                                    onChange={(val) => {
+                                        onChange(val);
+                                        setValue('address', '');
+                                        setValue('lngLat', []);
+                                    }}
+                                    value={value}
+                                    error={error}
+                                />
+                                    :
+                                    <div className={classes.checkboxNotAvailable}>&#10006;</div>
+                            )}
+                        />
+                        <label htmlFor="isMasterToHouse">{t('orderForm.isMasterToHouse')}</label>
+                        {errors.isMaster && (
+                            <div className={classes.checkboxError}>{errors.isMasterToHouse.message}</div>
+                        )}
+                    </div>
+                </div>
+                {<div className={classes.formRow}>
+                    <div className={classes.checkboxWrapper}>
+                        <Controller
+                            control={control}
+                            name="address"
+                            render={({
+                                field: { onChange },
+                            }) => (
+                                <ClientMap onChange={({ address, lngLat, isPointAvailable }) => {
+                                    onChange(isPointAvailable ? address : '');
+                                    setValue('lngLat', [lngLat.lng, lngLat.lat]);
+                                }}
+                                    className={watch('isMasterToHouse') && cities.find(city => city.id === watch('cityId'))?.MapArea?.length ? '' : 'hidden'}
+                                    cityId={watch('cityId')}
+                                    center={getCityCenter(cities.find(city => city.id === watch('cityId'))?.name)}
+                                />
+                            )}
+                        />
+                    </div>
+                </div>
+                }
             </div>
             <div className={classes.formRow}>
                 <div className={classes.rowTop}>

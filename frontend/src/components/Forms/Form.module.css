@@ -19,6 +19,14 @@ label {
     margin: 5px 0px 0px 0px;
 }
 
+.checkbox {
+    margin: 0;
+}
+
+.checkboxNotAvailable {
+    width: 13px;
+}
+
 .errorMessage {
     color: red;
     font-size: 14px;
