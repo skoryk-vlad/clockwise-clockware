@@ -37,7 +37,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "bash ./env",
+    "build": "react-scripts build",
     "test": "jest",
     "eject": "react-scripts eject"
   },

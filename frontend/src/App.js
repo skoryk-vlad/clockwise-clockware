@@ -14,6 +14,8 @@ const PayPalOptions = {
     "components": "buttons"
 };
 
+console.log(process.env);
+
 const App = () => {
     return (
         <Provider store={store}>
