@@ -14,8 +14,8 @@ module.exports = {
     [
       {
         id: 1,
-        email: encryptPassword('passwordsecret'),
-        password: 'passwordsecret',
+        email: 'admin@example.com',
+        password: encryptPassword('passwordsecret'),
         role: ROLES.ADMIN,
         confirmationToken: uuidv4(),
         createdAt: new Date(),

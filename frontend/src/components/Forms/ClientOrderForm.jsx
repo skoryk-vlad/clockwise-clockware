@@ -13,7 +13,7 @@ import { useEffect } from 'react';
 import { useState } from 'react';
 import { notify, NOTIFY_TYPES } from '../Notifications';
 import { useTranslation } from 'react-i18next';
-// import { ClientMap } from '../Map/ClientMap';
+import { ClientMap } from '../Map/ClientMap';
 
 const date = new Date();
 const minDate = formatISO(date, { representation: 'date' });
@@ -224,15 +224,14 @@ export const ClientOrderForm = ({ order, onClick, cities }) => {
                             render={({
                                 field: { onChange },
                             }) => (
-                                // <ClientMap onChange={({ address, lngLat, isPointAvailable }) => {
-                                //     onChange(isPointAvailable ? address : '');
-                                //     setValue('lngLat', [lngLat.lng, lngLat.lat]);
-                                // }}
-                                //     className={watch('isMasterToHouse') && cities.find(city => city.id === watch('cityId'))?.MapArea?.length ? '' : 'hidden'}
-                                //     cityId={watch('cityId')}
-                                //     center={getCityCenter(cities.find(city => city.id === watch('cityId'))?.name)}
-                                // />
-                                <div></div>
+                                <ClientMap onChange={({ address, lngLat, isPointAvailable }) => {
+                                    onChange(isPointAvailable ? address : '');
+                                    setValue('lngLat', [lngLat.lng, lngLat.lat]);
+                                }}
+                                    className={watch('isMasterToHouse') && cities.find(city => city.id === watch('cityId'))?.MapArea?.length ? '' : 'hidden'}
+                                    cityId={watch('cityId')}
+                                    center={getCityCenter(cities.find(city => city.id === watch('cityId'))?.name)}
+                                />
                             )}
                         />
                     </div>
