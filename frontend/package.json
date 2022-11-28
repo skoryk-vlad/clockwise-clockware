@@ -40,7 +40,7 @@
     "build": "npm install && react-scripts build -d",
     "test": "jest",
     "eject": "react-scripts eject",
-    "build:stage": "env-cmd npm run-script build"
+    "build:stage": "npm install && env-cmd npm run-script build"
   },
   "eslintConfig": {
     "extends": [
