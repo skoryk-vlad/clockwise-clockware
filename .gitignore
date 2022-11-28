@@ -1,6 +1,6 @@
 /backend/node_modules
 /backend/build
-/backend/.env.prod
+/backend/.env.production
 /backend/.env.local
 /backend/.env.test
 

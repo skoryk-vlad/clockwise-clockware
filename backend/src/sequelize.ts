@@ -7,7 +7,7 @@ const DBInfo = {
             logging: false
         }
     },
-    prod: {
+    production: {
         connectString: process.env.DB_CONNECT,
         options: {
             logging: false,
