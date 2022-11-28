@@ -23,7 +23,7 @@ export const AddOrderSchema = z.object({
         z.number().int().positive()
     ),
     status: z.nativeEnum(ORDER_STATUSES),
-    address: z.string().trim().max(255),
+    address: z.string().trim().max(255).optional(),
     lngLat: z.preprocess(value => String(value).split(',').map(coord => +coord), z.array(z.number().min(-180).max(180))).optional(),
 })
 .superRefine((order, ctx) => {
