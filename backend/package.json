@@ -7,7 +7,7 @@
     "node": "16.13.1"
   },
   "scripts": {
-    "build": "tsc && set NODE_ENV=prod",
+    "build": "npm install && tsc && set NODE_ENV=prod",
     "start": "set NODE_ENV=prod && node build/index.js",
     "serve": "set NODE_ENV=local && nodemon src/index.ts",
     "test": "set NODE_ENV=test && jest --forceExit --runInBand"
