@@ -37,10 +37,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "npm install && react-scripts build -d",
+    "build": "npm install && react-scripts build",
     "test": "jest",
-    "eject": "react-scripts eject",
-    "build:stage": "npm install && env-cmd npm run-script build"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
