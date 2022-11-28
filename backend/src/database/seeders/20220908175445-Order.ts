@@ -2,8 +2,8 @@ import { QueryInterface } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 enum STATUSES {
-  AWAITING_CONFIRMATION = 'awaiting confirmation',
-  CONFIRMED = 'confirmed',
+  AWAITING_PAYMENT = 'awaiting payment',
+  PAID = 'paid',
   COMPLETED = 'completed',
   CANCELED = 'canceled'
 }
@@ -27,8 +27,8 @@ module.exports = {
         clientId: 1,
         masterId: 1,
         cityId: 1,
-        status: STATUSES.AWAITING_CONFIRMATION,
-        confirmationToken: uuidv4(),
+        status: STATUSES.AWAITING_PAYMENT,
+        reviewToken: uuidv4(),
         price: 75,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -43,8 +43,8 @@ module.exports = {
         clientId: 2,
         masterId: 2,
         cityId: 2,
-        status: STATUSES.AWAITING_CONFIRMATION,
-        confirmationToken: uuidv4(),
+        status: STATUSES.PAID,
+        reviewToken: uuidv4(),
         price: 150,
         createdAt: new Date(),
         updatedAt: new Date(),

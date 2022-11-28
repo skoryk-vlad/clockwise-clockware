@@ -13,6 +13,7 @@ module.exports = {
           defaultValue: uuidv4()
         }
       ),
+      await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'),
       await queryInterface.sequelize.query('update "Order" set "reviewToken" = uuid_generate_v4();'),
       await queryInterface.addColumn(
         'Order',

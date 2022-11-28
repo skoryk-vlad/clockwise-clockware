@@ -8,9 +8,8 @@
   },
   "scripts": {
     "build": "tsc && set NODE_ENV=prod",
-    "postbuild": "set NODE_ENV=prod && node build/index.js",
+    "start": "set NODE_ENV=prod && node build/index.js",
     "serve": "set NODE_ENV=local && nodemon src/index.ts",
-    "start": "tsc && set NODE_ENV=prod && node build/index.js",
     "test": "set NODE_ENV=test && jest --forceExit --runInBand"
   },
   "heroku-run-build-script": true,
