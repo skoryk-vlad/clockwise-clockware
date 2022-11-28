@@ -4,7 +4,7 @@ import { DataTypes, Optional, ModelDefined } from 'sequelize';
 
 export interface MapAreaAttributes {
     id: number;
-    area: Array<Array<Array<number>>>;
+    area: number[][][];
     cityId: number;
 }
 

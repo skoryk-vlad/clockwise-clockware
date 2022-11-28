@@ -55,18 +55,13 @@ export default class MapController {
             const isPointAvailable = mapAreas.some(mapArea => {
                 const area = mapArea.getDataValue('area')[0];
 
-                let tempCoord = area[area.length - 1];
-                let tempIsPointAvailable = false;
-
-                area.forEach((coord, i) => {
+                return area.reduce((acc, coord, index) => {
+                    const tempCoord = area.at(index - 1);
                     if ((((coord[1] <= lat) && (lat < tempCoord[1])) || ((tempCoord[1] <= lat) && (lat < coord[1]))) &&
-                        (lng > (tempCoord[0] - coord[0]) * (lat - coord[1]) / (tempCoord[1] - coord[1]) + coord[0])) {
-                        tempIsPointAvailable = !tempIsPointAvailable;
-                    }
-                    tempCoord = coord;
-                });
-
-                return tempIsPointAvailable;
+                        (lng > (tempCoord[0] - coord[0]) * (lat - coord[1]) / (tempCoord[1] - coord[1]) + coord[0]))
+                        return !acc;
+                    return acc;
+                }, false)
             });
 
             return res.status(200).json(isPointAvailable);
