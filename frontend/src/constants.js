@@ -63,3 +63,26 @@ export const supportedLanguages = {
     en: 'English',
     ru: 'Русский'
 }
+
+export const CITY_COORDINATES = {
+    'default': {
+        longitude: 35.04809494722167,
+        latitude: 49.46348409567955
+    },
+    'Киев': {
+        longitude: 30.526615346572157,
+        latitude: 50.44956127700263
+    },
+    'Полтава': {
+        longitude: 34.55431380214435,
+        latitude: 49.58985501886275
+    },
+    'Ужгород': {
+        longitude: 22.305025190395895,
+        latitude: 48.62144484727884
+    },
+    'Днепр': {
+        longitude: 35.04809494722167,
+        latitude: 48.46348409567955
+    }
+}

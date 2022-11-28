@@ -241,3 +241,38 @@ export class AuthService {
         }
     }
 }
+
+export class MapService {
+    static async setAreas(areaInfo) {
+        try {
+            const { data } = await api.post(`/map/area`, areaInfo);
+            return data;
+        } catch (error) {
+            return error;
+        }
+    }
+    static async getAreas(cityId) {
+        try {
+            const { data } = await api.get(`/map/area/${cityId}`);
+            return data;
+        } catch (error) {
+            return error;
+        }
+    }
+    static async checkPointInArea(attributes) {
+        try {
+            const { data } = await api.get(`/map/point-in-area?${createSearchParams(attributes)}`);
+            return data;
+        } catch (error) {
+            return error;
+        }
+    }
+    static async getPlaceByLngLat(LngLat) {
+        try {
+            const { data } = await api.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${LngLat.lng},${LngLat.lat}.json?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`);
+            return data;
+        } catch (error) {
+            return error;
+        }
+    }
+}

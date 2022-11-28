@@ -210,6 +210,9 @@ export default class ClientController {
             const client = await Client.findByPk(id);
             if (!client) return res.status(404).json('No such client');
 
+            const order = await Order.findOne({ where: { clientId: id } });
+            if (order) return res.status(409).json('The client has orders');
+
             const user = await User.findByPk(client.getDataValue('userId'));
 
             await client.destroy({ transaction: deleteClientTransaction });

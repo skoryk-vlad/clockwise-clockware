@@ -13,10 +13,10 @@ export const AppRouter = () => {
         <Routes>
             <>
                 {publicRoutes.map(route =>
-                    <>
-                        <Route path={`/:locale${route.path}`} element={<LocaleRoute>{route.element}</LocaleRoute>} exact={route.exact} key={route.path} />
+                    <React.Fragment key={route.path}>
+                        <Route path={`/:locale${route.path}`} element={<LocaleRoute>{route.element}</LocaleRoute>} exact={route.exact} />
                         <Route path={route.path} element={<Navigate replace={true} to={`/${i18n.language}${route.path}`} />} />
-                    </>
+                    </React.Fragment>
                 )}
                 <Route path="*" element={<Navigate replace={true} to={`/${i18n.language}`} />} />
             </>

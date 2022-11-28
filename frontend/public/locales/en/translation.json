@@ -79,6 +79,9 @@
         "masterChoose": "Choose",
         "noMasters": "Unfortunately, there are no masters at this time on this day. Please select a different time or date.",
         "masterReviewsTitle": "Reviews about the master",
+        "isMasterToHouse": "Enter the address to call the master",
+        "placeNotAvailable": "Not available",
+        "address": "Address",
         "returnFormAltText": "Back"
     },
     "watchSizes": {

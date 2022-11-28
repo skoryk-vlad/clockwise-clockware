@@ -20,7 +20,10 @@ const defaultOrder = {
     date: "",
     time: null,
     status: ORDER_STATUSES.AWAITING_PAYMENT,
-    images: []
+    images: [],
+    isMasterToHouse: false,
+    address: '',
+    lngLat: [],
 };
 
 export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, register }) => {
@@ -130,6 +133,7 @@ export const OrderModal = ({ isOrderModalOpened, setIsOrderModalOpened, login, r
                         <div className='orderDetails__item'><span className='orderDetails__bold'>{t('orderForm.dateAndTime')}:</span> {orderReturned.date} {orderReturned.time}:00-{orderReturned.endTime}:00</div>
                         <div className='orderDetails__item'><span className='orderDetails__bold'>{t('orderForm.watchSize')}:</span> {t(`watchSizes.${orderReturned.watchSize}`)}</div>
                         <div className='orderDetails__item'><span className='orderDetails__bold'>{t('orderForm.price')}:</span> {orderReturned.price}</div>
+                        {orderReturned.address && <div className='orderDetails__item'><span className='orderDetails__bold'>{t('orderForm.address')}:</span> {orderReturned.address}</div>}
                         <div className='orderDetails__text'>{t('orderForm.howToPay')}</div>
                         {orderPaid
                             ?

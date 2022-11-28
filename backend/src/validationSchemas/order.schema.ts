@@ -22,7 +22,9 @@ export const AddOrderSchema = z.object({
         (a) => typeof a === 'string' ? parseInt(z.string().parse(a), 10) : a,
         z.number().int().positive()
     ),
-    status: z.nativeEnum(ORDER_STATUSES)
+    status: z.nativeEnum(ORDER_STATUSES),
+    address: z.string().trim().max(255),
+    lngLat: z.preprocess(value => String(value).split(',').map(coord => +coord), z.array(z.number().min(-180).max(180))).optional(),
 })
 .superRefine((order, ctx) => {
     if (!(order.time + Object.values(WATCH_SIZES).indexOf(order.watchSize) + 1 < 20)) {

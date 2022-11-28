@@ -77,7 +77,11 @@ export const Clients = () => {
             notify(NOTIFY_TYPES.SUCCESS, 'Клиент успешно удален');
             fetchClients();
         } catch (error) {
-            notify(NOTIFY_TYPES.ERROR);
+            if(error.response.data === 'The client has orders') {
+                notify(NOTIFY_TYPES.ERROR, 'У данного клиента есть заказы. Его удаление невозможно!');
+            } else {
+                notify(NOTIFY_TYPES.ERROR);
+            }
             console.log(error.response.data);
         }
     }

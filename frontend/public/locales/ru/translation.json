@@ -79,6 +79,9 @@
         "masterChoose": "Выбрать",
         "noMasters": "К сожалению, мастеров на это время в этот день нет. Выберите другое время или дату.",
         "masterReviewsTitle": "Отзывы о мастере",
+        "isMasterToHouse": "Указать адрес для вызова мастера",
+        "placeNotAvailable": "Недоступно",
+        "address": "Адрес",
         "returnFormAltText": "Назад"
     },
     "watchSizes": {
