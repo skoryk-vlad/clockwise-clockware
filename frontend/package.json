@@ -15,6 +15,7 @@
     "date-fns": "^2.29.3",
     "i18next": "^22.0.4",
     "i18next-http-backend": "^2.0.1",
+    "mapbox-gl": "^2.11.0",
     "path": "^0.12.7",
     "rc-slider": "^10.0.1",
     "react": "^18.1.0",
@@ -51,7 +52,10 @@
     "production": [
       ">0.2%",
       "not dead",
-      "not op_mini all"
+      "not ie 11",
+      "not chrome < 51",
+      "not safari < 10",
+      "not android < 51"
     ],
     "development": [
       "last 1 chrome version",

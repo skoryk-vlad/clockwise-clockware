@@ -9,8 +9,10 @@ module.exports = {
   },
   production: {
     url: process.env.DB_CONNECT,
-    ssl: {
-      "rejectUnauthorized": false
+    dialectOptions: {
+      ssl: {
+        rejectUnauthorized: false
+      }
     },
     dialect: 'postgres',
   }

@@ -7,10 +7,9 @@
     "node": "16.13.1"
   },
   "scripts": {
-    "build": "tsc && set NODE_ENV=prod",
-    "postbuild": "set NODE_ENV=prod && node build/index.js",
+    "build": "npm install && tsc && set NODE_ENV=production",
+    "start": "set NODE_ENV=production && node build/index.js",
     "serve": "set NODE_ENV=local && nodemon src/index.ts",
-    "start": "tsc && set NODE_ENV=prod && node build/index.js",
     "test": "set NODE_ENV=test && jest --forceExit --runInBand"
   },
   "heroku-run-build-script": true,

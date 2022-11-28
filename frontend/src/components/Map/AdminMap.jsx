@@ -34,7 +34,7 @@ export const AdminMap = ({ onChange, cityId }) => {
 
     const sendAreas = async () => {
         try {
-            MapService.setAreas({ areas, cityId });
+            await MapService.setAreas({ areas, cityId });
             notify(NOTIFY_TYPES.SUCCESS, 'Область успешно изменена!');
             onChange();
         } catch (error) {
