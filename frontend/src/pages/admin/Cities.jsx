@@ -12,7 +12,7 @@ import { notify, NOTIFY_TYPES } from '../../components/Notifications';
 import { Table } from '../../components/Table/Table';
 import { ColumnHead } from '../../components/Table/ColumnHead';
 import { CityFilterForm } from '../../components/Forms/CityFilterForm';
-// import { AdminMap } from '../../components/Map/AdminMap';
+import { AdminMap } from '../../components/Map/AdminMap';
 
 const defaultCity = {
     name: '',
@@ -130,7 +130,7 @@ export const Cities = () => {
                         openMap={() => setIsMapOpened(true)} />}
                 </MyModal>
                 <MyModal visible={isMapOpened} setVisible={setIsMapOpened}>
-                    {/* {isMapOpened && <AdminMap onChange={() => { setIsMapOpened(false); fetchCities(); }} cityId={currentCity?.id} />} */}
+                    {isMapOpened && <AdminMap onChange={() => { setIsMapOpened(false); fetchCities(); }} cityId={currentCity?.id} />}
                 </MyModal>
 
                 <Table changeLimit={limit => setPagination({ ...pagination, limit: limit })}
