@@ -215,7 +215,7 @@ describe("MASTER API", () => {
                 .post("/api/master/user")
                 .send(newMaster3)
                 .expect("Content-Type", /json/)
-                .expect(201);
+                .expect(20100000);
 
             const { id, name, email, cities, status } = response.body;
             expect(id).toBe(newMaster3.id);
