@@ -7,8 +7,17 @@ on:
     branches: [ "develop" ]
 
 env:
-    DB_CONNECT: ${{ secrets.DB_CONNECT }}
     NODE_ENV: test.production
+    DB_CONNECT: ${{ secrets.DB_CONNECT }}
+    ADMIN_LOGIN: ${{ secrets.ADMIN_LOGIN }}
+    ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+    JWT_TOKEN_KEY: ${{ secrets.JWT_TOKEN_KEY }}
+    MAIL_USER: ${{ secrets.MAIL_USER }}
+    MAIL_PASS: ${{ secrets.MAIL_PASS }}
+    BASE_LINK: ${{ secrets.BASE_LINK }}
+    CLIENT_LINK: ${{ secrets.CLIENT_LINK }}
+    SERVER_TIME_DIFFERENCE: ${{ secrets.SERVER_TIME_DIFFERENCE }}
+    GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
 
 jobs:
   test-backend:
