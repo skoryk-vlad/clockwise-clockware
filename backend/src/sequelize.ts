@@ -15,7 +15,7 @@ const DBOptions = {
     "test": {
         logging: false
     },
-    "test.production": {
+    "test-production": {
         logging: false,
         dialectOptions: {
             ssl: {
