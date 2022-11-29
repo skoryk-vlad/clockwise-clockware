@@ -18,7 +18,10 @@ const defaultOrder = {
     date: "",
     time: null,
     status: ORDER_STATUSES.AWAITING_PAYMENT,
-    images: []
+    images: [],
+    isMasterToHouse: false,
+    address: '',
+    lngLat: [],
 };
 
 const validOrder = {
@@ -29,7 +32,10 @@ const validOrder = {
     date: "2023-01-30",
     time: 10,
     status: ORDER_STATUSES.AWAITING_PAYMENT,
-    images: []
+    images: [],
+    isMasterToHouse: false,
+    address: '',
+    lngLat: [],
 };
 
 const setup = (props) => {
@@ -45,7 +51,7 @@ describe("<ClientOrderForm />", () => {
     test("should render component correctly", async () => {
         const { container } = setup();
 
-        expect(container.childNodes[0].childNodes).toHaveLength(8);
+        expect(container.childNodes[0].childNodes).toHaveLength(9);
 
         const nameInput = screen.queryByPlaceholderText(/name/);
         expect(nameInput.value).toBe(defaultOrder.name);
