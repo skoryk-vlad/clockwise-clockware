@@ -112,7 +112,9 @@ let token = '';
 describe("ORDER API", () => {
     beforeAll(async () => {
         await sequelize.sync({ force: true });
-        await User.create(adminInfo);
+        const user = await User.create(adminInfo);
+        console.log(user);
+        
         const auth = await server.post('/api/auth').send(admin);
         token = auth.body.token;
 

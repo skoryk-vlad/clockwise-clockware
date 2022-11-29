@@ -1,5 +1,5 @@
-import { encryptPassword } from './../src/password';
-import { User, ROLES } from './../src/models/user.model';
+import { encryptPassword } from '../src/password';
+import { User, ROLES } from '../src/models/user.model';
 import { AUTH_SERVICES } from '../src/types';
 import { WATCH_SIZES, ORDER_STATUSES } from '../src/models/order.model';
 import { CLIENT_STATUSES } from '../src/models/client.model';
@@ -58,17 +58,6 @@ const newMaster4 = {
     email: 'semisvetik123@gmail.com',
     cities: [newCity2.id],
     status: MASTER_STATUSES.NOT_CONFIRMED
-};
-const newMasterByService = {
-    id: 15,
-    token: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjcxM2ZkNjhjOTY2ZTI5MzgwOTgxZWRjMDE2NGEyZjZjMDZjNTcwMmEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYmYiOjE2NjgxNTgxNTQsImF1ZCI6IjEwNjY3NDQ3NDk4MTMtOTh2Nzk1YmplM2M2aWw4NmRpM3FiNzYwbDRjZnQyamIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTAyMjU4NjA2MDk0NjQ1MDk0MTYiLCJlbWFpbCI6InZtczA3MDMwNEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMTA2Njc0NDc0OTgxMy05OHY3OTViamUzYzZpbDg2ZGkzcWI3NjBsNGNmdDJqYi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsIm5hbWUiOiJWbGFkIEtyYW1lciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UyR2UxMlN0NHl5TUZEVmJYZV9hemJxOGxmdTQtTHlTcFUzZm9qQj1zOTYtYyIsImdpdmVuX25hbWUiOiJWbGFkIiwiZmFtaWx5X25hbWUiOiJLcmFtZXIiLCJpYXQiOjE2NjgxNTg0NTQsImV4cCI6MTY2ODE2MjA1NCwianRpIjoiNmU4NTI3NWMxNWYzNjEzZTkyNDFhNTEyN2ZmYjk0OTE3ODZhMGVlYSJ9.f3U7SaNsUzGr19P4PjaxQsur7dr4HNgqrZdFk-ZXH-sFsBC09RgL4MoZO5QNPJt4wnfRfDE1qKP33yIpvDaYGKHvQYZTGGSDdwvoYOkKFpnmtUXU5pskMhg07I94wpb1H76ZC_R1PZ2niRlXVAcop4vJzpWX6rukzYeIDQyT2ADXL8GiGhGhWSE8MycLevB3dvOE26q9N9ICrQcQmZVm789vkNeHmSfP0orifvzshhM0jUlK2DFL2VoNKfbLalsFSXP0zTec-OvnpCcPRQP0Ym3bvnosTgQx4a6lLcu_EtPgpMcwl8hiJR1Sa3KWJ2I9SAtNj_G9P0_VZOldDZp-rQ",
-    service: AUTH_SERVICES.GOOGLE,
-    cities: [newCity.id]
-};
-const newMasterByServiceExpiredToken = {
-    token: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjcxM2ZkNjhjOTY2ZTI5MzgwOTgxZWRjMDE2NGEyZjZjMDZjNTcwMmEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJuYmYiOjE2NjgwNjU0NDUsImF1ZCI6IjEwNjY3NDQ3NDk4MTMtOTh2Nzk1YmplM2M2aWw4NmRpM3FiNzYwbDRjZnQyamIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTAyMjU4NjA2MDk0NjQ1MDk0MTYiLCJlbWFpbCI6InZtczA3MDMwNEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXpwIjoiMTA2Njc0NDc0OTgxMy05OHY3OTViamUzYzZpbDg2ZGkzcWI3NjBsNGNmdDJqYi5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsIm5hbWUiOiJWbGFkIEtyYW1lciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BTG01d3UyR2UxMlN0NHl5TUZEVmJYZV9hemJxOGxmdTQtTHlTcFUzZm9qQj1zOTYtYyIsImdpdmVuX25hbWUiOiJWbGFkIiwiZmFtaWx5X25hbWUiOiJLcmFtZXIiLCJpYXQiOjE2NjgwNjU3NDUsImV4cCI6MTY2ODA2OTM0NSwianRpIjoiMGJlMmJlYTc3OGFkY2U3YjUwN2YwMjQ2YThmYjE0ODFkMmYyMDZmZSJ9.BqwdSUP8vtMTATdGzmcK4e9s0lPYzzb6WEpSVvZbRZhOaegQlpn1RgywcolA1g2gLf2IHdOMWf7KeuQQFdVWaiYqnNJY87bjOlFvRBAxFi__lMK7erHlJ7fzH1Hw8PQt9nabnhv25umd6hljkJ3_Ku0ITXwFx-7MPrtmBntPMY5YXHpiRhKI12TslNUp2stxAozeXDcuKsxO4l4zaOtgVaNpmklCbC-bHjFJnx_aMWnt2wcxTQtFQyHcLQR4_WyAU0D0Dbea7yJqMVbGYtNjDYe_PLCi5Qt_hCcuioVwy_bzHgL4c6l7wHSGXpBHiQwj3VN_K3QoVYbJHkQxqisixQ',
-    service: AUTH_SERVICES.GOOGLE,
-    cities: [newCity.id]
 };
 const newMasterByServiceWrongToken = {
     token: 'eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJ',
@@ -265,26 +254,6 @@ describe("MASTER API", () => {
     });
 
     describe("POST /api/master/service", () => {
-        let id = null;
-        it("should add master", async () => {
-            const response = await server
-                .post("/api/master/service")
-                .send(newMasterByService)
-                .expect("Content-Type", /json/)
-                .expect(201);
-
-            id = response.body.id;
-            expect(response.body.cities).toHaveLength(newMasterByService.cities.length);
-            expect(response.body.status).toBe(MASTER_STATUSES.CONFIRMED);
-        });
-        it("should return error that token expired", async () => {
-            await server
-                .post("/api/master/service")
-                .send(newMasterByServiceExpiredToken)
-                .expect("Content-Type", /json/)
-                .expect(400)
-                .expect(`"Token used too late"`);
-        });
         it("should return error that token in wrong format", async () => {
             await server
                 .post("/api/master/service")
@@ -303,9 +272,6 @@ describe("MASTER API", () => {
             expect(response.body[0]).toHaveProperty("path", ["service"]);
             expect(response.body[0]).toHaveProperty("message", "Invalid enum value. Expected 'google' | 'facebook', received 'twitter'");
         });
-        afterAll(async () => {
-            await server.delete(`/api/master/${id}`).set('Authorization', `Bearer ${token}`);
-        })
     });
 
     describe("POST /api/master/admin", () => {

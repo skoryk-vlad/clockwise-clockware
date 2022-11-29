@@ -10,7 +10,8 @@
     "build": "npm install && tsc && set NODE_ENV=production",
     "start": "set NODE_ENV=production && node build/index.js",
     "serve": "set NODE_ENV=local && nodemon src/index.ts",
-    "test": "set NODE_ENV=test && jest --forceExit --runInBand"
+    "test": "set NODE_ENV=test && jest --forceExit --runInBand",
+    "test:production": "set NODE_ENV=test.production && jest --forceExit --runInBand"
   },
   "heroku-run-build-script": true,
   "author": "",

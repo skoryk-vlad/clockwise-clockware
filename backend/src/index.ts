@@ -35,7 +35,7 @@ app.get('/api/ping', (req, res) => {
     res.sendStatus(200);
 });
 
-if (process.env.NODE_ENV.trim() !== 'test') {
+if (!process.env.NODE_ENV.trim().includes('test')) {
     app.listen(PORT, () => { console.log(`Server started on port ${PORT} in ${process.env.NODE_ENV}mode`); });
 }
 
