@@ -1,10 +1,10 @@
 import { Sequelize } from 'sequelize';
 
 const DBOptions = {
-    local: {
+    "local": {
         logging: false
     },
-    production: {
+    "production": {
         logging: false,
         dialectOptions: {
             ssl: {
@@ -12,11 +12,16 @@ const DBOptions = {
             }
         }
     },
-    test: {
+    "test": {
         logging: false
     },
     "test.production": {
-        logging: false
+        logging: false,
+        dialectOptions: {
+            ssl: {
+                rejectUnauthorized: false
+            }
+        }
     },
 };
 
