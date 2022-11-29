@@ -8,6 +8,7 @@ on:
 
 env:
     DB_CONNECT: ${{ secrets.DB_CONNECT }}
+    NODE_ENV: test-production
 
 jobs:
   test-backend:
