@@ -3,12 +3,8 @@ name: Frontend CI
 on:
   push:
     branches: [ "develop" ]
-    paths:
-      - 'frontend/**'
   pull_request:
     branches: [ "develop" ]
-    paths:
-      - 'frontend/**'
 
 jobs:
   test-frontend:
@@ -18,7 +14,6 @@ jobs:
     defaults:
       run:
         working-directory: ./frontend
-
 
     strategy:
       matrix:
