@@ -47,17 +47,19 @@ export const ClientMap = ({ className, onChange, cityId, center }) => {
     }, [center]);
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition(pos => {
-            setViewState({
-                ...viewState,
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                setViewState({
+                    ...viewState,
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude
+                });
+                setMarkerPosition({
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                });
             });
-            setMarkerPosition({
-                lat: pos.coords.latitude,
-                lng: pos.coords.longitude
-            });
-        });
+        }
     }, []);
 
     const handleChange = async (point) => {

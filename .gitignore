@@ -3,6 +3,7 @@
 /backend/.env.production
 /backend/.env.local
 /backend/.env.test
+/backend/.env.test.production
 
 /frontend/node_modules
 /frontend/build

@@ -1,0 +1,44 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+env:
+    NODE_ENV: test.production
+    DB_CONNECT: ${{ secrets.DB_CONNECT }}
+    ADMIN_LOGIN: ${{ secrets.ADMIN_LOGIN }}
+    ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+    JWT_TOKEN_KEY: ${{ secrets.JWT_TOKEN_KEY }}
+    MAIL_USER: ${{ secrets.MAIL_USER }}
+    MAIL_PASS: ${{ secrets.MAIL_PASS }}
+    BASE_LINK: ${{ secrets.BASE_LINK }}
+    CLIENT_LINK: ${{ secrets.CLIENT_LINK }}
+    SERVER_TIME_DIFFERENCE: ${{ secrets.SERVER_TIME_DIFFERENCE }}
+    GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+
+jobs:
+  test-backend:
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './backend/package-lock.json'
+    - run: npm install
+    - run: npm run test:production

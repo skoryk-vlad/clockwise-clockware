@@ -92,7 +92,7 @@ export default class MasterController {
             if (error?.name === "ZodError") return res.status(400).json(error.issues);
             if (error?.message.includes("Wrong number of segments in token")) return res.status(400).json(error.message);
             if (error?.message.includes("Token used too late")) return res.status(400).json("Token used too late");
-            return res.sendStatus(505);
+            return res.sendStatus(500);
         }
     }
     async addMasterByAdmin(req: Request, res: Response): Promise<Response> {
