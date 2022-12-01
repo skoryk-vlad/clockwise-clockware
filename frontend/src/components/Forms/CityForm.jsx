@@ -65,8 +65,8 @@ export const CityForm = ({ city, onClick, btnTitle, openMap, mapBtnTitle }) => {
                         fieldState: { error }
                     }) => (
                         <MyInput
-                            name={name} type="number"
-                            onChange={event => onChange(+event.target.value)}
+                            name={name} type="text"
+                            onChange={event => isNaN(event.target.value) || event.target.value === '' ? onChange(event.target.value) : onChange(+event.target.value)}
                             value={value}
                             error={error}
                             placeholder="Цена..."
@@ -77,9 +77,6 @@ export const CityForm = ({ city, onClick, btnTitle, openMap, mapBtnTitle }) => {
             {btnTitle !== 'Добавить' && <div className={classes.formRow}>
                 <div className={classes.rowTop}>
                     <label htmlFor="price">Область для услуги "Вызов мастера на дом"</label>
-                    {errors.price && (
-                        <div className={classes.errorMessage}>{errors.price.message}</div>
-                    )}
                 </div>
                 <AdminButton type="button" onClick={openMap} className={classes.select}>{mapBtnTitle}</AdminButton>
             </div>}

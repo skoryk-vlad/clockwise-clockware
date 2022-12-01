@@ -75,6 +75,8 @@ export const AuthorizationModal = ({ isRegistration, needRedirect = true, setIsA
                 notify(NOTIFY_TYPES.ERROR, t('notifications.loginError'));
             else if (response.payload === 'Master is not yet approved')
                 notify(NOTIFY_TYPES.ERROR, t('notifications.notApproved'));
+            else if (response.payload === 'Email is not verified')
+                notify(NOTIFY_TYPES.ERROR, t('notifications.notConfirmed'));
             else if (response.payload === "User doesn't have a password") {
                 setIsConfirmationModalOpened(true);
                 setConfirmationModalInfo({
