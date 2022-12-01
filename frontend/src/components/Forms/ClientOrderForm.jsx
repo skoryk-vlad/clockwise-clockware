@@ -46,7 +46,7 @@ const ClientOrderSchema = z.object({
             message: "errors.timeWatchSize",
         });
     }
-    if (order.date === minDate && order.time < minTime) {
+    if (formatISO(order.date, { representation: 'date' }) === minDate && order.time < minTime) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['date'],

@@ -141,7 +141,8 @@
         "successRegistrationWithApprove": "Registration completed successfully! Wait for admin approval!",
         "successRegistration": "Registration completed successfully!",
         "atLeastOneCity": "Select at least one city!",
-        "userNotExist": "User with this email address does not exist!"
+        "userNotExist": "User with this email address does not exist!",
+        "notConfirmed": "Confirm your email address to sign in!"
     },
     "paypal": {
         "description": "Grandfather clock repair",
